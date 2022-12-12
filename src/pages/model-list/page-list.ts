@@ -44,6 +44,11 @@ const list: listType[] = [
     title: "006.多个机器人",
     path: "/list/animation-multiple"
   },
+  {
+    key: "007",
+    title: "007.WEBGL相机",
+    path: "/list/webgl-camera"
+  },
 ];
 
 export default list;

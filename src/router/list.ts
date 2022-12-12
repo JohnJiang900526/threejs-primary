@@ -10,6 +10,7 @@ import SkinningAdditiveBlending from "@/pages/model-list/details/003-skinning-ad
 import SkinningIk from "@/pages/model-list/details/004-skinning_ik/index.vue";
 import SkinningMorph from "@/pages/model-list/details/005-skinning-morph/index.vue";
 import AnimationMultiple from "@/pages/model-list/details/006-animation-multiple/index.vue";
+import WebglCamera from "@/pages/model-list/details/007-webgl-camera/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -65,6 +66,12 @@ const routes: RouteRecordRaw[] = [
         name: 'AnimationMultiple',
         meta: {title: "animation-multiple"},
         component: AnimationMultiple,
+      },
+      {
+        path: '/list/webgl-camera',
+        name: 'WebglCamera',
+        meta: {title: "webgl-camera"},
+        component: WebglCamera,
       }
     ]
   },
