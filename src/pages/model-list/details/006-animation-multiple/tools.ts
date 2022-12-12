@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 export class Model {
   private width: number
@@ -16,12 +17,7 @@ export class Model {
   private model: null | THREE.Group
   private stats: null | Stats
   private control: null | OrbitControls
-  private mixer: null | THREE.AnimationMixer
-  private animations: {[key: string]: THREE.AnimationAction}
-  private currentAction: null | THREE.AnimationAction
-  private prevAction: null | THREE.AnimationAction
-  private states: string[]
-  private emotes: string[]
+  private mixers: THREE.AnimationMixer[]
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -34,164 +30,124 @@ export class Model {
     this.model = null;
     this.stats = null;
     this.control = null;
-    this.mixer = null;
-    // 动画集合对象
-    this.animations = {};
-    // 之前的执行动画
-    this.prevAction = null;
-    // 当前执行动画
-    this.currentAction = null;
-    // 状态
-    this.states = ['Idle', 'Walking', 'Running', 'Dance', 'Death', 'Sitting', 'Standing'];
-    // 表情
-    this.emotes = ['Jump', 'Yes', 'No', 'Wave', 'Punch', 'ThumbsUp'];
+    this.mixers = [];
   }
 
   init(fn?: (val: number) => void) {
-    // 创建一个透视相机 用来模拟人眼
-    // 请注意，在大多数属性发生改变之后，你将需要调用.updateProjectionMatrix来使得这些改变生效。
-    this.camera = new THREE.PerspectiveCamera(80, this.width/this.height, 0.25, 100);
-    // 相机的位置
-    this.camera.position.set(- 5, 5, 10);
-    // 相机看向的焦点
-    this.camera.lookAt(0, 2, 0);
-
-    // 创建一个场景
-    this.scene = new THREE.Scene();
-    // 背景颜色
-    this.scene.background = new THREE.Color(0xe0e0e0);
-    // 雾气
-    this.scene.fog = new THREE.Fog(0xe0e0e0, 20, 100);
+    // 创建一个透视相机 模拟人眼
+    this.camera = new THREE.PerspectiveCamera(80, this.width/this.height, 1, 1000);
+    // 设置相机的位置
+    this.camera.position.set(2, 3, - 6);
+    // 设置相机看向的位置
+    this.camera.lookAt(0, 1, 0);
 
     // 创建一个时钟
     this.clock = new THREE.Clock();
+    // 创建一个场景
+    this.scene = new THREE.Scene();
+    // 设置场景的背景颜色
+    this.scene.background = new THREE.Color(0xa0a0a0);
+    // 设置场景的雾气
+    this.scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
 
-    // 光线场景
-    // 创建半球光 光源直接放置于场景之上，光照颜色从天空光线颜色渐变到地面光线颜色 半球光没有投影
-    const hemisLight = new THREE.HemisphereLight(0xffffff, 0x666666);
-    hemisLight.position.set(0, 20, 0);
-    this.scene.add(hemisLight);
+    // 创建一个半球光 漫散射光
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
+    // 设置光的位置
+    hemiLight.position.set(0, 20, 0);
+    // 添加到场景中
+    this.scene.add(hemiLight);
 
     // 创建一个平行光
     const dirLight = new THREE.DirectionalLight(0xffffff);
-    dirLight.position.set(0, 20, 10);
+    // 设置平行光的光源位置
+    dirLight.position.set(- 3, 10, - 10);
+    // 设置平行光允许出现阴影
+    dirLight.castShadow = true;
+    // 设置阴影相机的位置
+    dirLight.shadow.camera.top = 4;
+    dirLight.shadow.camera.bottom = -4;
+    dirLight.shadow.camera.left = - 4;
+    dirLight.shadow.camera.right = 4;
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 40;
+    // 将平行光添加到场景中
     this.scene.add(dirLight);
 
-    // 创建一个网格模型 多边形网格
+    // 创建一个网格模型
     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(1000, 1000),
-      // 一种用于具有镜面高光的光泽表面的材质。
-      // depthWrite 渲染此材质是否对深度缓冲区有任何影响。默认为true
-      new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false })
+      new THREE.PlaneGeometry(200, 200),
+      new THREE.MeshPhongMaterial({color: 0x999999, depthWrite: false})
     );
+    // 调整物体的旋转弧度
     mesh.rotation.x = -(Math.PI / 2);
+    // 材质是否接受阴影
+    mesh.receiveShadow = true;
+    // 将网格模型添加到场景中去
     this.scene.add(mesh);
 
-    // 创建一个坐标辅助对象 坐标格辅助对象. 坐标格实际上是2维线数组.
-    const grid = new THREE.GridHelper(200, 40, 0x000000, 0x000000);
-    // @ts-ignore
-    grid.material.opacity = 0.2;
-    // @ts-ignore
-    grid.material.transparent = true;
-    this.scene.add(grid);
-
-    // 创建一个模型加载器 加载几何模型
+    // 加载动画模型
     const loader = new GLTFLoader();
-    loader.load("./examples/models/gltf/RobotExpressive/RobotExpressive.glb", (gltf) => {
-      const animations = gltf.animations;
-      this.model = gltf.scene;
-      this.mixer = new THREE.AnimationMixer(this.model);
-      
-      this.scene?.add(this.model);
-      animations.forEach((item) => {
-        if (this.mixer?.clipAction) {
-          const action = this.mixer?.clipAction(item);
-
-          if (this.states.indexOf(item.name) >= 4 || this.emotes.indexOf(item.name) >= 0) {
-            action.clampWhenFinished = true;
-            action.loop = THREE.LoopOnce;
-          }
-
-          this.animations[item.name] = action as THREE.AnimationAction;
-        }
+    loader.load("./examples/models/gltf/Soldier.glb", (gltf) => {
+      gltf.scene.traverse((item) => {
+        // @ts-ignore
+        if (item.isMesh) { item.castShadow = true; }
       });
 
-      // 设置当前动作
-      this.currentAction = this.animations["Walking"];
-      this.currentAction.play();
-    }, ({ loaded, total }) => {
-      this.process = (loaded / total);
+      // 克隆动画模型
+      // 克隆给定对象及其后代，确保任何 SkinnedMesh 实例都与其骨骼正确关联
+      const model1 = SkeletonUtils.clone(gltf.scene);
+      const model2 = SkeletonUtils.clone(gltf.scene);
+      const model3 = SkeletonUtils.clone(gltf.scene);
 
+      // 创建动画混合器
+      // 返回所传入的剪辑参数的AnimationAction, 根对象参数可选，
+      // 默认值为混合器的默认根对象。第一个参数可以是动画剪辑(AnimationClip)对象或者动画剪辑的名称。
+      const mixer1 = new THREE.AnimationMixer(model1);
+      const mixer2 = new THREE.AnimationMixer(model2);
+      const mixer3 = new THREE.AnimationMixer(model3);
+
+      // idle
+      mixer1.clipAction(gltf.animations[0]).play();
+      // walk
+      mixer2.clipAction(gltf.animations[1]).play();
+      // run
+      mixer3.clipAction(gltf.animations[3]).play();
+
+      model1.position.x = -2;
+      model2.position.x = 0;
+      model3.position.x = 2;
+
+      this.scene?.add(model1, model2, model3);
+      this.mixers.push(mixer1, mixer2, mixer3);
+    }, ({ loaded, total }) => {
+      this.process = Number(((loaded/total) * 100).toFixed(2));
       fn && fn(this.process);
     }, (e) => {
       console.log(e);
     });
 
     // 创建一个渲染器
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({antialias: true});
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.shadowMap.enabled = true;
     this.container.appendChild(this.renderer.domElement);
 
-    // 创建一个控制器 控制器可以让模型旋转
-    this.control = new OrbitControls(this.camera, this.renderer.domElement);
-    // 启用或禁用摄像机平移，默认为true。
-    this.control.enablePan = false;
-    // 将其设置为true以启用阻尼（惯性），这将给控制器带来重量感。默认值为false
-    // 请注意，如果该值被启用，你将必须在你的动画循环里调用.update()
-    this.control.enableDamping = true;
-
-    // 创建一个性能统计器
+    // 创建统计信息
     this.stats = Stats();
     const dom = this.stats.dom;
     dom.style.position = "absolute";
     this.container.appendChild(dom);
 
+    // 创建一个控制器 允许鼠标控制场景
+    this.control = new OrbitControls(this.camera, this.renderer.domElement);
+    this.control.enablePan = false;
+    this.control.enableDamping = true;
+    this.control.enableZoom = true;
+
     this.animate();
     this.resize();
-  }
-
-  // 状态操作
-  stateAction(key: string, duration: number = 0.5) {
-    const action = this.animations[key];
-    if (action) {
-      if (this.currentAction !== action) {
-        if (this.currentAction) {
-          this.currentAction.fadeOut(duration);
-          this.prevAction = this.currentAction;
-        }
-      }
-
-      this.currentAction = action;
-      this.currentAction
-      .reset()
-      .setEffectiveTimeScale(1)
-      .setEffectiveWeight(1)
-      .fadeIn(duration)
-      .play();
-    }
-  }
-
-  // 表情操作
-  emoteAction(key: string, duration: number = 0.5) {
-    this.stateAction(key, duration);
-
-    // 存储状态
-    const restoreState = () => {
-      if (this.mixer) {
-        this.mixer.removeEventListener("finished", restoreState);
-        if (this.prevAction) {
-          // @ts-ignore
-          const key = this.prevAction._clip.name;
-          this.stateAction(key, duration);
-        }
-      }
-    };
-
-    if (this.mixer) {
-      this.mixer.addEventListener("finished", restoreState);
-    }
   }
 
   // 开启动画
@@ -206,9 +162,9 @@ export class Model {
     }
     
     // 混合器需要更新 否则动画不执行
-    if (this.mixer && this.clock) {
+    if (this.mixers && this.clock) {
       const delta = this.clock.getDelta();
-      this.mixer.update(delta);
+      this.mixers.forEach((mixer) => { mixer.update(delta); });
     }
 
     // 控制器跟随更新
