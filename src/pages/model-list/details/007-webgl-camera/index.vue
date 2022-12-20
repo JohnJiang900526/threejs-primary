@@ -8,7 +8,7 @@
   <div class="webgl-camera-page">
     <Page title="webgl-camera">
       <div ref="container" class="key-frame-page-inner">
-        <div v-show="false" class="actions">
+        <div class="actions">
           <Icon @click="openHandle" name="wap-nav" color="#fff"/>
         </div>
       </div>
@@ -19,8 +19,8 @@
         <div class="settings-content">
           <Block title="1. 状态">
             <Space size="1rem" wrap>  
-              <Button size="small" type="primary">Idle</Button>
-              <Button size="small" type="primary">Walking</Button>
+              <Button @click="setActive('perspective')" size="small" type="primary">perspective</Button>
+              <Button @click="setActive('orthographic')" size="small" type="primary">orthographic</Button>
             </Space>
           </Block>
 
@@ -51,6 +51,13 @@ export default defineComponent({
       objModel.init();
     },
 
+    setActive(key: "orthographic" | "perspective") {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setActive(key);
+      }
+    },
+
     // 打开设置面板
     openHandle() {
       this.show = true;
@@ -72,7 +79,7 @@ export default defineComponent({
 
   .webgl-camera-page {
     .absolute-page();
-    background-color: #e0e0e0;
+    background-color: #000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
