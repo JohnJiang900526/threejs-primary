@@ -21,6 +21,7 @@ export class Model {
   private mesh2: null | THREE.Mesh
   private mesh3: null | THREE.Mesh
   private stats: null | Stats
+  private frustumSize: number
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -39,10 +40,10 @@ export class Model {
     this.mesh2 = null;
     this.mesh3 = null;
     this.stats = null;
+    this.frustumSize = 600;
   }
 
   init() {
-    const frustumSize = 600;
     const aspect = this.width/this.height;
 
     // 创建一个场景
@@ -53,15 +54,27 @@ export class Model {
     this.camera.position.z = 2500;
 
     // 创建第二个透视相机
+    // PerspectiveCamera( fov : Number, aspect : Number, near : Number, far : Number )
+    // fov — 摄像机视锥体垂直视野角度
+    // aspect — 摄像机视锥体长宽比
+    // near — 摄像机视锥体近端面
+    // far — 摄像机视锥体远端面
     this.cameraPerspective = new THREE.PerspectiveCamera(50, 0.5 * aspect, 150, 1000);
     this.cameraPerspectiveHelper = new THREE.CameraHelper(this.cameraPerspective);
     this.scene.add(this.cameraPerspectiveHelper);
 
     // 创建正交投影相机
+    // OrthographicCamera( left : Number, right : Number, top : Number, bottom : Number, near : Number, far : Number )
+    // left — 摄像机视锥体左侧面
+    // right — 摄像机视锥体右侧面
+    // top — 摄像机视锥体上侧面
+    // bottom — 摄像机视锥体下侧面
+    // near — 摄像机视锥体近端面
+    // far — 摄像机视锥体远端面
     this.cameraOrtho = new THREE.OrthographicCamera(
-      0.5 * frustumSize * aspect / -2, 
-      0.5 * frustumSize * aspect / 2, 
-      frustumSize / 2, frustumSize / -2, 
+      0.5 * this.frustumSize * aspect / -2, 
+      0.5 * this.frustumSize * aspect / 2, 
+      this.frustumSize / 2, this.frustumSize / -2, 
       150, 1000
     );
     this.cameraOrthoHelper = new THREE.CameraHelper(this.cameraOrtho);
@@ -71,14 +84,29 @@ export class Model {
     this.activeCamera = this.cameraPerspective;
     this.activeHelper = this.cameraPerspectiveHelper;
 
-    this.cameraOrtho.rotation.y = Math.PI;
     this.cameraPerspective.rotation.y = Math.PI;
+    this.cameraOrtho.rotation.y = Math.PI;
 
+    // 分组 几乎和Object3D是相同的，其目的是使得组中对象在语法上的结构更加清晰
     this.cameraRig = new THREE.Group();
-    this.cameraRig.add(this.cameraOrtho);
     this.cameraRig.add(this.cameraPerspective);
+    this.cameraRig.add(this.cameraOrtho);
     this.scene.add(this.cameraRig);
 
+    // 物体网格（Mesh）
+    // Mesh( geometry : BufferGeometry, material : Material )
+    // geometry —— （可选）BufferGeometry的实例，默认值是一个新的BufferGeometry
+    // material —— （可选）一个Material，或是一个包含有Material的数组，默认是一个新的MeshBasicMaterial
+
+    // 球缓冲几何体（SphereGeometry）
+    // SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
+    // radius — 球体半径，默认为1
+    // widthSegments — 水平分段数（沿着经线分段），最小值为3，默认值为32
+    // heightSegments — 垂直分段数（沿着纬线分段），最小值为2，默认值为16
+    // phiStart — 指定水平（经线）起始角度，默认值为0
+    // phiLength — 指定水平（经线）扫描角度的大小，默认值为 Math.PI * 2
+    // thetaStart — 指定垂直（纬线）起始角度，默认值为0
+    // thetaLength — 指定垂直（纬线）扫描角度大小，默认值为 Math.PI
     this.mesh1 = new THREE.Mesh(
       new THREE.SphereGeometry(100, 16, 8),
       new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true } )
@@ -99,16 +127,15 @@ export class Model {
     this.mesh3.position.z = 150;
     this.cameraRig.add(this.mesh3);
     
+    // 模拟星空之中的星星
     const geometry = new THREE.BufferGeometry();
     const vertices: number[] = [];
-
     for ( let i = 0; i < 10000; i ++ ) {
       vertices.push(THREE.MathUtils.randFloatSpread(2000)); // x
       vertices.push(THREE.MathUtils.randFloatSpread(2000)); // y
       vertices.push(THREE.MathUtils.randFloatSpread(2000)); // z
     }
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-
     const particles = new THREE.Points( geometry, new THREE.PointsMaterial({color: 0x888888}));
     this.scene.add(particles);
 
@@ -137,8 +164,10 @@ export class Model {
       this.mesh1.position.y = 700 * Math.sin(r);
       this.mesh1.position.z = 700 * Math.sin(r);
 
-      this.mesh1.children[0].position.x = 70 * Math.cos(2 * r);
-      this.mesh1.children[0].position.z = 70 * Math.sin(r);
+      if (this.mesh1.children[0]) {
+        this.mesh1.children[0].position.x = 70 * Math.cos(2 * r);
+        this.mesh1.children[0].position.z = 70 * Math.sin(r);
+      }
     }
 
     if (this.activeCamera === this.cameraPerspective) {
@@ -169,13 +198,14 @@ export class Model {
       this.renderer.clear();
       this.activeHelper.visible = false;
 
+      // setViewport ( x : Integer, y : Integer, width : Integer, height : Integer )
+      // 将视口大小设置为(x, y)到 (x + width, y + height)
       this.renderer.setViewport(0, 0, this.width/2, this.height);
       if (this.activeCamera) {
         this.renderer.render(this.scene, this.activeCamera);
       }
 
       this.activeHelper.visible = true;
-
       this.renderer.setViewport(this.width/2, 0, this.width/2, this.height);
       if (this.camera) {
         this.renderer.render(this.scene, this.camera);
@@ -187,16 +217,22 @@ export class Model {
   setActive(key: "orthographic" | "perspective") {
     switch(key) {
       case "perspective":
-        this.activeCamera = this.cameraPerspective;
-        this.activeHelper = this.cameraPerspectiveHelper;
+        if (this.activeCamera !== this.cameraPerspective) {
+          this.activeCamera = this.cameraPerspective;
+          this.activeHelper = this.cameraPerspectiveHelper;
+        }
         break;
       case "orthographic":
-        this.activeCamera = this.cameraOrtho;
-        this.activeHelper = this.cameraOrthoHelper;
+        if (this.activeCamera !== this.cameraOrtho) {
+          this.activeCamera = this.cameraOrtho;
+          this.activeHelper = this.cameraOrthoHelper;
+        }
         break;
       default:
-        this.activeCamera = this.cameraPerspective;
-        this.activeHelper = this.cameraPerspectiveHelper;
+        if (this.activeCamera !== this.cameraPerspective) {
+          this.activeCamera = this.cameraPerspective;
+          this.activeHelper = this.cameraPerspectiveHelper;
+        }
     }
   }
 
@@ -221,7 +257,6 @@ export class Model {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
       const aspect = this.width/this.height;
-      const frustumSize = 600;
 
       if (this.camera) {
         // 摄像机视锥体的长宽比，通常是使用画布的宽/画布的高。默认值是1（正方形画布）
@@ -236,15 +271,11 @@ export class Model {
       }
 
       if (this.cameraOrtho) {
-        this.cameraOrtho.left = -(0.5 * frustumSize * aspect / 2);
-				this.cameraOrtho.right = (0.5 * frustumSize * aspect / 2);
-				this.cameraOrtho.top = (frustumSize / 2);
-				this.cameraOrtho.bottom = -(frustumSize / 2);
+        this.cameraOrtho.left = -(0.5 * this.frustumSize * aspect / 2);
+				this.cameraOrtho.right = (0.5 * this.frustumSize * aspect / 2);
+				this.cameraOrtho.top = (this.frustumSize / 2);
+				this.cameraOrtho.bottom = -(this.frustumSize / 2);
         this.cameraOrtho.updateProjectionMatrix();
-      }
-
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
       }
     };
   }
