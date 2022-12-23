@@ -49,6 +49,11 @@ const list: listType[] = [
     title: "007.WEBGL相机",
     path: "/list/webgl-camera"
   },
+  {
+    key: "008",
+    title: "008.WEBGL相机数组",
+    path: "/list/webgl-camera-array"
+  },
 ];
 
 export default list;

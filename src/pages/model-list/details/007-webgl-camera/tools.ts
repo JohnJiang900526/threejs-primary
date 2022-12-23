@@ -1,7 +1,5 @@
 import * as THREE from 'three';
-
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export class Model {
   private width: number

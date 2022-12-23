@@ -11,6 +11,7 @@ import SkinningIk from "@/pages/model-list/details/004-skinning_ik/index.vue";
 import SkinningMorph from "@/pages/model-list/details/005-skinning-morph/index.vue";
 import AnimationMultiple from "@/pages/model-list/details/006-animation-multiple/index.vue";
 import WebglCamera from "@/pages/model-list/details/007-webgl-camera/index.vue";
+import WebglCameraArray from  "@/pages/model-list/details/008-webgl-camera-array/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -72,6 +73,12 @@ const routes: RouteRecordRaw[] = [
         name: 'WebglCamera',
         meta: {title: "webgl-camera"},
         component: WebglCamera,
+      },
+      {
+        path: '/list/webgl-camera-array',
+        name: 'WebglCameraArray',
+        meta: {title: "webgl-camera-array"},
+        component: WebglCameraArray,
       }
     ]
   },
