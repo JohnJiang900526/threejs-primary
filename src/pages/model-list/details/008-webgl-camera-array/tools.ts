@@ -25,6 +25,7 @@ export class Model {
     this.mesh = null;
   }
 
+  // 创建相机矩阵
   getCameras() {
     // 设备像素比
     const devicePixelRatio = window.devicePixelRatio;
@@ -36,11 +37,17 @@ export class Model {
       for (let j = 0; j < this.amount; j++) {
         const camera = new THREE.PerspectiveCamera(40, this.aspect, 0.1, 10);
         // @ts-ignore
-        camera.viewport = new THREE.Vector4(Math.floor(j * width), Math.floor(i * height), Math.ceil(width), Math.ceil(height));
+        camera.viewport = new THREE.Vector4(
+          Math.floor(j * width), Math.floor(i * height), 
+          Math.ceil(width), Math.ceil(height)
+        );
         camera.position.x = (j / this.amount) - 0.5;
         camera.position.y = 0.5 - (i / this.amount);
         camera.position.z = 1.5;
+        // 将该向量与所传入的标量s进行相乘。
         camera.position.multiplyScalar(2);
+        //表示 一个表示世界空间中位置的向量。
+        // 也可以使用世界空间中x、y和z的位置分量。
         camera.lookAt(0, 0, 0);
         camera.updateMatrixWorld();
         cameras.push(camera);
@@ -59,7 +66,8 @@ export class Model {
     // 创建一个主场景
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x212190);
-    // 在主场景中添加一束光
+    // 在主场景中添加漫散射光 环境光会均匀的照亮场景中的所有物体
+    // 环境光不能用来投射阴影，因为它没有方向
     this.scene.add(new THREE.AmbientLight(0x222244));
 
     // 创建一束平行光
@@ -69,8 +77,9 @@ export class Model {
     light.shadow.camera.zoom = 4;
     this.scene.add(light);
 
-    // 设置背景颜色
-    const geometryBackground = new THREE.PlaneGeometry(100, 100);
+    // 设置背景颜色 平面缓冲几何体
+    const geometryBackground = new THREE.PlaneGeometry(100, 200);
+    // 一种用于具有镜面高光的光泽表面的材质
     const materialBackground = new THREE.MeshPhongMaterial({color: 0x000066});
     const backgroud = new THREE.Mesh(geometryBackground, materialBackground);
     backgroud.receiveShadow = true;
@@ -81,7 +90,9 @@ export class Model {
     const geometryCylinder = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 32);
     const materialCylinder = new THREE.MeshPhongMaterial({color: 0xff0000});
     this.mesh = new THREE.Mesh(geometryCylinder, materialCylinder);
+    // 对象是否被渲染到阴影贴图中。默认值为false
     this.mesh.castShadow = true;
+    // 材质是否接收阴影。默认值为false
     this.mesh.receiveShadow = true;
     this.scene.add(this.mesh);
 
@@ -95,6 +106,7 @@ export class Model {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
+    // - enabled: 如果设置开启，允许在场景中使用阴影贴图。默认是 false
     this.renderer.shadowMap.enabled = true;
     this.container.appendChild(this.renderer.domElement);
 
