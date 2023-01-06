@@ -54,6 +54,11 @@ const list: listType[] = [
     title: "008.WEBGL相机数组",
     path: "/list/webgl-camera-array"
   },
+  {
+    key: "009",
+    title: "009.WEBGL相机电影",
+    path: "/list/webgl-camera-cinematic"
+  },
 ];
 
-export default list;
+export default list.reverse();
