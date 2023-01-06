@@ -112,6 +112,7 @@ export class Model {
     this.animate();
     this.resize();
 
+    // 添加鼠标事件
     window.onmousemove = (e) => {
       e.preventDefault();
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
