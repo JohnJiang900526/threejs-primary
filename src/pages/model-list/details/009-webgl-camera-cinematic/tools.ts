@@ -12,7 +12,6 @@ export class Model {
   private stats: null | Stats
   private theta: number
   private aspect: number
-  private mesh: null | THREE.Mesh
   private raycaster: null | THREE.Raycaster
   private radius: number
   private mouse: THREE.Vector2
