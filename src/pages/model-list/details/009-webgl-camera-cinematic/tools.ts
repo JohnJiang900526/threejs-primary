@@ -11,7 +11,6 @@ export class Model {
   private camera: null | CinematicCamera
   private stats: null | Stats
   private theta: number
-  private aspect: number
   private raycaster: null | THREE.Raycaster
   private radius: number
   private mouse: THREE.Vector2
@@ -26,8 +25,6 @@ export class Model {
     this.camera = null;
     this.stats = null;
     this.theta = 0;
-    this.aspect = this.width/this.height;
-    this.mesh = null;
     this.raycaster = null;
     this.radius = 100;
     this.mouse = new THREE.Vector2();
