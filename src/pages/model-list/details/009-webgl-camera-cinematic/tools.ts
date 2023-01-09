@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { CinematicCamera } from 'three/examples/jsm/cameras/CinematicCamera.js';
+import Stats from 'three/examples/jsm/libs/stats.module';
+import { CinematicCamera } from 'three/examples/jsm/cameras/CinematicCamera';
 
 export class Model {
   private width: number
@@ -57,12 +57,6 @@ export class Model {
   }
 
   init() {
-    // 性能统计信息
-    this.stats = Stats();
-    const dom = this.stats.domElement;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
-
     // 创建相机
     this.camera = new CinematicCamera(60, this.width/this.height, 1, 1000);
     // 处理相机参数问题
@@ -87,6 +81,9 @@ export class Model {
     // 光线投射用于进行鼠标拾取（在三维空间中计算出鼠标移过了什么物体）。
     this.raycaster = new THREE.Raycaster();
 
+    // 性能统计
+    this.initStats();
+
     // 创建渲染器
     this.renderer = new THREE.WebGLRenderer({antialias: true});
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -104,6 +101,14 @@ export class Model {
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
+  }
+
+  // 性能统计
+  initStats() {
+    this.stats = Stats();
+    const dom = this.stats.domElement;
+    dom.style.position = "absolute";
+    this.container.appendChild(dom);
   }
 
   // 相机参数处理
