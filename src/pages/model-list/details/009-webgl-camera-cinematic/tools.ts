@@ -65,17 +65,8 @@ export class Model {
 
     // 创建相机
     this.camera = new CinematicCamera(60, this.width/this.height, 1, 1000);
-    for ( const e in this.effectController ) {
-      if ( e in this.camera.postprocessing.bokeh_uniforms ) {
-        // @ts-ignore
-        this.camera.postprocessing.bokeh_uniforms[e].value = this.effectController[e];
-      }
-    }
-
-    this.camera.postprocessing.bokeh_uniforms['znear'].value = this.camera.near;
-    this.camera.postprocessing.bokeh_uniforms['zfar'].value = this.camera.far;
-    // @ts-ignore
-    this.camera.setLens(15, this.camera.frameHeight, 28, this.camera.coc);
+    // 处理相机参数问题
+    this.formatCamera();
     this.camera.position.set(5, 1, 500);
 
     // 创建一个场景
@@ -89,15 +80,11 @@ export class Model {
     light.position.set(1, 1, 1).normalize();
     this.scene.add(light);
 
-    // 创建n个几个体
-    const geometry = new THREE.BoxGeometry(20, 20, 20);
-    for (let i = 0; i < 1500; i++) {
-      const obj = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff}));
-      obj.position.x = Math.random() * 800 - 400;
-      obj.position.y = Math.random() * 800 - 400;
-      obj.position.z = Math.random() * 800 - 400;
-      this.scene.add(obj);
-    }
+    // 创建几何体
+    this.createBoxGeometry();
+
+    // 这个类用于进行raycasting（光线投射）。 
+    // 光线投射用于进行鼠标拾取（在三维空间中计算出鼠标移过了什么物体）。
     this.raycaster = new THREE.Raycaster();
 
     // 创建渲染器
@@ -106,7 +93,9 @@ export class Model {
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
 
+    // 动画循环渲染
     this.animate();
+    // 窗体改变事件
     this.resize();
 
     // 添加鼠标事件
@@ -117,14 +106,53 @@ export class Model {
     };
   }
 
+  // 相机参数处理
+  formatCamera() {
+    if (this.camera) {
+      // 设置参数信息
+      for ( const e in this.effectController ) {
+        if ( e in this.camera.postprocessing.bokeh_uniforms ) {
+          // @ts-ignore
+          this.camera.postprocessing.bokeh_uniforms[e].value = this.effectController[e];
+        }
+      }
+
+      // 设置参数信息
+      this.camera.postprocessing.bokeh_uniforms['znear'].value = this.camera.near;
+      this.camera.postprocessing.bokeh_uniforms['zfar'].value = this.camera.far;
+      // 这只参数信息
+      // @ts-ignore
+      this.camera.setLens(15, this.camera.frameHeight, 28, this.camera.coc);
+    }
+  }
+
+  // 创建柱形几何体
+  createBoxGeometry() {
+    if (this.scene) {
+      // 创建n个几个体 立方缓冲几何体（BoxGeometry）
+      const geometry = new THREE.BoxGeometry(20, 20, 20);
+      for (let i = 0; i < 1500; i++) {
+        const obj = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff}));
+        obj.position.x = Math.random() * 800 - 400;
+        obj.position.y = Math.random() * 800 - 400;
+        obj.position.z = Math.random() * 800 - 400;
+        this.scene.add(obj);
+      }
+    }
+  }
+
   render() {
     this.theta += 0.1;
 
     if (this.camera && this.scene) {
-      this.camera.position.x = this.radius * Math.sin( THREE.MathUtils.degToRad( this.theta ) );
-      this.camera.position.y = this.radius * Math.sin( THREE.MathUtils.degToRad( this.theta ) );
-      this.camera.position.z = this.radius * Math.cos( THREE.MathUtils.degToRad( this.theta ) );
+      // THREE.MathUtils.degToRad
+      // 将度转换为弧度
+      this.camera.position.x = this.radius * Math.sin(THREE.MathUtils.degToRad(this.theta));
+      this.camera.position.y = this.radius * Math.sin(THREE.MathUtils.degToRad(this.theta));
+      this.camera.position.z = this.radius * Math.cos(THREE.MathUtils.degToRad(this.theta));
+      // 相机始终对准 场景的位置
       this.camera.lookAt(this.scene.position);
+      // 更新物体及其后代的全局变换
       this.camera.updateMatrixWorld();
     }
 
@@ -138,7 +166,7 @@ export class Model {
         if (this.INTERSECTED !== intersects[0].object) {
           if (this.INTERSECTED) {
             // @ts-ignore
-            this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
+            this.INTERSECTED.material.emissive.setHex(this.INTERSECTED.currentHex);
           }
           this.INTERSECTED = intersects[0].object;
           // @ts-ignore
