@@ -198,6 +198,7 @@ export class Model {
         this.camera.aspect = this.width/this.height;
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
         this.camera.updateProjectionMatrix();
+        this.camera.setViewOffset(this.width, this.height, this.width, 0, this.width, this.height);
       }
 
       if (this.renderer) {
