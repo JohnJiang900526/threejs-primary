@@ -13,6 +13,7 @@ import AnimationMultiple from "@/pages/model-list/details/006-animation-multiple
 import WebglCamera from "@/pages/model-list/details/007-webgl-camera/index.vue";
 import WebglCameraArray from  "@/pages/model-list/details/008-webgl-camera-array/index.vue";
 import WebglCameraCinematic from "@/pages/model-list/details/009-webgl-camera-cinematic/index.vue";
+import LogarithMicdepthBuffer from "@/pages/model-list/details/010-logarithmic-depth-buffer/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -86,6 +87,12 @@ const routes: RouteRecordRaw[] = [
         name: 'WebglCameraArray',
         meta: {title: "webgl-camera-cinematic"},
         component: WebglCameraCinematic,
+      },
+      {
+        path: '/list/logarithmic-depth-buffer',
+        name: 'LogarithmicDepthBuffer',
+        meta: {title: "logarithmic-depth-buffer"},
+        component: LogarithMicdepthBuffer,
       }
     ]
   },

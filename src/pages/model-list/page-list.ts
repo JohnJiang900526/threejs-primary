@@ -59,6 +59,11 @@ const list: listType[] = [
     title: "009.WEBGL相机电影",
     path: "/list/webgl-camera-cinematic"
   },
+  {
+    key: "010",
+    title: "010.WEBGL相机对数微深度缓冲",
+    path: "/list/logarithmic-depth-buffer"
+  },
 ];
 
 export default list.reverse();
