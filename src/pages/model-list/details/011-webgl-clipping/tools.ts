@@ -88,13 +88,13 @@ export class Model {
     this.object.castShadow = true;
     this.scene.add(this.object);
 
-    const ground = new THREE.Mesh(
+    const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(9, 9, 1, 1),
       new THREE.MeshPhongMaterial({color: 0xa0adaf, shininess: 150})
     );
-    ground.rotation.x = - Math.PI / 2;
-    ground.receiveShadow = true;
-    this.scene.add(ground);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    this.scene.add(floor);
 
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.shadowMap.enabled = true;
