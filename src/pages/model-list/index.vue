@@ -20,7 +20,7 @@
             </cell-group>
           </div>
           <div  v-else>
-            <Empty image="search" description="没有匹配到对应的模型"/>
+            <Empty image="search" description="没有匹配到对应的模型，请重新搜索"/>
           </div>
         </div>
       </div>
