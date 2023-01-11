@@ -176,9 +176,9 @@ export class Model {
       this.zoompos += this.zoomspeed;
       this.zoomspeed *= damping;
 
-      this.camera.position.x = Math.sin(0.50 * Math.PI * ( this.mouse[0] - 0.5 )) * zoom;
-      this.camera.position.y = Math.sin(0.25 * Math.PI * ( this.mouse[1] - 0.5 )) * zoom;
-      this.camera.position.z = Math.cos(0.50 * Math.PI * ( this.mouse[0] - 0.5 )) * zoom;
+      this.camera.position.x = Math.sin(0.50 * Math.PI * ( this.mouse[0] - 0.5)) * zoom;
+      this.camera.position.y = Math.sin(0.25 * Math.PI * ( this.mouse[1] - 0.5)) * zoom;
+      this.camera.position.z = Math.cos(0.50 * Math.PI * ( this.mouse[0] - 0.5)) * zoom;
       this.camera.lookAt(this.scene.position);
       this.renderer.render(this.scene, this.camera);
     }
