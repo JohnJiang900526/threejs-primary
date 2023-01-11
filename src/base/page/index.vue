@@ -55,7 +55,8 @@ export default defineComponent({
     }
     .page-body {
       flex: 1;
-      height: auto;
+      height: 100%;
+      overflow: hidden;
     }
   }
 </style>
