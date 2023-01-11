@@ -37,8 +37,8 @@ export class Model {
   // 初始化方法入口
   init() {
     // 实例化相机
-    this.camera = new THREE.PerspectiveCamera(120, this.width/this.height, 0.25, 16);
-    this.camera.position.set(0, 1.5, 1.5);
+    this.camera = new THREE.PerspectiveCamera(80, this.width/this.height, 0.25, 16);
+    this.camera.position.set(0, 1.5, 3);
 
     // 创建一个场景
     this.scene = new THREE.Scene();
