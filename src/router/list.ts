@@ -14,6 +14,7 @@ import WebglCamera from "@/pages/model-list/details/007-webgl-camera/index.vue";
 import WebglCameraArray from  "@/pages/model-list/details/008-webgl-camera-array/index.vue";
 import WebglCameraCinematic from "@/pages/model-list/details/009-webgl-camera-cinematic/index.vue";
 import LogarithMicdepthBuffer from "@/pages/model-list/details/010-logarithmic-depth-buffer/index.vue";
+import WebglClipping from "@/pages/model-list/details/011-webgl-clipping/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -93,6 +94,12 @@ const routes: RouteRecordRaw[] = [
         name: 'LogarithmicDepthBuffer',
         meta: {title: "logarithmic-depth-buffer"},
         component: LogarithMicdepthBuffer,
+      },
+      {
+        path: '/list/webgl-clipping',
+        name: 'WebglClipping',
+        meta: {title: "webgl-clipping"},
+        component: WebglClipping,
       }
     ]
   },
