@@ -43,7 +43,7 @@ export class Model {
     this.zoompos = -100;
     this.zoomspeed = 0.015;
     this.minzoomspeed = 0.015;
-    this.mouse = [.5, .5]
+    this.mouse = [0.5, 0.5]
   }
 
   init() {
@@ -161,27 +161,24 @@ export class Model {
     });
     
     // 统计信息更新
-    if (this.stats) {
-      this.stats.update();
-    }
+    if (this.stats) { this.stats.update(); }
 
     if (this.renderer && this.scene && this.camera) {
       const minzoom = this.labeldata[0].size * this.labeldata[0].scale * 1;
       const maxzoom = this.labeldata[this.labeldata.length - 1].size * this.labeldata[ this.labeldata.length - 1 ].scale * 100;
-      let damping = ( Math.abs(this.zoomspeed ) > this.minzoomspeed ? 0.95 : 1.0 );
-      const zoom = THREE.MathUtils.clamp( Math.pow( Math.E, this.zoompos ), minzoom, maxzoom );
+      let damping = (Math.abs(this.zoomspeed) > this.minzoomspeed ? 0.95 : 1.0 );
+      const zoom = THREE.MathUtils.clamp(Math.pow(Math.E, this.zoompos), minzoom, maxzoom);
       this.zoompos = Math.log(zoom);
 
-      if (( zoom == minzoom && this.zoomspeed < 0 ) || ( zoom == maxzoom && this.zoomspeed > 0 )) {
-        damping = 0.85;
-      }
+      const isDamping = ((zoom == minzoom && this.zoomspeed < 0) || (zoom == maxzoom && this.zoomspeed > 0));
+      if (isDamping) { damping = 0.85; }
+
       this.zoompos += this.zoomspeed;
       this.zoomspeed *= damping;
 
-      this.camera.position.x = Math.sin( .5 * Math.PI * ( this.mouse[ 0 ] - .5 ) ) * zoom;
-      this.camera.position.y = Math.sin( .25 * Math.PI * ( this.mouse[ 1 ] - .5 ) ) * zoom;
-      this.camera.position.z = Math.cos( .5 * Math.PI * ( this.mouse[ 0 ] - .5 ) ) * zoom;
-
+      this.camera.position.x = Math.sin(0.50 * Math.PI * ( this.mouse[0] - 0.5 )) * zoom;
+      this.camera.position.y = Math.sin(0.25 * Math.PI * ( this.mouse[1] - 0.5 )) * zoom;
+      this.camera.position.z = Math.cos(0.50 * Math.PI * ( this.mouse[0] - 0.5 )) * zoom;
       this.camera.lookAt(this.scene.position);
       this.renderer.render(this.scene, this.camera);
     }
