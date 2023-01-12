@@ -36,6 +36,17 @@ export class Model {
     };
 
     this.clipPlanes = [
+      // 在三维空间中无限延伸的二维平面，平面方程用单位长度的法向量和常数表示为海塞法向量Hessian normal form形式
+      // Plane(normal : Vector3, constant : Float)
+      // normal - (可选参数) 定义单位长度的平面法向量Vector3。默认值为 (1, 0, 0)
+      // constant - (可选参数) 从原点到平面的有符号距离。 默认值为 0
+
+      // 三维向量（Vector3）
+      // 该类表示的是一个三维向量（3D vector）。 一个三维向量表示的是一个有顺序的、三个为一组的数字组合（标记为x、y和z
+      // Vector3( x : Float, y : Float, z : Float )
+      // x - 向量的x值，默认为0
+      // y - 向量的y值，默认为0
+      // z - 向量的z值，默认为0
       new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
       new THREE.Plane(new THREE.Vector3(0, -1, 0), 0),
       new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
