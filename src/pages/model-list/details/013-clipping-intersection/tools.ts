@@ -54,7 +54,9 @@ export class Model {
     // 初始化一个场景
     this.scene = new THREE.Scene();
 
-    // 创建一束光
+    // 创建一束光 半球光（HemisphereLight）
+    // 光源直接放置于场景之上，光照颜色从天空光线颜色渐变到地面光线颜色
+    // 半球光不能投射阴影
     const light = new THREE.HemisphereLight(0xffffff, 0x080808, 1.5);
     light.position.set(-1.25, 1, 1.25);
     this.scene.add(light);
@@ -62,11 +64,17 @@ export class Model {
     // 创建几何分组
     this.group = new THREE.Group();
     for (let i = 1; i <= 30; i += 2) {
+      // 球缓冲几何体（SphereGeometry）
       const geometry = new THREE.SphereGeometry(i / 30, 48, 24);
-      const material = new THREE.MeshLambertMaterial( {
+      // Lambert网格材质(MeshLambertMaterial)
+      const material = new THREE.MeshLambertMaterial({
         color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5),
         side: THREE.DoubleSide,
+        // 用户定义的剪裁平面，在世界空间中指定为THREE.Plane对象。
+        // 这些平面适用于所有使用此材质的对象。空间中与平面的有符号距离为负的点被剪裁（未渲染）。 
+        // 这需要WebGLRenderer.localClippingEnabled为true
         clippingPlanes: this.clipPlanes,
+        // 更改剪裁平面的行为，以便仅剪切其交叉点，而不是它们的并集。默认值为 false
         clipIntersection: this.params.clipIntersection
       });
       this.group.add(new THREE.Mesh(geometry, material));
