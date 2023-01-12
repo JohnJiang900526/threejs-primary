@@ -161,7 +161,7 @@ export class Model {
     this.startTime = Date.now();
 
     // 控制器
-    const controls = new OrbitControls( this.camera, this.renderer.domElement );
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
     controls.minDistance = 1;
     controls.maxDistance = 8;
     controls.target.set(0, 1, 0);
