@@ -24,6 +24,7 @@
             <div class="item-param">
               <Checkbox v-model="localShadows" @change="localShadowsChange">Shadows</Checkbox>
             </div>
+            <div class="item-param">Plane</div>
             <div class="item-param slider">
               <Slider 
                 v-model="localPlane" :min="0.1" :max="1.25" :step="0.01" 
@@ -35,6 +36,7 @@
             <div class="item-param">
               <Checkbox v-model="globalEnabled" @change="globalEnabledChange">Enabled</Checkbox>
             </div>
+            <div class="item-param">Plane</div>
             <div class="item-param slider">
               <Slider 
                 v-model="globalPlane" :min="-0.4" :max="3" :step="0.01" 

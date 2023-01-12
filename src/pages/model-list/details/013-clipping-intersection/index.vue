@@ -21,6 +21,7 @@
             <div class="item-param">
               <Checkbox v-model="intersection" @change="intersectionChange">Clip Intersection</Checkbox>
             </div>
+            <div class="item-param">Plane Constant</div>
             <div class="item-param slider">
               <Slider 
                 v-model="constant" :min="-1" :max="1" :step="0.01" 

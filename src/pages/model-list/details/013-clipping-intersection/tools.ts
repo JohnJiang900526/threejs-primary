@@ -106,7 +106,7 @@ export class Model {
     this.resize();
   }
 
-  // Intersection
+  // 设置交叉点 Intersection
   setIntersection(isTrue: boolean) {
     const children: THREE.Object3D[] = (this.group as THREE.Group).children;
     for ( let i = 0; i < children.length; i ++ ) {
@@ -114,7 +114,7 @@ export class Model {
       children[i].material.clipIntersection = isTrue;
     }
   }
-  // Constant
+  // 设置变量 Constant
   setConstant(val: number) {
     for ( let i = 0; i < this.clipPlanes.length; i ++ ) {
       this.clipPlanes[i].constant = val;
