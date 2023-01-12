@@ -5,8 +5,8 @@
 </script>
 
 <template>
-  <div class="clipping-advanced-page">
-    <Page title="clipping-advanced">
+  <div class="clipping-intersection-page">
+    <Page title="clipping-intersection">
       <div ref="container" class="key-frame-page-inner">
         <div v-show="true" class="actions">
           <Icon @click="openHandle" name="wap-nav" color="#fff"/>
@@ -114,7 +114,7 @@ export default defineComponent({
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .clipping-advanced-page {
+  .clipping-intersection-page {
     .absolute-page();
     background-color: #000;
     .key-frame-page-inner {

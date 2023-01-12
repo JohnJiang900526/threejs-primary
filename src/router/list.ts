@@ -16,6 +16,7 @@ import WebglCameraCinematic from "@/pages/model-list/details/009-webgl-camera-ci
 import LogarithMicdepthBuffer from "@/pages/model-list/details/010-logarithmic-depth-buffer/index.vue";
 import WebglClipping from "@/pages/model-list/details/011-webgl-clipping/index.vue";
 import ClippingAdvanced from "@/pages/model-list/details/012-clipping-advanced/index.vue";
+import ClippingIntersection from "@/pages/model-list/details/013-clipping-intersection/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -107,6 +108,12 @@ const routes: RouteRecordRaw[] = [
         name: 'ClippingAdvanced',
         meta: {title: "clipping-advanced"},
         component: ClippingAdvanced,
+      },
+      {
+        path: '/list/clipping-intersection',
+        name: 'ClippingIntersection',
+        meta: {title: "clipping-intersection"},
+        component: ClippingIntersection,
       }
     ]
   },

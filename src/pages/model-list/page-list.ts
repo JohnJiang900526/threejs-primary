@@ -74,6 +74,11 @@ const list: listType[] = [
     title: "012.WEBGL高级剪裁",
     path: "/list/clipping-advanced"
   },
+  {
+    key: "013",
+    title: "013.WEBGL裁剪交点",
+    path: "/list/clipping-intersection"
+  },
 ];
 
 export default list.reverse();
