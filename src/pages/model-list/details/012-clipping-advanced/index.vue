@@ -24,21 +24,14 @@
             <div class="item-param">
               <Checkbox v-model="localShadows" @change="localShadowsChange">Shadows</Checkbox>
             </div>
-            <div class="item-param slider">
-              <Slider 
-                v-model="localPlane" :min="0.1" :max="1.25" :step="0.01" 
-                @update:model-value="localPlaneChange" bar-height="4px" active-color="#238bfe"></Slider>
+            <div class="item-param">
+              <Checkbox v-model="localVisualize" @change="localVisualizeChange">Visualize</Checkbox>
             </div>
           </Block>
 
           <Block title="Global Clipping">
             <div class="item-param">
               <Checkbox v-model="globalEnabled" @change="globalEnabledChange">Enabled</Checkbox>
-            </div>
-            <div class="item-param slider">
-              <Slider 
-                v-model="globalPlane" :min="-0.4" :max="3" :step="0.01" 
-                @update:model-value="globalPlaneChange" bar-height="4px" active-color="#238bfe"></Slider>
             </div>
           </Block>
 
@@ -59,9 +52,8 @@ export default defineComponent({
       show: false,
       localEnabled: true,
       localShadows: true,
-      localPlane: 0.8,
+      localVisualize: false,
       globalEnabled: false,
-      globalPlane: 0.1,
     };
   },
   mounted() {
@@ -95,15 +87,11 @@ export default defineComponent({
       }
     },
 
-    // Plane
-    localPlaneChange(val: number) {
+    // Visualize
+    localVisualizeChange (check: boolean) {
       if (objModel) {
-        objModel.setPlane("local", val);
-      }
-    },
-    globalPlaneChange(val: number) {
-      if (objModel) {
-        objModel.setPlane("global", val);
+        this.closeHandle();
+        objModel.setVisualize("local", check);
       }
     },
 
