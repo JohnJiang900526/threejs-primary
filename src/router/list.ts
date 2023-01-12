@@ -17,6 +17,7 @@ import LogarithMicdepthBuffer from "@/pages/model-list/details/010-logarithmic-d
 import WebglClipping from "@/pages/model-list/details/011-webgl-clipping/index.vue";
 import ClippingAdvanced from "@/pages/model-list/details/012-clipping-advanced/index.vue";
 import ClippingIntersection from "@/pages/model-list/details/013-clipping-intersection/index.vue";
+import ClippingStencil from "@/pages/model-list/details/014-clipping-stencil/index.vue"
 
 const routes: RouteRecordRaw[] = [
   {
@@ -114,6 +115,12 @@ const routes: RouteRecordRaw[] = [
         name: 'ClippingIntersection',
         meta: {title: "clipping-intersection"},
         component: ClippingIntersection,
+      },
+      {
+        path: '/list/clipping-stencil',
+        name: 'ClippingStencil',
+        meta: {title: "clipping-stencil"},
+        component: ClippingStencil,
       }
     ]
   },
