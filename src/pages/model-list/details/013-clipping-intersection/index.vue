@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon, Popup, Checkbox } from 'vant';
+  import { Icon, Popup, Checkbox, Slider } from 'vant';
   import Page from "@/base/page/index.vue";
   import Block from "@/base/block/index.vue";
 </script>
@@ -17,21 +17,18 @@
     <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
       <Page @click-left="closeHandle" :default-click="false" title="模型设置">
         <div class="settings-content">
-          <Block title="Local Clipping">
+          <Block title="Controller">
             <div class="item-param">
-              <Checkbox v-model="localEnabled" @change="localEnabledChange">Enabled</Checkbox>
+              <Checkbox v-model="intersection" @change="intersectionChange">Clip Intersection</Checkbox>
             </div>
-            <div class="item-param">
-              <Checkbox v-model="localShadows" @change="localShadowsChange">Shadows</Checkbox>
+            <div class="item-param slider">
+              <Slider 
+                v-model="constant" :min="-1" :max="1" :step="0.01" 
+                @update:model-value="constantChange" bar-height="4px" active-color="#238bfe"></Slider>
             </div>
-            <div class="item-param">
-              <Checkbox v-model="localVisualize" @change="localVisualizeChange">Visualize</Checkbox>
-            </div>
-          </Block>
 
-          <Block title="Global Clipping">
             <div class="item-param">
-              <Checkbox v-model="globalEnabled" @change="globalEnabledChange">Enabled</Checkbox>
+              <Checkbox v-model="isHelpers" @change="isHelpersChange">Show Helpers</Checkbox>
             </div>
           </Block>
 
@@ -50,10 +47,9 @@ export default defineComponent({
   data() {
     return {
       show: false,
-      localEnabled: true,
-      localShadows: true,
-      localVisualize: false,
-      globalEnabled: false,
+      intersection: true,
+      constant: 0,
+      isHelpers: false,
     };
   },
   mounted() {
@@ -65,33 +61,25 @@ export default defineComponent({
       objModel = new Model(this.$refs.container as HTMLDivElement);
       objModel.init();
     },
-    // Enabled
-    localEnabledChange(check: boolean) {
+    // intersection
+    intersectionChange(check: boolean) {
       if (objModel) {
         this.closeHandle();
-        objModel.setEnabled("local", check);
+        objModel.setIntersection(check);
       }
     },
-    globalEnabledChange(check: boolean) {
+    // constant
+    constantChange(val: number) {
       if (objModel) {
-        this.closeHandle();
-        objModel.setEnabled("global", check);
-      }
-    },
-
-    // Shadows
-    localShadowsChange (check: boolean) {
-      if (objModel) {
-        this.closeHandle();
-        objModel.setShadows("local", check);
+        objModel.setConstant(val);
       }
     },
 
-    // Visualize
-    localVisualizeChange (check: boolean) {
+    // isHelpers
+    isHelpersChange (check: boolean) {
       if (objModel) {
         this.closeHandle();
-        objModel.setVisualize("local", check);
+        objModel.showHelpers(check);
       }
     },
 
