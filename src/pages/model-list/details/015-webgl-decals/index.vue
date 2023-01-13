@@ -56,8 +56,8 @@ export default defineComponent({
     return {
       show: false,
       rotate: true,
-      minScale: 1,
-      maxScale: 1,
+      minScale: 10,
+      maxScale: 20,
     };
   },
   mounted() {
