@@ -157,8 +157,8 @@ export class Model {
       new THREE.PlaneGeometry(9, 9, 1, 1),
       new THREE.ShadowMaterial({color: 0x000000, opacity: 0.25, side: THREE.DoubleSide})
     );
-    ground.rotation.x = - Math.PI / 2;
-    ground.position.y = - 1;
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -1;
     ground.receiveShadow = true;
     this.scene.add(ground);
 
