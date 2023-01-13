@@ -105,15 +105,15 @@ export class Model {
     this.scene.add(this.object);
 
     // geometry
-    const geometry = new THREE.TorusKnotGeometry(0.4, 0.15, 220, 60);
+    const geometry = new THREE.TorusKnotGeometry(0.4, 0.10, 220, 60);
     const planeGeometry =  new THREE.PlaneGeometry(4, 4);
     for (let i = 0; i < 3; i++) {
-      const poGroup = new THREE.Group();
+      const planeObjectGroup = new THREE.Group();
       const plane = this.planes[i];
       const stencilGroup = this.createPlaneStencilGroup(geometry, plane, i + 1);
 
       // plane is clipped by the other clipping planes
-      const planeMat = new THREE.MeshStandardMaterial({
+      const planeMaterial = new THREE.MeshStandardMaterial({
         color: 0xE91E63,
         metalness: 0.1,
         roughness: 0.75,
@@ -126,15 +126,13 @@ export class Model {
         stencilZPass: THREE.ReplaceStencilOp,
       });
 
-      const po = new THREE.Mesh(planeGeometry, planeMat);
-      po.onAfterRender = function (renderer) {
-        renderer.clearStencil();
-      };
-      po.renderOrder = (i + 1.1);
+      const planeObject = new THREE.Mesh(planeGeometry, planeMaterial);
+      planeObject.onAfterRender = (renderer) => {renderer.clearStencil();};
+      planeObject.renderOrder = (i + 1.1);
       this.object.add(stencilGroup);
-      poGroup.add(po);
-      this.planeObjects.push(po);
-      this.scene.add(poGroup);
+      planeObjectGroup.add(planeObject);
+      this.planeObjects.push(planeObject);
+      this.scene.add(planeObjectGroup);
     }
 
     // 材质
