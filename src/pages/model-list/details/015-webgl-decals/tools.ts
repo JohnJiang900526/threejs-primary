@@ -156,25 +156,17 @@ export class Model {
     this.controls.maxDistance = 200;
 
     // 事件绑定
-    this.controls.addEventListener("change", () => {
-      this.moved = true;
-    });
-
-    window.onpointerdown = () => {
-      this.moved = false;
-    };
+    this.controls.addEventListener("change", () => { this.moved = true; });
+    
+    window.onpointerdown = () => { this.moved = false; };
     window.onpointerup = (e) => {
       if (this.moved === false) {
         this.checkIntersection(e.clientX, e.clientY - 50);
-        if (this.intersection.intersects) {
-          this.shoot();
-        }
+        if (this.intersection.intersects) { this.shoot(); }
       }
     };
     window.onpointermove = (e) => {
-      if (e.isPrimary) {
-        this.checkIntersection(e.clientX, e.clientY - 50);
-      }
+      if (e.isPrimary) { this.checkIntersection(e.clientX, e.clientY - 50); }
     };
 
     // 初始化 性能统计
