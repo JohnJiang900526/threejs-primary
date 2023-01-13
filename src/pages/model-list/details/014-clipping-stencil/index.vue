@@ -21,6 +21,15 @@
             <div class="item-param">
               <Checkbox v-model="animate" @change="animateChange">animate</Checkbox>
             </div>
+            <div class="item-param">
+              <Checkbox v-model="displayHelper" @change="displayHelperAllChange">displayHelper</Checkbox>
+            </div>
+            <div class="item-param">Constant</div>
+            <div class="item-param slider">
+              <Slider 
+                v-model="constant" :min="-1" :max="1" :step="0.01" 
+                @update:model-value="constantAllChange" bar-height="4px" active-color="#238bfe"></Slider>
+            </div>
           </Block>
 
           <Block title="PlaneX">
@@ -87,6 +96,9 @@ export default defineComponent({
     return {
       show: false,
       animate: true,
+      displayHelper: false,
+      constant: 0,
+
       displayHelperX: false,
       constantX: 0,
       negatedX: false,
@@ -114,6 +126,27 @@ export default defineComponent({
       if (objModel) {
         this.closeHandle();
         objModel.setAnimate(isCheck);
+      }
+    },
+    displayHelperAllChange(isCheck: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        this.displayHelperX = isCheck;
+        this.displayHelperY = isCheck;
+        this.displayHelperZ = isCheck;
+        objModel.setDisplayHelper("planeX", isCheck);
+        objModel.setDisplayHelper("planeY", isCheck);
+        objModel.setDisplayHelper("planeZ", isCheck);
+      }
+    },
+    constantAllChange(val: number) {
+      if (objModel) {
+        this.constantX = val;
+        this.constantY = val;
+        this.constantZ = val;
+        objModel.setConstant("planeX", val);
+        objModel.setConstant("planeY", val);
+        objModel.setConstant("planeZ", val);
       }
     },
     // displayHelper
