@@ -2,6 +2,19 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
+interface IplaneProps {
+  constant: number,
+  negated: boolean,
+  displayHelper: boolean
+}
+
+interface Iparams {
+  animate: boolean
+  planeX: IplaneProps,
+  planeY: IplaneProps,
+  planeZ: IplaneProps,
+}
+
 export class Model {
   private width: number
   private height: number
@@ -11,14 +24,12 @@ export class Model {
   private controls: null | OrbitControls
   private camera: null | THREE.PerspectiveCamera
   private stats: null | Stats
-  private params: {
-    clipIntersection: boolean,
-    planeConstant: number,
-    showHelpers: boolean
-  }
-  private clipPlanes: THREE.Plane[]
-  private helpers: null | THREE.Group
-  private group: null | THREE.Group
+  private object: null | THREE.Group
+  private planes: THREE.Plane[]
+  private planeObjects: THREE.Mesh[]
+  private planeHelpers: THREE.PlaneHelper[]
+  private clock: THREE.Clock
+  private params: Iparams
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -28,94 +39,143 @@ export class Model {
     this.controls = null;
     this.camera = null;
     this.stats = null;
-
-    this.params = {
-      clipIntersection: true,
-      planeConstant: 0,
-      showHelpers: false
-    };
-
-    this.clipPlanes = [
-      // 在三维空间中无限延伸的二维平面，平面方程用单位长度的法向量和常数表示为海塞法向量Hessian normal form形式
-      // Plane(normal : Vector3, constant : Float)
-      // normal - (可选参数) 定义单位长度的平面法向量Vector3。默认值为 (1, 0, 0)
-      // constant - (可选参数) 从原点到平面的有符号距离。 默认值为 0
-
-      // 三维向量（Vector3）
-      // 该类表示的是一个三维向量（3D vector）。 一个三维向量表示的是一个有顺序的、三个为一组的数字组合（标记为x、y和z
-      // Vector3( x : Float, y : Float, z : Float )
-      // x - 向量的x值，默认为0
-      // y - 向量的y值，默认为0
-      // z - 向量的z值，默认为0
-      new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+    this.object = null;
+    this.planes = [
+      new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0),
       new THREE.Plane(new THREE.Vector3(0, -1, 0), 0),
       new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
     ];
+    this.planeObjects = [];
+    this.planeHelpers = [];
+    this.clock = new THREE.Clock();
 
-    this.helpers = null;
-    this.group = null;
+    // 默认参数
+    this.params = {
+      animate: true,
+      planeX: {
+        constant: 0,
+        negated: false,
+        displayHelper: false
+      },
+      planeY: {
+        constant: 0,
+        negated: false,
+        displayHelper: false
+      },
+      planeZ: {
+        constant: 0,
+        negated: false,
+        displayHelper: false
+      },
+    };
   }
 
   // 初始化方法入口
   init() {
-    // 初始化相机
-    this.camera = new THREE.PerspectiveCamera(70, this.width/this.height, 1, 200);
-    this.camera.position.set(-1.5, 2.5, 3.0);
+    // 实例化时钟
+    this.clock = new THREE.Clock();
 
-    // 初始化一个场景
+    // 实例化相机
+    this.camera = new THREE.PerspectiveCamera(60, this.width/this.height, 1, 100);
+    this.camera.position.set(2, 2, 2);
+
+    // 创建场景
     this.scene = new THREE.Scene();
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    // 创建一束光 半球光（HemisphereLight）
-    // 光源直接放置于场景之上，光照颜色从天空光线颜色渐变到地面光线颜色
-    // 半球光不能投射阴影
-    const light = new THREE.HemisphereLight(0xffffff, 0x080808, 1.5);
-    light.position.set(-1.25, 1, 1.25);
-    this.scene.add(light);
+    // 创建直线光
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7.5);
+    dirLight.castShadow = true;
+    dirLight.shadow.camera.left = -2;
+    dirLight.shadow.camera.right = 2;
+    dirLight.shadow.camera.top = 2;
+    dirLight.shadow.camera.bottom = -2;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    this.scene.add(dirLight);
 
-    // 创建几何分组
-    this.group = new THREE.Group();
-    for (let i = 1; i <= 30; i += 2) {
-      // 球缓冲几何体（SphereGeometry）
-      const geometry = new THREE.SphereGeometry(i / 30, 48, 24);
-      // Lambert网格材质(MeshLambertMaterial)
-      const material = new THREE.MeshLambertMaterial({
-        color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5),
-        side: THREE.DoubleSide,
-        // 用户定义的剪裁平面，在世界空间中指定为THREE.Plane对象。
-        // 这些平面适用于所有使用此材质的对象。空间中与平面的有符号距离为负的点被剪裁（未渲染）。 
-        // 这需要WebGLRenderer.localClippingEnabled为true
-        clippingPlanes: this.clipPlanes,
-        // 更改剪裁平面的行为，以便仅剪切其交叉点，而不是它们的并集。默认值为 false
-        clipIntersection: this.params.clipIntersection
+    this.planeHelpers = this.planes.map((plane) => new THREE.PlaneHelper(plane, 2, 0xffffff));
+    this.planeHelpers.forEach((helper) => {
+      helper.visible = false;
+      (this.scene as THREE.Scene).add(helper);
+    });
+
+    this.object = new THREE.Group();
+    this.scene.add(this.object);
+
+    // geometry
+    const geometry = new THREE.TorusKnotGeometry(0.4, 0.15, 220, 60);
+    const planeGeometry =  new THREE.PlaneGeometry(4, 4);
+    for (let i = 0; i < 3; i++) {
+      const poGroup = new THREE.Group();
+      const plane = this.planes[i];
+      const stencilGroup = this.createPlaneStencilGroup(geometry, plane, i + 1);
+
+      // plane is clipped by the other clipping planes
+      const planeMat = new THREE.MeshStandardMaterial({
+        color: 0xE91E63,
+        metalness: 0.1,
+        roughness: 0.75,
+        clippingPlanes: this.planes.filter((p) => p !== plane ),
+        stencilWrite: true,
+        stencilRef: 0,
+        stencilFunc: THREE.NotEqualStencilFunc,
+        stencilFail: THREE.ReplaceStencilOp,
+        stencilZFail: THREE.ReplaceStencilOp,
+        stencilZPass: THREE.ReplaceStencilOp,
       });
-      this.group.add(new THREE.Mesh(geometry, material));
+
+      const po = new THREE.Mesh(planeGeometry, planeMat);
+      po.onAfterRender = function (renderer) {
+        renderer.clearStencil();
+      };
+      po.renderOrder = (i + 1.1);
+      this.object.add(stencilGroup);
+      poGroup.add(po);
+      this.planeObjects.push(po);
+      this.scene.add(poGroup);
     }
-    this.scene.add(this.group);
 
-    // 创建helpers
-    this.helpers = new THREE.Group();
-    this.helpers.add(new THREE.PlaneHelper(this.clipPlanes[0], 2, 0xff0000));
-    this.helpers.add(new THREE.PlaneHelper(this.clipPlanes[1], 2, 0x00ff00));
-    this.helpers.add(new THREE.PlaneHelper(this.clipPlanes[2], 2, 0x0000ff));
-    this.helpers.visible = false;
-    this.scene.add(this.helpers);
+    // 材质
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xFFC107,
+      metalness: 0.1,
+      roughness: 0.75,
+      clippingPlanes: this.planes,
+      clipShadows: true,
+      shadowSide: THREE.DoubleSide,
+    });
 
-    // 实例化一个渲染器
-    this.renderer = new THREE.WebGLRenderer();
+    // add the color
+    const clippedColorFront = new THREE.Mesh(geometry, material);
+    clippedColorFront.castShadow = true;
+    clippedColorFront.renderOrder = 6;
+    this.object.add(clippedColorFront);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(9, 9, 1, 1),
+      new THREE.ShadowMaterial({color: 0x000000, opacity: 0.25, side: THREE.DoubleSide})
+    );
+    ground.rotation.x = - Math.PI / 2;
+    ground.position.y = - 1;
+    ground.receiveShadow = true;
+    this.scene.add(ground);
+
+    // Renderer
+    this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.shadowMap.enabled = true;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
+    this.renderer.setClearColor(0x263238);
     this.renderer.localClippingEnabled = true;
     this.container.appendChild(this.renderer.domElement);
 
-    // 实例化一个轨道控制器
-    this.controls = new OrbitControls( this.camera, this.renderer.domElement);
+    // 控制器
+    this.controls = new OrbitControls(this.camera,this.renderer.domElement );
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 20;
     this.controls.update();
-    // 禁止相机平移
-    this.controls.enablePan = false;
-    // 启用阻尼（惯性）
-    this.controls.enableDamping = true;
-    // 启用自动旋转
-    this.controls.autoRotate = true;
     
     // 初始化 性能统计
     this.initStats();
@@ -125,23 +185,103 @@ export class Model {
     this.resize();
   }
 
-  // 设置交叉点 Intersection
-  setIntersection(isTrue: boolean) {
-    const children: THREE.Object3D[] = (this.group as THREE.Group).children;
-    for ( let i = 0; i < children.length; i ++ ) {
-      // @ts-ignore
-      children[i].material.clipIntersection = isTrue;
+  // animate
+  setAnimate(isTrue: boolean) {
+    this.params.animate = isTrue;
+  }
+
+  // displayHelper
+  setDisplayHelper(type: "planeX" | "planeY" | "planeZ", show: boolean) {
+    switch(type) {
+      case "planeX":
+        this.planeHelpers[0].visible = show;
+        break;
+      case "planeY":
+        this.planeHelpers[1].visible = show;
+        break;
+      case "planeZ":
+        this.planeHelpers[2].visible = show;
+        break;
+      default:
+        this.planeHelpers[0].visible = show;
     }
   }
-  // 设置变量 Constant
-  setConstant(val: number) {
-    for ( let i = 0; i < this.clipPlanes.length; i ++ ) {
-      this.clipPlanes[i].constant = val;
+
+  // constant
+  setConstant(type: "planeX" | "planeY" | "planeZ", val: number) {
+    switch(type) {
+      case "planeX":
+        this.planes[0].constant = val;
+        break;
+      case "planeY":
+        this.planes[1].constant = val;
+        break;
+      case "planeZ":
+        this.planes[2].constant = val;
+        break;
+      default:
+        this.planes[0].constant = val;
     }
   }
-  // Helpers
-  showHelpers(isShow: boolean) {
-    (this.helpers as THREE.Group).visible = isShow;
+
+  // negated
+  setNegated(type: "planeX" | "planeY" | "planeZ", show?: boolean) {
+    switch(type) {
+      case "planeX":
+        this.planes[0].negate();
+				this.params.planeX.constant = this.planes[0].constant;
+        break;
+      case "planeY":
+        this.planes[1].negate();
+				this.params.planeY.constant = this.planes[1].constant;
+        break;
+      case "planeZ":
+        this.planes[2].negate();
+				this.params.planeZ.constant = this.planes[2].constant;
+        break;
+      default:
+        this.planes[0].negate();
+				this.params.planeX.constant = this.planes[0].constant;
+    }
+  }
+
+  // 创建平面模具组
+  private createPlaneStencilGroup(geometry: THREE.TorusKnotGeometry, plane: THREE.Plane, renderOrder: number) {
+    const group = new THREE.Group();
+
+    // 基础材质
+    const baseMat = new THREE.MeshBasicMaterial();
+    baseMat.depthWrite = false;
+    baseMat.depthTest = false;
+    baseMat.colorWrite = false;
+    baseMat.stencilWrite = true;
+    baseMat.stencilFunc = THREE.AlwaysStencilFunc;
+
+    // back faces
+    const mat0 = baseMat.clone();
+    mat0.side = THREE.BackSide;
+    mat0.clippingPlanes = [plane];
+    mat0.stencilFail = THREE.IncrementWrapStencilOp;
+    mat0.stencilZFail = THREE.IncrementWrapStencilOp;
+    mat0.stencilZPass = THREE.IncrementWrapStencilOp;
+
+    const mesh0 = new THREE.Mesh(geometry, mat0);
+    mesh0.renderOrder = renderOrder;
+    group.add(mesh0);
+
+    // front faces
+    const mat1 = baseMat.clone();
+    mat1.side = THREE.FrontSide;
+    mat1.clippingPlanes = [ plane ];
+    mat1.stencilFail = THREE.DecrementWrapStencilOp;
+    mat1.stencilZFail = THREE.DecrementWrapStencilOp;
+    mat1.stencilZPass = THREE.DecrementWrapStencilOp;
+
+    const mesh1 = new THREE.Mesh(geometry, mat1);
+    mesh1.renderOrder = renderOrder;
+    group.add(mesh1);
+
+    return group;
   }
 
   // 性能统计
@@ -156,6 +296,23 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => {
       this.animate();
+    });
+
+    const delta = this.clock.getDelta();
+
+    if (this.params.animate) {
+      (this.object as THREE.Group).rotation.x += (delta * 0.5);
+      (this.object as THREE.Group).rotation.y += (delta * 0.5);
+    }
+
+    this.planeObjects.forEach((planeObject, index) => {
+      const plane = this.planes[index];
+      plane.coplanarPoint(planeObject.position);
+      planeObject.lookAt(
+        planeObject.position.x - plane.normal.x,
+        planeObject.position.y - plane.normal.y,
+        planeObject.position.z - plane.normal.z,
+      );
     });
 
     // 统计信息更新

@@ -19,17 +19,55 @@
         <div class="settings-content">
           <Block title="Controller">
             <div class="item-param">
-              <Checkbox v-model="intersection" @change="intersectionChange">Clip Intersection</Checkbox>
+              <Checkbox v-model="animate" @change="animateChange">animate</Checkbox>
             </div>
-            <div class="item-param">Plane Constant</div>
+          </Block>
+
+          <Block title="PlaneX">
+            <div class="item-param">
+              <Checkbox v-model="displayHelperX" @change="(v) => {displayHelperChange('planeX', v)}">displayHelper</Checkbox>
+            </div>
+            <div class="item-param">Constant</div>
             <div class="item-param slider">
               <Slider 
-                v-model="constant" :min="-1" :max="1" :step="0.01" 
-                @update:model-value="constantChange" bar-height="4px" active-color="#238bfe"></Slider>
+                v-model="constantX" :min="-1" :max="1" :step="0.01" 
+                @update:model-value="(v) => {constantChange('planeX', v)}" bar-height="4px" active-color="#238bfe"></Slider>
             </div>
 
             <div class="item-param">
-              <Checkbox v-model="isHelpers" @change="isHelpersChange">Show Helpers</Checkbox>
+              <Checkbox v-model="negatedX" @change="(v) => negatedChange('planeX', v)">negated</Checkbox>
+            </div>
+          </Block>
+
+          <Block title="PlaneY">
+            <div class="item-param">
+              <Checkbox v-model="displayHelperY" @change="(v) => {displayHelperChange('planeY', v)}">displayHelper</Checkbox>
+            </div>
+            <div class="item-param">Constant</div>
+            <div class="item-param slider">
+              <Slider 
+                v-model="constantY" :min="-1" :max="1" :step="0.01" 
+                @update:model-value="(v) => {constantChange('planeY', v)}" bar-height="4px" active-color="#238bfe"></Slider>
+            </div>
+
+            <div class="item-param">
+              <Checkbox v-model="negatedY" @change="(v) => {negatedChange('planeY', v)}">negated</Checkbox>
+            </div>
+          </Block>
+
+          <Block title="PlaneZ">
+            <div class="item-param">
+              <Checkbox v-model="displayHelperZ" @change="(v) => {displayHelperChange('planeZ', v)}">displayHelper</Checkbox>
+            </div>
+            <div class="item-param">Constant</div>
+            <div class="item-param slider">
+              <Slider 
+                v-model="constantZ" :min="-1" :max="1" :step="0.01" 
+                @update:model-value="(v) => {constantChange('planeZ', v)}" bar-height="4px" active-color="#238bfe"></Slider>
+            </div>
+
+            <div class="item-param">
+              <Checkbox v-model="negatedZ" @change="(v) => {negatedChange('planeZ', v)}">negated</Checkbox>
             </div>
           </Block>
 
@@ -48,9 +86,18 @@ export default defineComponent({
   data() {
     return {
       show: false,
-      intersection: true,
-      constant: 0,
-      isHelpers: false,
+      animate: true,
+      displayHelperX: false,
+      constantX: 0,
+      negatedX: false,
+
+      displayHelperY: false,
+      constantY: 0,
+      negatedY: false,
+
+      displayHelperZ: false,
+      constantZ: 0,
+      negatedZ: false,
     };
   },
   mounted() {
@@ -62,25 +109,31 @@ export default defineComponent({
       objModel = new Model(this.$refs.container as HTMLDivElement);
       objModel.init();
     },
-    // intersection
-    intersectionChange(check: boolean) {
+    // animate
+    animateChange(isCheck: boolean) {
       if (objModel) {
         this.closeHandle();
-        objModel.setIntersection(check);
+        objModel.setAnimate(isCheck);
       }
     },
-    // constant
-    constantChange(val: number) {
-      if (objModel) {
-        objModel.setConstant(val);
-      }
-    },
-
-    // isHelpers
-    isHelpersChange (check: boolean) {
+    // displayHelper
+    displayHelperChange(type: "planeX" | "planeY" | "planeZ", isCheck: boolean) {
       if (objModel) {
         this.closeHandle();
-        objModel.showHelpers(check);
+        objModel.setDisplayHelper(type, isCheck);
+      }
+    },
+    // Constant
+    constantChange(type: "planeX" | "planeY" | "planeZ", val: number) {
+      if (objModel) {
+        objModel.setConstant(type, val);
+      }
+    },
+    // negated
+    negatedChange(type: "planeX" | "planeY" | "planeZ", isCheck: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setNegated(type, isCheck);
       }
     },
 
