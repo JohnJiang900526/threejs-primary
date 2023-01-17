@@ -158,7 +158,6 @@ export class Model {
     // 执行渲染
     if (this.scene && this.camera && this.effect) {
       this.effect.render(this.scene, this.camera);
-      this.effect.setSize(this.width, this.height);
     }
   }
 

@@ -21,6 +21,7 @@ import ClippingStencil from "@/pages/model-list/details/014-clipping-stencil/ind
 import WebglDecals from "@/pages/model-list/details/015-webgl-decals/index.vue";
 import DepthTexture from "@/pages/model-list/details/016-depth-texture/index.vue";
 import EffectsAnaglyph from "@/pages/model-list/details/017-effects-anaglyph/index.vue";
+import EffectsAscii from "@/pages/model-list/details/018-effects-ascii/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -142,6 +143,12 @@ const routes: RouteRecordRaw[] = [
         name: 'EffectsAnaglyph',
         meta: {title: "effects-anaglyph"},
         component: EffectsAnaglyph,
+      },
+      {
+        path: '/list/effects-ascii',
+        name: 'EffectsAscii',
+        meta: {title: "effects-ascii"},
+        component: EffectsAscii,
       },
     ]
   },

@@ -99,6 +99,11 @@ const list: listType[] = [
     title: "017.WEBGL补色效果",
     path: "/list/effects-anaglyph"
   },
+  {
+    key: "018",
+    title: "018.WEBGL Ascii效果",
+    path: "/list/effects-ascii"
+  },
 ];
 
 export default list.reverse();
