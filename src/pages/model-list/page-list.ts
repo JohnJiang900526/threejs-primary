@@ -94,6 +94,11 @@ const list: listType[] = [
     title: "016.WEBGL深度纹理",
     path: "/list/depth-texture"
   },
+  {
+    key: "017",
+    title: "017.WEBGL补色效果",
+    path: "/list/effects-anaglyph"
+  },
 ];
 
 export default list.reverse();
