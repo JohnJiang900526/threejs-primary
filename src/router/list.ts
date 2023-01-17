@@ -19,6 +19,7 @@ import ClippingAdvanced from "@/pages/model-list/details/012-clipping-advanced/i
 import ClippingIntersection from "@/pages/model-list/details/013-clipping-intersection/index.vue";
 import ClippingStencil from "@/pages/model-list/details/014-clipping-stencil/index.vue";
 import WebglDecals from "@/pages/model-list/details/015-webgl-decals/index.vue";
+import DepthTexture from "@/pages/model-list/details/016-depth-texture/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -128,6 +129,12 @@ const routes: RouteRecordRaw[] = [
         name: 'WebglDecals',
         meta: {title: "webgl-decals"},
         component: WebglDecals,
+      },
+      {
+        path: '/list/depth-texture',
+        name: 'DepthTexture',
+        meta: {title: "depth-texture"},
+        component: DepthTexture,
       },
     ]
   },

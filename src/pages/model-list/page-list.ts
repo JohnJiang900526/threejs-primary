@@ -89,6 +89,11 @@ const list: listType[] = [
     title: "015.WEBGL贴花印图案",
     path: "/list/webgl-decals"
   },
+  {
+    key: "016",
+    title: "016.WEBGL深度纹理",
+    path: "/list/depth-texture"
+  },
 ];
 
 export default list.reverse();
