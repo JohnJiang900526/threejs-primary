@@ -40,9 +40,9 @@ export class Model {
   init() {
     // 初始化 图片数组
     const urls = [
-      this.path + 'px' + this.format, this.path + 'nx' + this.format,
-      this.path + 'py' + this.format, this.path + 'ny' + this.format,
-      this.path + 'pz' + this.format, this.path + 'nz' + this.format
+      `px${this.format}`, `nx${this.format}`, 
+      `py${this.format}`, `ny${this.format}`, 
+      `pz${this.format}`, `nz${this.format}`, 
     ];
 
     // 实例化相机
@@ -52,12 +52,20 @@ export class Model {
     this.camera.focalLength = 3;
 
     // 创建一个场景
-    const textureCube = new THREE.CubeTextureLoader().load(urls); 
+    const textureCube = new THREE.CubeTextureLoader().setPath(this.path).load(urls); 
     this.scene = new THREE.Scene();
+    // .background : Object
+    // 若不为空，在渲染场景的时候将设置背景，且背景总是首先被渲染的
+    // 可以设置一个用于的“clear”的Color（颜色）、
+    // 一个覆盖canvas的Texture（纹理）， 
+    // 或是 a cubemap as a CubeTexture or an equirectangular as a Texture。
+    // 默认值为null
     this.scene.background = textureCube;
 
     // 创建球体集合
     const geometry = new THREE.SphereGeometry(0.1, 32, 16);
+    // .envMap : Texture
+    // 环境贴图。默认值为null
     const material = new THREE.MeshBasicMaterial({color: 0xffffff, envMap: textureCube});
     for (let i = 0; i < 500; i++) {
       const mesh = new THREE.Mesh(geometry, material);
@@ -67,6 +75,8 @@ export class Model {
       mesh.position.y = Math.random() * 10 - 5;
       mesh.position.z = Math.random() * 10 - 5;
 
+      // .scale : Vector3
+      // 物体的局部缩放。默认值是Vector3( 1, 1, 1 )
       mesh.scale.x = scale;
       mesh.scale.y = scale;
       mesh.scale.z = scale;
@@ -79,10 +89,9 @@ export class Model {
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.container.appendChild(this.renderer.domElement);
-
     // AnaglyphEffect
     this.effect = new AnaglyphEffect(this.renderer);
-    this.effect.setSize(this.width || 2, this.height || 2);
+    this.effect.setSize(this.width, this.height);
 
     // 鼠标移动事件
     window.onmousemove = (e) => {
@@ -136,8 +145,8 @@ export class Model {
 
       this.camera.lookAt(this.scene.position);
       this.spheres.forEach((sphere, i) => {
-        sphere.position.x = 5 * Math.cos(timer + i);
-        sphere.position.y = 5 * Math.sin(timer + i * 1.1);
+        sphere.position.x = (5 * Math.cos(timer + i));
+        sphere.position.y = (5 * Math.sin(timer + i * 1.1));
       });
     }
 
@@ -166,8 +175,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
+      if (this.effect) {
+        this.effect.setSize(this.width, this.height);
       }
     };
   }
