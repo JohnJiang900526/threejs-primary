@@ -22,6 +22,7 @@ import WebglDecals from "@/pages/model-list/details/015-webgl-decals/index.vue";
 import DepthTexture from "@/pages/model-list/details/016-depth-texture/index.vue";
 import EffectsAnaglyph from "@/pages/model-list/details/017-effects-anaglyph/index.vue";
 import EffectsAscii from "@/pages/model-list/details/018-effects-ascii/index.vue";
+import EffectsParallaxbarrier from "@/pages/model-list/details/019-effects-parallaxbarrier/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -149,6 +150,12 @@ const routes: RouteRecordRaw[] = [
         name: 'EffectsAscii',
         meta: {title: "effects-ascii"},
         component: EffectsAscii,
+      },
+      {
+        path: '/list/effects-parallaxbarrier',
+        name: 'EffectsParallaxbarrier',
+        meta: {title: "effects-parallaxbarrier"},
+        component: EffectsParallaxbarrier,
       },
     ]
   },

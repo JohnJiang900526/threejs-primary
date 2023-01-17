@@ -104,6 +104,11 @@ const list: listType[] = [
     title: "018.WEBGL Ascii效果",
     path: "/list/effects-ascii"
   },
+  {
+    key: "019",
+    title: "019.WEBGL 影响视差",
+    path: "/list/effects-parallaxbarrier"
+  },
 ];
 
 export default list.reverse();
