@@ -109,6 +109,11 @@ const list: listType[] = [
     title: "019.WEBGL 影响视差",
     path: "/list/effects-parallaxbarrier"
   },
+  {
+    key: "020",
+    title: "020.WEBGL 辣椒鬼效应(佩珀幽灵)",
+    path: "/list/effects-peppersghost"
+  },
 ];
 
 export default list.reverse();
