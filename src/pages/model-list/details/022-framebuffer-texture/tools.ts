@@ -76,6 +76,7 @@ export class Model {
     this.line = new THREE.Line(geometry, material);
     this.line.scale.setScalar(0.05);
     this.scene.add(this.line);
+    this.updateColors(this.line.geometry.getAttribute("color"));
 
     // 创建纹理
     this.texture = new THREE.FramebufferTexture(this.textureSize, this.textureSize, THREE.RGBAFormat);
