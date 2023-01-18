@@ -61,14 +61,14 @@ export class Model {
     this.scene = new THREE.Scene();
     this.sceneOrtho = new THREE.Scene();
 
-    // 创建点
+    // 创建点 高斯帕曲线
     const points = GeometryUtils.gosper(8);
     const geometry = new THREE.BufferGeometry();
     const positionAttribute = new THREE.Float32BufferAttribute(points, 3);
     geometry.setAttribute('position', positionAttribute);
     geometry.center();
 
-    const colorAttribute = new THREE.BufferAttribute(new Float32Array(positionAttribute.array.length ), 3);
+    const colorAttribute = new THREE.BufferAttribute(new Float32Array(positionAttribute.array.length), 3);
     colorAttribute.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('color', colorAttribute);
 
@@ -87,7 +87,6 @@ export class Model {
     this.sprite = new THREE.Sprite(spriteMaterial);
     this.sprite.scale.set(this.textureSize, this.textureSize, 1);
     this.sceneOrtho.add(this.sprite);
-
     this.updateSpritePosition();
 
     // 创建渲染器
@@ -129,21 +128,18 @@ export class Model {
   }
 
   private updateSpritePosition() {
-    const halfWidth = this.width / 2;
-    const halfHeight = this.height / 2;
+    const halfX = this.width / 2;
+    const halfY = this.height / 2;
 
-    const halfImageWidth = this.textureSize / 2;
-    const halfImageHeight = this.textureSize / 2;
+    const halfBoxX = this.textureSize / 2;
+    const halfBoxY = this.textureSize / 2;
 
     if (this.sprite) {
-      this.sprite.position.set(
-        -halfWidth + halfImageWidth, 
-        halfHeight - halfImageHeight, 
-        1
-      );
       if (this.isMobile()) {
         this.sprite.scale.set(100, 100, 1);
-        this.sprite.position.set(-halfWidth + 50 + 20, halfHeight - 50 - 20, 1);
+        this.sprite.position.set(-halfX + 50 + 20, halfY - 50 - 20, 1);
+      } else {
+        this.sprite.position.set(-halfX + halfBoxX, halfY - halfBoxY, 1);
       }
     }
   }
@@ -172,6 +168,8 @@ export class Model {
       const colorAttribute = this.line.geometry.getAttribute('color');
       this.updateColors(colorAttribute);
 
+      // .clear ( color : Boolean, depth : Boolean, stencil : Boolean ) : undefined
+      // 告诉渲染器清除颜色、深度或模板缓存. 此方法将颜色缓存初始化为当前颜色。参数们默认都是true
       this.renderer.clear();
       this.renderer.render(this.scene, this.camera);
 
@@ -179,6 +177,8 @@ export class Model {
       this.vector.y = (this.height * this.dpr/2) - (this.textureSize/2);
 
       this.renderer.copyFramebufferToTexture(this.vector, this.texture);
+      // .clearDepth ( ) : undefined
+      // 清除深度缓存。相当于调用.clear( false, true, false )
       this.renderer.clearDepth();
       if (this.sceneOrtho && this.cameraOrtho) {
         this.renderer.render(this.sceneOrtho, this.cameraOrtho);
