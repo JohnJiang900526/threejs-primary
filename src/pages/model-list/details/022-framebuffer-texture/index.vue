@@ -90,13 +90,13 @@ export default defineComponent({
       align-items: center;
       height: 100%;
       width: 100%;
-      top: 0;
+      top: 45px;
       z-index: 999;
       .box {
         height: 128px;
 				width: 128px;
 				border: 1px solid white;
-        margin-top: 50px;
+        margin-top: -45px;
       }
     }
     .key-frame-page-inner {
