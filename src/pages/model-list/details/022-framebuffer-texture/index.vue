@@ -93,8 +93,8 @@ export default defineComponent({
       top: 45px;
       z-index: 999;
       .box {
-        height: 128px;
-				width: 128px;
+        height: 100px;
+				width: 100px;
 				border: 1px solid white;
         margin-top: -45px;
       }
