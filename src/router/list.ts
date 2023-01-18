@@ -25,6 +25,7 @@ import EffectsAscii from "@/pages/model-list/details/018-effects-ascii/index.vue
 import EffectsParallaxbarrier from "@/pages/model-list/details/019-effects-parallaxbarrier/index.vue";
 import EffectsPeppersghost from "@/pages/model-list/details/020-effects-peppersghost/index.vue";
 import EffectsStereo from "@/pages/model-list/details/021-effects-stereo/index.vue";
+import FramebufferTexture from "@/pages/model-list/details/022-framebuffer-texture/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -39,6 +40,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/framebuffer-texture',
+        name: 'FramebufferTexture',
+        meta: {title: "framebuffer-texture"},
+        component: FramebufferTexture,
+      },
       {
         path: '/list/effects-stereo',
         name: 'EffectsStereo',

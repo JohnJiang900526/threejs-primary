@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "022",
+    title: "022.WEBGL framebuffer纹理",
+    path: "/list/framebuffer-texture"
+  },
+  {
     key: "021",
     title: "021.WEBGL 立体效果",
     path: "/list/effects-stereo"
