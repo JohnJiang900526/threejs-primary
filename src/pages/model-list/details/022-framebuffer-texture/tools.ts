@@ -45,11 +45,30 @@ export class Model {
 
   // 初始化方法入口
   init() {
-    // 创建相机
+    // 创建相机 透视相机（PerspectiveCamera）
+    // 这一摄像机使用perspective projection（透视投影）来进行投影。
+    // 这一投影模式被用来模拟人眼所看到的景象，它是3D场景的渲染中使用得最普遍的投影模式。
+    // PerspectiveCamera( fov : Number, aspect : Number, near : Number, far : Number )
+    // fov — 摄像机视锥体垂直视野角度
+    // aspect — 摄像机视锥体长宽比
+    // near — 摄像机视锥体近端面
+    // far — 摄像机视锥体远端面
+    // 这些参数一起定义了摄像机的viewing frustum（视锥体）
     this.camera = new THREE.PerspectiveCamera(100, this.width / this.height, 1, 1000);
     this.camera.position.z = 20;
 
-    // 创建正交相机
+    // 创建正交相机 正交相机（OrthographicCamera）
+    // 这一摄像机使用orthographic projection（正交投影）来进行投影
+    // 在这种投影模式下，无论物体距离相机距离远或者近，在最终渲染的图片中物体的大小都保持不变。
+    // 这对于渲染2D场景或者UI元素是非常有用的。
+    // OrthographicCamera( left : Number, right : Number, top : Number, bottom : Number, near : Number, far : Number )
+    // left — 摄像机视锥体左侧面
+    // right — 摄像机视锥体右侧面
+    // top — 摄像机视锥体上侧面
+    // bottom — 摄像机视锥体下侧面
+    // near — 摄像机视锥体近端面
+    // far — 摄像机视锥体远端面
+    // 这些参数一起定义了摄像机的viewing frustum（视锥体）
     this.cameraOrtho = new THREE.OrthographicCamera(
       -this.width/2, this.width/2, 
       this.height/2, -this.height/2, 
@@ -72,19 +91,40 @@ export class Model {
     colorAttribute.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('color', colorAttribute);
 
+    // 基础线条材质（LineBasicMaterial）
+    // .vertexColors : Boolean
+    // 是否使用顶点着色。默认值为false
     const material = new THREE.LineBasicMaterial({vertexColors: true});
+    // 线（Line）Line( geometry : BufferGeometry, material : Material )
+    // geometry —— 表示线段的顶点，默认值是一个新的BufferGeometry
+    // material —— 线的材质，默认值是一个新的具有随机颜色的LineBasicMaterial
     this.line = new THREE.Line(geometry, material);
+    // .scale : Vector3 物体的局部缩放。默认值是Vector3( 1, 1, 1 )。
+    // .setScalar ( scalar : Float ) : this
+    // 将该向量的x、y和z值同时设置为等于传入的scalar
     this.line.scale.setScalar(0.05);
     this.scene.add(this.line);
     this.updateColors(this.line.geometry.getAttribute("color"));
 
     // 创建纹理
+    // FramebufferTexture This class can only be used in combination with WebGLRenderer.copyFramebufferToTexture().
+    // FramebufferTexture( width : Number, height : Number, format : Constant )
+    // width -- The width of the texture
+    // height -- The height of the texture
+    // format -- The format used in the texture. See format constants for other choices
     this.texture = new THREE.FramebufferTexture(this.textureSize, this.textureSize, THREE.RGBAFormat);
+    // .minFilter : number
+    // 当一个纹素覆盖小于一个像素时，贴图将如何采样。
+    // 默认值为THREE.LinearMipmapLinearFilter， 它将使用mipmapping以及三次线性滤镜
     this.texture.minFilter = THREE.NearestFilter;
     this.texture.magFilter = THREE.NearestFilter;
 
-    // 创建材质
+    // 创建材质 点精灵材质(SpriteMaterial)
+    // .map : Texture
+    // 颜色贴图。可以选择包括一个alpha通道，通常与.transparent 或.alphaTest。默认为null
     const spriteMaterial = new THREE.SpriteMaterial({map: this.texture});
+    // 精灵（Sprite）精灵是一个总是面朝着摄像机的平面，通常含有使用一个半透明的纹理
+    // 精灵不会投射任何阴影，即使设置了
     this.sprite = new THREE.Sprite(spriteMaterial);
     this.sprite.scale.set(this.textureSize, this.textureSize, 1);
     this.sceneOrtho.add(this.sprite);
