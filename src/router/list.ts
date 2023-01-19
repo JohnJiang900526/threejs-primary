@@ -27,6 +27,7 @@ import EffectsPeppersghost from "@/pages/model-list/details/020-effects-peppersg
 import EffectsStereo from "@/pages/model-list/details/021-effects-stereo/index.vue";
 import FramebufferTexture from "@/pages/model-list/details/022-framebuffer-texture/index.vue";
 import WebglGeometry from "@/pages/model-list/details/023-webgl-geometry/index.vue";
+import GeometriesParametric from "@/pages/model-list/details/024-geometries-parametric/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -41,6 +42,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/geometries-parametric',
+        name: 'GeometriesParametric',
+        meta: {title: "geometries-parametric"},
+        component: GeometriesParametric,
+      },
       {
         path: '/list/webgl-geometry',
         name: 'WebglGeometry',
