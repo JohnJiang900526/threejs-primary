@@ -26,6 +26,7 @@ import EffectsParallaxbarrier from "@/pages/model-list/details/019-effects-paral
 import EffectsPeppersghost from "@/pages/model-list/details/020-effects-peppersghost/index.vue";
 import EffectsStereo from "@/pages/model-list/details/021-effects-stereo/index.vue";
 import FramebufferTexture from "@/pages/model-list/details/022-framebuffer-texture/index.vue";
+import WebglGeometry from "@/pages/model-list/details/023-webgl-geometry/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -40,6 +41,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/webgl-geometry',
+        name: 'WebglGeometry',
+        meta: {title: "webgl-geometry"},
+        component: WebglGeometry,
+      },
       {
         path: '/list/framebuffer-texture',
         name: 'FramebufferTexture',

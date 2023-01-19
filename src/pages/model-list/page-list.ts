@@ -10,8 +10,13 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "023",
+    title: "023.WEBGL Geometry几何体",
+    path: "/list/webgl-geometry"
+  },
+  {
     key: "022",
-    title: "022.WEBGL framebuffer纹理",
+    title: "022.WEBGL FrameBuffer纹理",
     path: "/list/framebuffer-texture"
   },
   {
