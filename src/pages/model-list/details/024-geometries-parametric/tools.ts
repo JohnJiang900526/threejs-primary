@@ -42,17 +42,26 @@ export class Model {
     // 创建一个场景
     this.scene = new THREE.Scene();
     // 给场景添加环境光
-    this.scene.add(new THREE.AmbientLight(0xcccccc, 0.4));
+    this.scene.add(new THREE.AmbientLight(0xcccccc, 1));
 
     // 创建一个点光源
     const pointLight = new THREE.PointLight(0xffffff, 0.8);
     this.camera.add(pointLight);
     this.scene.add(this.camera);
 
-    // 创建纹理
+    // 创建纹理 纹理（Texture）
+    // 创建一个纹理贴图，将其应用到一个表面，或者作为反射/折射贴图
     this.texture = (new THREE.TextureLoader()).load("/examples/textures/uv_grid_opengl.jpg");
+    // .wrapS : number
+    // 这个值定义了纹理贴图在水平方向上将如何包裹，在UV映射中对应于U
     this.texture.wrapS = THREE.RepeatWrapping;
+    // .wrapT : number
+    // 这个值定义了纹理贴图在垂直方向上将如何包裹，在UV映射中对应于V
     this.texture.wrapT = THREE.RepeatWrapping;
+    // .anisotropy : number
+    // 沿着轴，通过具有最高纹素密度的像素的样本数。 默认情况下，这个值为1
+    // 设置一个较高的值将会产生比基本的mipmap更清晰的效果，代价是需要使用更多纹理样本
+    // 这个值通常是2的幂
     this.texture.anisotropy = 16;
     // 创建材质
     this.material = new THREE.MeshPhongMaterial({map: this.texture, side: THREE.DoubleSide});
@@ -83,18 +92,21 @@ export class Model {
   createFirstRow() {
     const material = this.material as THREE.MeshPhongMaterial;
 
+    // 创建面几何体 平面缓冲几何体（PlaneGeometry）一个用于生成平面几何体的类 
     this.geometry = new ParametricGeometry(ParametricGeometries.plane(100, 100), 10, 10);
     this.geometry.center();
     this.object = new THREE.Mesh(this.geometry, material);
     this.object.position.set(-200, 0, 200);
     this.scene?.add(this.object);
 
+    // klein
     this.geometry = new ParametricGeometry(ParametricGeometries.klein, 20, 20);
     this.object = new THREE.Mesh(this.geometry, material);
     this.object.position.set(0, 0, 200);
     this.object.scale.multiplyScalar(5);
     this.scene?.add(this.object);
 
+    // 莫比乌斯环 or Mobius带
     this.geometry = new ParametricGeometry(ParametricGeometries.mobius, 20, 20);
     this.object = new THREE.Mesh(this.geometry, material);
     this.object.position.set(200, 0, 200);
@@ -111,14 +123,17 @@ export class Model {
     const sphere = new ParametricGeometries.SphereGeometry(50, 20, 10);
     const tube = new ParametricGeometries.TubeGeometry(GrannyKnot, 100, 3, 8, true);
 
+    // 圆环缓冲扭结几何体（TorusKnotGeometry）
     this.object = new THREE.Mesh(torus, material);
     this.object.position.set(-200, 0, -200);
     this.scene?.add(this.object);
 
+    // 球缓冲几何体（SphereGeometry）
     this.object = new THREE.Mesh(sphere, material);
     this.object.position.set(0, 0, -200);
     this.scene?.add(this.object);
 
+    // 管道缓冲几何体（TubeGeometry）
     this.object = new THREE.Mesh(tube, material);
     this.object.position.set(200, 0, -200);
     this.object.scale.multiplyScalar(2);
