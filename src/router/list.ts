@@ -28,6 +28,7 @@ import EffectsStereo from "@/pages/model-list/details/021-effects-stereo/index.v
 import FramebufferTexture from "@/pages/model-list/details/022-framebuffer-texture/index.vue";
 import WebglGeometry from "@/pages/model-list/details/023-webgl-geometry/index.vue";
 import GeometriesParametric from "@/pages/model-list/details/024-geometries-parametric/index.vue";
+import GeometryColors from "@/pages/model-list/details/025-geometry-colors/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -42,6 +43,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/geometry-colors',
+        name: 'GeometryColors',
+        meta: {title: "geometry-colors"},
+        component: GeometryColors,
+      },
       {
         path: '/list/geometries-parametric',
         name: 'GeometriesParametric',
