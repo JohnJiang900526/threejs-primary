@@ -14,6 +14,7 @@ export class Model {
   private controls: null | OrbitControls
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
+  private geometry: null | ParametricGeometry
   private object: null | THREE.Mesh
   private texture: null | THREE.Texture
   private material: null | THREE.MeshPhongMaterial
@@ -25,6 +26,7 @@ export class Model {
     this.renderer = null;
     this.camera = null;
     this.stats = null;
+    this.geometry = null;
     this.object = null;
     this.controls = null;
     this.texture = null;
@@ -33,7 +35,41 @@ export class Model {
 
   // 初始化方法入口
   init() {
-    
+    // 创建相机
+    this.camera = new THREE.PerspectiveCamera(80, this.width/this.height, 1, 20000);
+    this.camera.position.y = 400;
+
+    // 创建一个场景
+    this.scene = new THREE.Scene();
+    // 给场景添加环境光
+    this.scene.add(new THREE.AmbientLight(0xcccccc, 0.4));
+
+    // 创建一个点光源
+    const pointLight = new THREE.PointLight(0xffffff, 0.8);
+    this.camera.add(pointLight);
+    this.scene.add(this.camera);
+
+    // 创建纹理
+    this.texture = (new THREE.TextureLoader()).load("/examples/textures/uv_grid_opengl.jpg");
+    this.texture.wrapS = THREE.RepeatWrapping;
+    this.texture.wrapT = THREE.RepeatWrapping;
+    this.texture.anisotropy = 16;
+    // 创建材质
+    this.material = new THREE.MeshPhongMaterial({map: this.texture, side: THREE.DoubleSide});
+
+    // 创建几何体
+    this.createFirstRow();
+    this.createSecondRow();
+
+    // 渲染器
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(this.width, this.height);
+    this.container.appendChild(this.renderer.domElement);
+
+    // 控制器
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    controls.update();
 
     // 初始化 性能统计
     this.initStats();
@@ -43,6 +79,51 @@ export class Model {
     this.resize();
   }
 
+  // 创建第1列
+  createFirstRow() {
+    const material = this.material as THREE.MeshPhongMaterial;
+
+    this.geometry = new ParametricGeometry(ParametricGeometries.plane(100, 100), 10, 10);
+    this.geometry.center();
+    this.object = new THREE.Mesh(this.geometry, material);
+    this.object.position.set(-200, 0, 200);
+    this.scene?.add(this.object);
+
+    this.geometry = new ParametricGeometry(ParametricGeometries.klein, 20, 20);
+    this.object = new THREE.Mesh(this.geometry, material);
+    this.object.position.set(0, 0, 200);
+    this.object.scale.multiplyScalar(5);
+    this.scene?.add(this.object);
+
+    this.geometry = new ParametricGeometry(ParametricGeometries.mobius, 20, 20);
+    this.object = new THREE.Mesh(this.geometry, material);
+    this.object.position.set(200, 0, 200);
+    this.object.scale.multiplyScalar(30);
+    this.scene?.add(this.object);
+  }
+
+  // 创建第2列
+  createSecondRow() {
+    const material = this.material as THREE.MeshPhongMaterial;
+
+    const GrannyKnot = new Curves.GrannyKnot();
+    const torus = new ParametricGeometries.TorusKnotGeometry(50, 10, 50, 20, 2, 3);
+    const sphere = new ParametricGeometries.SphereGeometry(50, 20, 10);
+    const tube = new ParametricGeometries.TubeGeometry(GrannyKnot, 100, 3, 8, true);
+
+    this.object = new THREE.Mesh(torus, material);
+    this.object.position.set(-200, 0, -200);
+    this.scene?.add(this.object);
+
+    this.object = new THREE.Mesh(sphere, material);
+    this.object.position.set(0, 0, -200);
+    this.scene?.add(this.object);
+
+    this.object = new THREE.Mesh(tube, material);
+    this.object.position.set(200, 0, -200);
+    this.object.scale.multiplyScalar(2);
+    this.scene?.add(this.object);
+  }
 
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
