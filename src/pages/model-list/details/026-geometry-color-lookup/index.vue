@@ -5,11 +5,11 @@
 </script>
 
 <template>
-  <div class="geometry-colors-page">
-    <Page title="geometry-colors">
+  <div class="geometry-color-lookup-page">
+    <Page title="geometry-color-lookup">
       <div ref="container" class="key-frame-page-inner">
-        <div v-show="false" class="actions">
-          <Icon @click="openHandle" name="wap-nav" color="#fff"/>
+        <div v-show="true" class="actions">
+          <Icon @click="openHandle" name="wap-nav" color="#333"/>
         </div>
       </div>
     </Page>
@@ -17,10 +17,19 @@
     <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
       <Page @click-left="closeHandle" :default-click="false" title="模型设置">
         <div class="settings-content">
-          <Block title="Format">
-            <radio-group v-model="format" @change="formatChange">
+          <Block title="颜色设置">
+            <radio-group v-model="color" @change="colorChange">
               <div class="item-param">
-                <radio name="DepthFormat">DepthFormat</radio>
+                <radio name="rainbow">rainbow</radio>
+              </div>
+              <div class="item-param">
+                <radio name="cooltowarm">cooltowarm</radio>
+              </div>
+              <div class="item-param">
+                <radio name="blackbody">blackbody</radio>
+              </div>
+              <div class="item-param">
+                <radio name="grayscale">grayscale</radio>
               </div>
             </radio-group>
           </Block>
@@ -40,7 +49,7 @@ export default defineComponent({
   data() {
     return {
       show: false,
-      format: "DepthFormat",
+      color: "rainbow",
     };
   },
   mounted() {
@@ -52,9 +61,13 @@ export default defineComponent({
       objModel = new Model(this.$refs.container as HTMLDivElement);
       objModel.init();
     },
-
-    formatChange() {},
-    typeChange() {},
+    // 颜色的设置
+    colorChange(colorType: 'rainbow'|'cooltowarm'|'blackbody'|'grayscale') {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setColor(colorType);
+      }
+    },
 
     // 打开设置面板
     openHandle() {
@@ -75,7 +88,7 @@ export default defineComponent({
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .geometry-colors-page {
+  .geometry-color-lookup-page {
     .absolute-page();
     background-color: #fff;
     .selection {

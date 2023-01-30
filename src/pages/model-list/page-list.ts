@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "026",
+    title: "026.WEBGL Geometry颜色查询",
+    path: "/list/geometry-color-lookup"
+  },
+  {
     key: "025",
     title: "025.WEBGL Geometry颜色",
     path: "/list/geometry-colors"
