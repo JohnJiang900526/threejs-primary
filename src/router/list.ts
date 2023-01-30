@@ -30,6 +30,7 @@ import WebglGeometry from "@/pages/model-list/details/023-webgl-geometry/index.v
 import GeometriesParametric from "@/pages/model-list/details/024-geometries-parametric/index.vue";
 import GeometryColors from "@/pages/model-list/details/025-geometry-colors/index.vue";
 import GeometryColorLookup from "@/pages/model-list/details/026-geometry-color-lookup/index.vue";
+import GeometryConvex from "@/pages/model-list/details/027-geometry-convex/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -44,6 +45,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/geometry-convex',
+        name: 'GeometryConvex',
+        meta: {title: "geometry-convex"},
+        component: GeometryConvex,
+      },
       {
         path: '/list/geometry-color-lookup',
         name: 'GeometryColorLookup',
