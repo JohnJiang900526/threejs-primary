@@ -60,11 +60,11 @@ export class Model {
     const pointsMaterial = new THREE.PointsMaterial({color: 0x0080ff, map: texture, size: 1,alphaTest: 0.5});
 
     // 创建点
-    let dodecahedronGeometry = new THREE.DodecahedronGeometry(10);
-    dodecahedronGeometry.deleteAttribute('normal');
-    dodecahedronGeometry.deleteAttribute('uv');
-    // @ts-ignore
-    dodecahedronGeometry = BufferGeometryUtils.mergeVertices(dodecahedronGeometry);
+    const baseDodecahedronGeometry = new THREE.DodecahedronGeometry(10);
+    baseDodecahedronGeometry.deleteAttribute('normal');
+    baseDodecahedronGeometry.deleteAttribute('uv');
+
+    const dodecahedronGeometry = BufferGeometryUtils.mergeVertices(baseDodecahedronGeometry);
     const vertices = [];
     const positionAttribute = dodecahedronGeometry.getAttribute('position');
     for ( let i = 0; i < positionAttribute.count; i++) {
