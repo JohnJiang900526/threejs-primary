@@ -31,6 +31,7 @@ import GeometriesParametric from "@/pages/model-list/details/024-geometries-para
 import GeometryColors from "@/pages/model-list/details/025-geometry-colors/index.vue";
 import GeometryColorLookup from "@/pages/model-list/details/026-geometry-color-lookup/index.vue";
 import GeometryConvex from "@/pages/model-list/details/027-geometry-convex/index.vue";
+import GeometryCube from "@/pages/model-list/details/028-geometry-cube/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -45,6 +46,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/geometry-cube',
+        name: 'GeometryCube',
+        meta: {title: "geometry-cube"},
+        component: GeometryCube,
+      },
       {
         path: '/list/geometry-convex',
         name: 'GeometryConvex',
