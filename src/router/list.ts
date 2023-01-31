@@ -32,6 +32,7 @@ import GeometryColors from "@/pages/model-list/details/025-geometry-colors/index
 import GeometryColorLookup from "@/pages/model-list/details/026-geometry-color-lookup/index.vue";
 import GeometryConvex from "@/pages/model-list/details/027-geometry-convex/index.vue";
 import GeometryCube from "@/pages/model-list/details/028-geometry-cube/index.vue";
+import GeometryDynamic from "@/pages/model-list/details/029-geometry-dynamic/index.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -46,6 +47,12 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      {
+        path: '/list/geometry-dynamic',
+        name: 'GeometryDynamic',
+        meta: {title: "geometry-dynamic"},
+        component: GeometryDynamic,
+      },
       {
         path: '/list/geometry-cube',
         name: 'GeometryCube',
