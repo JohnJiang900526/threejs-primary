@@ -85,7 +85,7 @@ export default defineComponent({
 
   .geometry-extrude-shape-page {
     .absolute-page();
-    background-color: #0044ff;
+    background-color: #000;
     .selection {
       position: absolute;
       display: flex;
