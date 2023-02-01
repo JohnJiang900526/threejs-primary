@@ -49,7 +49,14 @@ export class Model {
     this.scene.add(light);
     this.scene.add(new THREE.AmbientLight(0xcccccc, 0.2));
 
-    // 创建 helper
+    // 创建 helper GridHelper
+    // 坐标格辅助对象. 坐标格实际上是2维线数组
+    // GridHelper( size : number, divisions : Number, colorCenterLine : Color, colorGrid : Color )
+    // size -- 坐标格尺寸. 默认为 10
+    // divisions -- 坐标格细分次数. 默认为 10
+    // colorCenterLine -- 中线颜色. 值可以为 Color 类型, 16进制 和 CSS 颜色名. 默认为 0x444444
+    // colorGrid -- 坐标格网格线颜色. 值可以为 Color 类型, 16进制 和 CSS 颜色名. 默认为 0x888888
+    // 创建一个尺寸为 'size' 和 每个维度细分 'divisions' 次的坐标格. 颜色可选
     const helper = new THREE.GridHelper(160, 10);
     helper.rotation.x = Math.PI/2;
     this.group.add(helper);
@@ -128,12 +135,12 @@ export class Model {
     return obj;
   }
 
-  // 执行 transformSVGPath
+  // 执行 transformSVGPath 难点 核心算法
   private transformSVGPath() {
     const DEGS_TO_RADS = Math.PI / 180;
     const DIGIT_0 = 48, DIGIT_9 = 57, COMMA = 44, SPACE = 32, PERIOD = 46, MINUS = 45;
 
-    function transform( pathStr: string ) {
+    function transform(pathStr: string) {
       const path = new THREE.ShapePath();
 
       let idx = 1, activeCmd,
@@ -393,26 +400,32 @@ export class Model {
   // 创建集合对象
   private addGeometryObject(group: THREE.Group, obj: InitObj) {
     const transformSVGPath = this.transformSVGPath();
-    const paths = obj.paths;
-    const depths = obj.depths;
-    const colors = obj.colors;
-    const center = obj.center;
+    const {paths, depths, colors, center} = obj;
 
-    for ( let i = 0; i < paths.length; i ++ ) {
-      const path = transformSVGPath( paths[ i ] );
-      const color = new THREE.Color( colors[ i ] );
-      const material = new THREE.MeshLambertMaterial({ color, emissive: color});
-      const depth = depths[ i ];
-      const simpleShapes = path.toShapes( true );
-      for ( let j = 0; j < simpleShapes.length; j ++ ) {
-        const simpleShape = simpleShapes[ j ];
-        const shape3d = new THREE.ExtrudeGeometry( simpleShape, { depth: depth, bevelEnabled: false });
-        const mesh = new THREE.Mesh( shape3d, material );
+    for (let i = 0; i < paths.length; i++) {
+      const path = transformSVGPath(paths[i]);
+      const color = new THREE.Color(colors[i]);
+      const material = new THREE.MeshLambertMaterial({color, emissive: color});
+      const depth = depths[i];
+      // .toShapes ( isCCW : Boolean ) : Array
+      // isCCW -- 更改实体形状和孔洞的生成方式
+      const simpleShapes = path.toShapes(true);
+
+      for (let j = 0; j < simpleShapes.length; j++) {
+        const simpleShape = simpleShapes[j];
+        const shape3d = new THREE.ExtrudeGeometry(simpleShape, {depth: depth, bevelEnabled: false});
+        const mesh = new THREE.Mesh(shape3d, material);
         mesh.rotation.x = Math.PI;
-        mesh.translateZ( - depth - 1 );
-        mesh.translateX( - center.x );
-        mesh.translateY( - center.y );
-        group.add( mesh );
+        // .translateX ( distance : Float ) : this
+        // 沿着X轴将平移distance个单位。
+        mesh.translateX(-center.x);
+        // .translateY ( distance : Float ) : this
+        // 沿着Y轴将平移distance个单位。
+        mesh.translateY(-center.y);
+        // .translateZ ( distance : Float ) : this
+        // 沿着Z轴将平移distance个单位
+        mesh.translateZ(-depth - 1);
+        group.add(mesh);
       }
     }
   }
@@ -428,6 +441,9 @@ export class Model {
 
     // 控制器更新
     if (this.controls) {this.controls.update()}
+
+    // 实现自动旋转
+    this.group.rotation.z += 0.01;
 
     // 执行渲染
     if (this.scene && this.camera && this.renderer) {
