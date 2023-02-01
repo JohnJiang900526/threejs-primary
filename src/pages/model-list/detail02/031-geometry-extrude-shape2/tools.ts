@@ -56,8 +56,8 @@ export class Model {
 
     // 绘制图形
     const obj = this.initSVGObject();
-    this.addGeoObject(this.group, obj);
-
+    // 核心算法
+    this.addGeometryObject(this.group, obj);
 
     // 创建渲染器
     this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -133,7 +133,7 @@ export class Model {
     const DEGS_TO_RADS = Math.PI / 180;
     const DIGIT_0 = 48, DIGIT_9 = 57, COMMA = 44, SPACE = 32, PERIOD = 46, MINUS = 45;
 
-    function transformSVGPath( pathStr: string ) {
+    function transform( pathStr: string ) {
       const path = new THREE.ShapePath();
 
       let idx = 1, activeCmd,
@@ -387,11 +387,11 @@ export class Model {
       return path;
     }
 
-    return transformSVGPath;
+    return transform;
   }
 
   // 创建集合对象
-  private addGeoObject(group: THREE.Group, obj: InitObj) {
+  private addGeometryObject(group: THREE.Group, obj: InitObj) {
     const transformSVGPath = this.transformSVGPath();
     const paths = obj.paths;
     const depths = obj.depths;
