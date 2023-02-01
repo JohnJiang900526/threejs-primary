@@ -128,8 +128,8 @@ export class Model {
     return obj;
   }
 
-  // 执行 d3threeD
-  private d3threeD() {
+  // 执行 transformSVGPath
+  private transformSVGPath() {
     const DEGS_TO_RADS = Math.PI / 180;
     const DIGIT_0 = 48, DIGIT_9 = 57, COMMA = 44, SPACE = 32, PERIOD = 46, MINUS = 45;
 
@@ -392,7 +392,7 @@ export class Model {
 
   // 创建集合对象
   private addGeoObject(group: THREE.Group, obj: InitObj) {
-    const transformSVGPath = this.d3threeD();
+    const transformSVGPath = this.transformSVGPath();
     const paths = obj.paths;
     const depths = obj.depths;
     const colors = obj.colors;
