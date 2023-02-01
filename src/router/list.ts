@@ -4,6 +4,7 @@ import Welcome from "@/pages/welcome/index.vue";
 import List from "@/pages/model-list/index.vue";
 
 import routerList01 from "@/router/router-lists/01-list";
+import routerList02 from "@/router/router-lists/02-list";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -18,6 +19,7 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      ...routerList02,
       ...routerList01
     ]
   },
