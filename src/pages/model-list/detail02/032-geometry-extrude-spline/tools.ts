@@ -111,7 +111,7 @@ export class Model {
       new THREE.Vector3(0, 40, -40),
       new THREE.Vector3(0, 140, -40),
       new THREE.Vector3(0, 40, 40),
-      new THREE.Vector3(0, -40, 40)
+      new THREE.Vector3(0, -40, 40),
     ], true, "catmullrom");
 
     this.splines = {
@@ -195,16 +195,16 @@ export class Model {
 
   // 创建管状模型
   addTube(obj?: any) {
+    this.params = Object.assign(this.params, obj);
     if (this.mesh) {
       this.parent.remove(this.mesh);
       this.mesh.geometry.dispose();
     }
-    this.params = Object.assign(this.params, obj);
 
-    const extrudePath = this.splines[this.params.spline];
-    this.tubeGeometry = new THREE.TubeGeometry(
-      extrudePath, this.params.extrusionSegments, 2, this.params.radiusSegments, this.params.closed
-    );
+    const { spline, extrusionSegments, radiusSegments, closed } = this.params;
+    const path = this.splines[spline];
+
+    this.tubeGeometry = new THREE.TubeGeometry(path, extrusionSegments, 2, radiusSegments, closed);
     this.addGeometry(this.tubeGeometry);
     this.setScale();
   }
@@ -213,10 +213,9 @@ export class Model {
   private addGeometry(geometry: THREE.TubeGeometry) {
     const material = new THREE.MeshLambertMaterial({color: 0xff00ff});
     const wireframeMaterial = new THREE.MeshBasicMaterial({color: 0x000000, opacity: 0.3, wireframe: true, transparent: true});
-    const wireframe = new THREE.Mesh(geometry, wireframeMaterial);
-
+    
     this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.add(wireframe);
+    this.mesh.add(new THREE.Mesh(geometry, wireframeMaterial));
     this.parent.add(this.mesh);
   }
 
