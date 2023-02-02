@@ -2,8 +2,15 @@ import type { RouteRecordRaw } from "vue-router";
 
 import GeometryExtrudeShape2 from "@/pages/model-list/detail02/031-geometry-extrude-shape2/index.vue";
 import GeometryExtrudeSpline from "@/pages/model-list/detail02/032-geometry-extrude-spline/index.vue";
+import GeometryMinecraft from "@/pages/model-list/detail02/033-geometry-minecraft/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-minecraft',
+    name: 'GeometryMinecraft',
+    meta: {title: "geometry-minecraft"},
+    component: GeometryMinecraft,
+  },
   {
     path: '/list/geometry-extrude-spline',
     name: 'GeometryExtrudeSpline',
