@@ -127,7 +127,7 @@ export class Model {
     // @ts-ignore
     nzGeometry.attributes.uv.array[3] = 0.5;
     nzGeometry.rotateY( Math.PI );
-    nzGeometry.translate(0, 0, - 50);
+    nzGeometry.translate(0, 0, -50);
 
 
     const geometries = [];
@@ -164,10 +164,11 @@ export class Model {
     const geometry = BufferGeometryUtils.mergeBufferGeometries(geometries);
     geometry.computeBoundingSphere();
 
-    const texture = new THREE.TextureLoader().load( '/examples/textures/minecraft/atlas.png' );
+    const texture = new THREE.TextureLoader().load('/examples/textures/minecraft/atlas.png');
     texture.magFilter = THREE.NearestFilter;
+    const material = new THREE.MeshLambertMaterial({map: texture, side: THREE.DoubleSide});
 
-    const mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ map: texture, side: THREE.DoubleSide}) );
+    const mesh = new THREE.Mesh(geometry, material);
     (this.scene as THREE.Scene).add(mesh);
   }
 
