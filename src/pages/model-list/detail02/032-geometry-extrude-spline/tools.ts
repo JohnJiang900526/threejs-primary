@@ -54,8 +54,8 @@ export class Model {
   private mesh: null | THREE.Mesh
   private stats: null | Stats;
   private params: Iparams
-  private pipeSpline: THREE.CatmullRomCurve3
-  private sampleClosedSpline: THREE.CatmullRomCurve3
+  private readonly pipeSpline: THREE.CatmullRomCurve3
+  private readonly sampleClosedSpline: THREE.CatmullRomCurve3
   private splines: Isplines
 
   constructor(container: HTMLDivElement) {
@@ -141,6 +141,8 @@ export class Model {
     this.scene.background = new THREE.Color(0xf0f0f0);
     // 关键一步，否则模型不显示
     this.scene.add(this.parent);
+    // 添加环境光 个别模型显示是黑色 需要环境光衬托
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
     // 创建直线光源
     const light = new THREE.DirectionalLight(0xffffff);
@@ -150,9 +152,8 @@ export class Model {
     // 创建相机
     this.camera = new THREE.PerspectiveCamera(100, this.width/this.height, 0.01, 10000);
     this.camera.position.set(0, 50, 500);
-
-    // 创建样条曲线相机
-    this.splineCamera = new THREE.PerspectiveCamera(100, this.width/this.height, 0.01, 10000);
+    // 创建样条曲线跟踪相机
+    this.splineCamera = new THREE.PerspectiveCamera(100, this.width/this.height, 0.01, 1000);
     this.parent.add(this.splineCamera);
 
     // 创建相机帮助
@@ -197,13 +198,18 @@ export class Model {
   addTube(obj?: any) {
     this.params = Object.assign(this.params, obj);
     if (this.mesh) {
+      // .remove ( object : Object3D, ... ) : this
+      // 从当前对象的子级中移除对象。可以移除任意数量的对象
       this.parent.remove(this.mesh);
+      // .dispose () : undefined
+      // 从内存中销毁对象 如果在运行是需要从内存中删除 BufferGeometry，则需要调用该函数
       this.mesh.geometry.dispose();
     }
 
     const { spline, extrusionSegments, radiusSegments, closed } = this.params;
     const path = this.splines[spline];
 
+    // 管道缓冲几何体（TubeGeometry）
     this.tubeGeometry = new THREE.TubeGeometry(path, extrusionSegments, 2, radiusSegments, closed);
     this.addGeometry(this.tubeGeometry);
     this.setScale();
@@ -237,45 +243,64 @@ export class Model {
     }
   }
 
+  // 渲染方法 核心
+  private render() {
+    const time = Date.now();
+    const looptime = 20 * 1000;
+    const t = ( time % looptime ) / looptime;
+
+    if (this.tubeGeometry && this.splineCamera && this.cameraEye && this.cameraHelper) {
+      // .getPointAt ( u : Float, optionalTarget : Vector ) : Vector
+      // u - 根据弧长在曲线上的位置。必须在范围[0，1]内
+      // optionalTarget — (可选) 如果需要, (可选) 如果需要, 结果将复制到此向量中，否则将创建一个新向量
+      this.tubeGeometry.parameters.path.getPointAt(t, this.position);
+      // .multiplyScalar ( s : Float ) : this
+      // 将该向量与所传入的标量s进行相乘
+      this.position.multiplyScalar(this.params.scale);
+  
+      // .tangents : Array 一个Vector3切线数组
+      const segments = this.tubeGeometry.tangents.length;
+      const pickt = t * segments;
+      const pick = Math.floor(pickt);
+      const pickNext = (pick + 1) % segments;
+  
+      // .subVectors ( a : Vector3, b : Vector3 ) : this
+      // 将该向量设置为a - b
+      this.binormal.subVectors(this.tubeGeometry.binormals[pickNext], this.tubeGeometry.binormals[pick]);
+      this.binormal.multiplyScalar(pickt - pick).add(this.tubeGeometry.binormals[pick]);
+      // .getTangentAt ( u : Float, optionalTarget : Vector ) : Vector
+      // u - 根据弧长在曲线上的位置，必须在范围[ 0, 1 ]
+      // optionalTarget —(可选) 如果需要, (可选) 如果需要, 结果将复制到此向量中，否则将创建一个新向量
+      // 返回一个点处的切线，该点与 .getTangent中给定的曲线的端点距离相等
+      this.tubeGeometry.parameters.path.getTangentAt(t, this.direction);
+      // .copy ( v : Vector3 ) : this 将所传入Vector3的x、y和z属性复制给这一Vector3
+      // .cross ( v : Vector3 ) : this 将该向量设置为它本身与传入的v的叉积（cross product）
+      this.normal.copy(this.binormal).cross(this.direction);
+
+      this.position.add(this.normal.clone().multiplyScalar(15));
+      this.splineCamera.position.copy(this.position);
+      this.cameraEye.position.copy(this.position);
+      this.tubeGeometry.parameters.path.getPointAt((t + 30 / this.tubeGeometry.parameters.path.getLength()) % 1, this.lookAt);
+      this.lookAt.multiplyScalar(this.params.scale);
+
+      if (!this.params.lookAhead) {
+        this.lookAt.copy(this.position).add(this.direction);
+      }
+      // .matrix : Matrix4 局部变换矩阵
+      this.splineCamera.matrix.lookAt(this.splineCamera.position, this.lookAt, this.normal);
+      // .setFromRotationMatrix ( m : Matrix4 ) : this 从m的旋转分量中来设置该四元数
+      this.splineCamera.quaternion.setFromRotationMatrix(this.splineCamera.matrix);
+      this.cameraHelper.update();
+    }
+  }
+
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => {
       this.animate();
     });
 
-    const time = Date.now();
-    const looptime = 20 * 1000;
-    const t = ( time % looptime ) / looptime;
-
-    if (this.tubeGeometry && this.splineCamera && this.cameraEye && this.cameraHelper) {
-      this.tubeGeometry.parameters.path.getPointAt(t, this.position);
-      this.position.multiplyScalar(this.params.scale);
-  
-      const segments = this.tubeGeometry.tangents.length;
-      const pickt = t * segments;
-      const pick = Math.floor( pickt );
-      const pickNext = ( pick + 1 ) % segments;
-  
-      this.binormal.subVectors( this.tubeGeometry.binormals[ pickNext ], this.tubeGeometry.binormals[ pick ] );
-      this.binormal.multiplyScalar( pickt - pick ).add( this.tubeGeometry.binormals[ pick ] );
-      this.tubeGeometry.parameters.path.getTangentAt( t, this.direction );
-      this.normal.copy( this.binormal ).cross( this.direction );
-
-      const offset = 15;
-      this.position.add( this.normal.clone().multiplyScalar( offset ) );
-      this.splineCamera.position.copy( this.position );
-      this.cameraEye.position.copy( this.position );
-      this.tubeGeometry.parameters.path.getPointAt( ( t + 30 / this.tubeGeometry.parameters.path.getLength() ) % 1, this.lookAt );
-      this.lookAt.multiplyScalar( this.params.scale );
-
-      if ( ! this.params.lookAhead ) {
-        this.lookAt.copy( this.position ).add( this.direction )
-      }
-      this.splineCamera.matrix.lookAt( this.splineCamera.position, this.lookAt, this.normal );
-      this.splineCamera.quaternion.setFromRotationMatrix( this.splineCamera.matrix );
-
-      this.cameraHelper.update();
-    }
+    this.render();
 
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
@@ -285,8 +310,7 @@ export class Model {
 
     // 执行渲染
     if (this.scene && this.camera && this.renderer && this.splineCamera) {
-      const camera = this.params.animationView?this.splineCamera: this.camera
-      this.renderer.render(this.scene, camera);
+      this.renderer.render(this.scene, this.params.animationView?this.splineCamera: this.camera);
     }
   }
 

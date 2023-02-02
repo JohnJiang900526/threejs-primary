@@ -71,26 +71,26 @@
             <div class="item-param">Scale</div>
             <div class="item-param slider">
               <Slider 
-                v-model="scale" :min="1" :max="10" :step="0.01" 
+                v-model="scale" :min="2" :max="10" :step="2" 
                 @update:model-value="scaleChange" bar-height="4px" active-color="#238bfe"></Slider>
             </div>
 
             <div class="item-param">ExtrusionSegments</div>
             <div class="item-param slider">
               <Slider 
-                v-model="extrusionSegments" :min="50" :max="500" :step="0.01" 
+                v-model="extrusionSegments" :min="50" :max="500" :step="50" 
                 @update:model-value="extrusionSegmentsChange" bar-height="4px" active-color="#238bfe"></Slider>
             </div>
 
             <div class="item-param">RadiusSegments</div>
             <div class="item-param slider">
               <Slider 
-                v-model="radiusSegments" :min="2" :max="12" :step="0.01" 
+                v-model="radiusSegments" :min="2" :max="12" :step="1" 
                 @update:model-value="radiusSegmentsChange" bar-height="4px" active-color="#238bfe"></Slider>
             </div>
 
             <div class="item-param">
-              <Checkbox v-model="closed" @change="closedChange">Enabled</Checkbox>
+              <Checkbox v-model="closed" @change="closedChange">Closed</Checkbox>
             </div>
 
           </Block>
@@ -127,7 +127,7 @@ export default defineComponent({
       spline: "GrannyKnot",
       scale: 2,
       extrusionSegments: 50,
-      radiusSegments: 1,
+      radiusSegments: 3,
       closed: true,
       animationView: false,
       lookAhead: false,
@@ -150,9 +150,9 @@ export default defineComponent({
         objModel.addTube({spline});
       }
     },
-    scaleChange(setScale: number) {
+    scaleChange(scale: number) {
       if (objModel) {
-        objModel.setScale({setScale});
+        objModel.setScale({scale});
       }
     },
     extrusionSegmentsChange (extrusionSegments: number) {
