@@ -4,8 +4,15 @@ import GeometryExtrudeShape2 from "@/pages/model-list/detail02/031-geometry-extr
 import GeometryExtrudeSpline from "@/pages/model-list/detail02/032-geometry-extrude-spline/index.vue";
 import GeometryMinecraft from "@/pages/model-list/detail02/033-geometry-minecraft/index.vue";
 import GeometryNurbs from "@/pages/model-list/detail02/034-geometry-nurbs/index.vue";
+import GeometryShapes from "@/pages/model-list/detail02/035-geometry-shapes/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-shapes',
+    name: 'GeometryShapes',
+    meta: {title: "geometry-shapes"},
+    component: GeometryShapes,
+  },
   {
     path: '/list/geometry-nurbs',
     name: 'GeometryNurbs',
