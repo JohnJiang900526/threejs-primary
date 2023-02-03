@@ -88,13 +88,24 @@ export class Model {
 
   // 创建几何体 核心算法
   private createGeometries() {
+    // 四维矩阵（Matrix4）表示为一个 4x4 matrix.
+    // 在3D计算机图形学中，4x4矩阵最常用的用法是作为一个变换矩阵Transformation Matrix
     const matrix = new THREE.Matrix4();
 
+    // 平面缓冲几何体（PlaneGeometry）一个用于生成平面几何体的类
+    // PlaneGeometry(width : Float, height : Float, widthSegments : Integer, heightSegments : Integer)
+    // width — 平面沿着X轴的宽度。默认值是1
+    // height — 平面沿着Y轴的高度。默认值是1
+    // widthSegments — （可选）平面的宽度分段数，默认值是1
+    // heightSegments — （可选）平面的高度分段数，默认值是1
     const pxGeometry = new THREE.PlaneGeometry(100, 100);
     // @ts-ignore
     pxGeometry.attributes.uv.array[1] = 0.5;
     // @ts-ignore
     pxGeometry.attributes.uv.array[3] = 0.5;
+    // .rotateY ( radians : Float ) : this
+    // 在 Y 轴上旋转几何体。该操作一般在一次处理中完成，不会循环处理。
+    // 典型的用法是通过调用 Object3D.rotation 实时旋转几何体
     pxGeometry.rotateY(Math.PI / 2);
     pxGeometry.translate(50, 0, 0);
 
@@ -126,11 +137,10 @@ export class Model {
     nzGeometry.attributes.uv.array[1] = 0.5;
     // @ts-ignore
     nzGeometry.attributes.uv.array[3] = 0.5;
-    nzGeometry.rotateY( Math.PI );
+    nzGeometry.rotateY(Math.PI);
     nzGeometry.translate(0, 0, -50);
 
-
-    const geometries = [];
+    const geometries: THREE.BufferGeometry[] = [];
     for (let z = 0; z < this.worldDepth; z++) {
       for (let x = 0; x < this.worldWidth; x++) {
         const h = this.getY(x, z);
@@ -161,10 +171,21 @@ export class Model {
       }
     }
 
+    // .mergeBufferGeometries ( geometries : Array, useGroups : Boolean ) : BufferGeometry
+    // geometries -- 由 BufferGeometry 实例的数组
+    // useGroups -- 是否要为了合并几何体而产生组
+    // 将一组几何体合并到一个实例中。所有几何体都必须兼容该属性。 如果合并不成功，则该方法返回 null
     const geometry = BufferGeometryUtils.mergeBufferGeometries(geometries);
+    // .computeBoundingSphere () : undefined
+    // 计算当前几何体的的边界球形，该操作会更新已有 [param:.boundingSphere]。
+    // 边界球形不会默认计算，需要调用该接口指定计算边界球形，否则保持默认值 null
     geometry.computeBoundingSphere();
 
     const texture = new THREE.TextureLoader().load('/examples/textures/minecraft/atlas.png');
+    // .magFilter : number
+    // 当一个纹素覆盖大于一个像素时，贴图将如何采样
+    // 默认值为THREE.LinearFilter， 它将获取四个最接近的纹素，并在他们之间进行双线性插值
+    // 另一个选项是THREE.NearestFilter，它将使用最接近的纹素的值
     texture.magFilter = THREE.NearestFilter;
     const material = new THREE.MeshLambertMaterial({map: texture, side: THREE.DoubleSide});
 
@@ -177,20 +198,20 @@ export class Model {
   }
 
   private generateHeight(width: number, height: number) {
-    const data = [];
+    const data: number[] = [];
+    // 柏林噪声算法
     const perlin = new ImprovedNoise();
     const size = width * height;
     const z = Math.random() * 100;
     let quality = 2;
     for (let j = 0; j < 4; j++) {
       if (j === 0) {
-        for (let i = 0; i < size; i ++) {
-          data[i] = 0
-        }
+        for (let i = 0; i < size; i++) { data[i] = 0; }
       }
 
       for (let i = 0; i < size; i++) {
-        const x = i % width, y = (i / width) | 0;
+        const x = i % width;
+        const y = (i / width) | 0;
         data[i] += perlin.noise(x / quality, y / quality, z) * quality;
       }
       quality *= 4;
