@@ -6,8 +6,15 @@ import GeometryMinecraft from "@/pages/model-list/detail02/033-geometry-minecraf
 import GeometryNurbs from "@/pages/model-list/detail02/034-geometry-nurbs/index.vue";
 import GeometryShapes from "@/pages/model-list/detail02/035-geometry-shapes/index.vue";
 import GeometrySplineEditor from "@/pages/model-list/detail02/036-geometry-spline-editor/index.vue";
+import GeometryTeapot from "@/pages/model-list/detail02/037-geometry-teapot/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-teapot',
+    name: 'GeometryTeapot',
+    meta: {title: "geometry-teapot"},
+    component: GeometryTeapot,
+  },
   {
     path: '/list/geometry-spline-editor',
     name: 'GeometrySplineEditor',

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-			import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 
 export class Model {
   private width: number;
