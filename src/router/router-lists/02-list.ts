@@ -5,8 +5,15 @@ import GeometryExtrudeSpline from "@/pages/model-list/detail02/032-geometry-extr
 import GeometryMinecraft from "@/pages/model-list/detail02/033-geometry-minecraft/index.vue";
 import GeometryNurbs from "@/pages/model-list/detail02/034-geometry-nurbs/index.vue";
 import GeometryShapes from "@/pages/model-list/detail02/035-geometry-shapes/index.vue";
+import GeometrySplineEditor from "@/pages/model-list/detail02/036-geometry-spline-editor/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-spline-editor',
+    name: 'GeometrySplineEditor',
+    meta: {title: "geometry-spline-editor"},
+    component: GeometrySplineEditor,
+  },
   {
     path: '/list/geometry-shapes',
     name: 'GeometryShapes',

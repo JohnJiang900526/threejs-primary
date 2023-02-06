@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "036",
+    title: "036.WEBGL Geometry样条编辑器",
+    path: "/list/geometry-spline-editor"
+  },
+  {
     key: "035",
     title: "035.WEBGL Geometry形状",
     path: "/list/geometry-shapes"
