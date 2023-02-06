@@ -92,13 +92,14 @@ export class Model {
     light.castShadow = true;
     light.shadow.camera.near = 200;
     light.shadow.camera.far = 2000;
-    light.shadow.bias = - 0.000222;
+    light.shadow.bias = -0.000222;
     light.shadow.mapSize.width = 1024;
     light.shadow.mapSize.height = 1024;
     this.scene.add(light);
 
-    // 创建 plane
+    // 创建曲线阴影 plane
     const planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+    // 阴影材质(ShadowMaterial) 此材质可以接收阴影，但在其他方面完全透明
     const planeMaterial = new THREE.ShadowMaterial({color: 0x000000, opacity: 0.2});
     planeGeometry.rotateX(-Math.PI/2);
 
@@ -107,7 +108,7 @@ export class Model {
     plane.receiveShadow = true;
     this.scene.add(plane);
 
-    // 创建帮助
+    // 创建创建地面网格
     const helper = new THREE.GridHelper(2000, 100);
     helper.position.y = -199;
     // @ts-ignore
@@ -126,19 +127,18 @@ export class Model {
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
 
-    // 创建控制器
+    // 创建控制器 轨道控制器（OrbitControls）
+    // Orbit controls（轨道控制器）可以使得相机围绕目标进行轨道运动
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    // @ts-ignore
-    this.controls.damping = 0.2;
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.2;
     this.controls.addEventListener("change", () => {
       this.render();
     });
 
     // 创建缩放控制器
     this.transformControl = new TransformControls(this.camera, this.renderer.domElement);
-    this.transformControl.addEventListener( 'change', () => {
-      this.render();
-    });
+    this.transformControl.addEventListener('change', () => {this.render();});
     this.transformControl.addEventListener("dragging-changed", (e) => {
       if (this.controls) { this.controls.enabled = !e.value; }
     });
@@ -171,9 +171,7 @@ export class Model {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.ARC_SEGMENTS * 3), 3));
 
-    let curve = new THREE.CatmullRomCurve3(this.positions);
-    // @ts-ignore
-    curve.curveType = 'catmullrom';
+    let curve = new THREE.CatmullRomCurve3(this.positions, false, "catmullrom");
     // @ts-ignore
     curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
       color: 0xff0000,
@@ -183,9 +181,7 @@ export class Model {
     curve.mesh.castShadow = true;
     this.splines.uniform = curve;
 
-    curve = new THREE.CatmullRomCurve3(this.positions);
-    // @ts-ignore
-    curve.curveType = 'centripetal';
+    curve = new THREE.CatmullRomCurve3(this.positions, false, "centripetal");
     // @ts-ignore
     curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
       color: 0x00ff00,
@@ -195,9 +191,7 @@ export class Model {
     curve.mesh.castShadow = true;
     this.splines.centripetal = curve;
 
-    curve = new THREE.CatmullRomCurve3(this.positions);
-    // @ts-ignore
-    curve.curveType = 'chordal';
+    curve = new THREE.CatmullRomCurve3(this.positions, false, "chordal");
     // @ts-ignore
     curve.mesh = new THREE.Line(geometry.clone(), new THREE.LineBasicMaterial({
       color: 0x0000ff,
@@ -210,7 +204,9 @@ export class Model {
     Object.keys(this.splines).forEach((k) => {
       // @ts-ignore
       const spline = this.splines[k];
-      this.scene.add(spline.mesh);
+      if (spline && spline.mesh) {
+        this.scene.add(spline.mesh);
+      }
     });
 
     this.load([ 
@@ -222,6 +218,7 @@ export class Model {
 
     this.render();
   }
+  // 设置张力
   setTension (tension: number) {
     // @ts-ignore
     this.splines.uniform.tension = tension;
@@ -236,22 +233,48 @@ export class Model {
 
   // 绑定事件
   private bind() {
-    window.onpointerdown = (e) => {
-      this.onPointerDown(e);
-    };
-    window.onpointerup = (e) => {
-      this.onPointerUp(e);
-    };
-    window.onpointermove = (e) => {
-      this.onPointerMove(e);
-    };
-  }
-  private onPointerMove(e: PointerEvent) {
-    const intersects = this.raycaster.intersectObjects(this.splineHelperObjects, false);
+    if (this.isMobile()) {
+      this.container.ontouchstart = (event) => {
+        const e = event.touches[0];
+        this.onPointerDown(e);
+      };
 
+      this.container.ontouchmove = (event) => {
+        const e = event.touches[0];
+        this.onPointerMove(e);
+      };
+
+      this.container.ontouchend = (event) => {
+        // 触摸结束事件特殊
+        const e = event.changedTouches[0];
+        this.onPointerUp(e);
+      };
+
+      this.container.onpointerdown = null;
+      this.container.onpointerup = null;
+      this.container.onpointermove = null;
+    } else {
+      this.container.onpointerdown = (e) => {
+        this.onPointerDown(e);
+      };
+      this.container.onpointerup = (e) => {
+        this.onPointerUp(e);
+      };
+      this.container.onpointermove = (e) => {
+        this.onPointerMove(e);
+      };
+      this.container.ontouchstart = null;
+      this.container.ontouchmove = null;
+      this.container.ontouchend = null;
+    }
+  }
+  private onPointerMove(e: PointerEvent|Touch) {
     this.pointer.x = (e.clientX / this.width) * 2 - 1;
     this.pointer.y = -((e.clientY - 45) / (this.height)) * 2 + 1;
+    // 通过摄像机和鼠标位置更新射线
     this.raycaster.setFromCamera(this.pointer, this.camera as THREE.PerspectiveCamera);
+    // 计算物体和射线的焦点
+    const intersects = this.raycaster.intersectObjects(this.splineHelperObjects, false);
   
     if (intersects.length > 0 && this.transformControl) {
       const object = intersects[0].object;
@@ -260,7 +283,7 @@ export class Model {
       }
     }
   }
-  private onPointerUp(e: PointerEvent) {
+  private onPointerUp(e: PointerEvent|Touch) {
     this.onUpPosition.x = e.clientX;
 		this.onUpPosition.y = e.clientY - 45;
 
@@ -270,23 +293,20 @@ export class Model {
       }
     }
   }
-
-  private onPointerDown(e: PointerEvent) {
+  private onPointerDown(e: PointerEvent|Touch) {
     this.onDownPosition.x = e.clientX;
     this.onDownPosition.y = e.clientY - 45;
   }
-  private load(new_positions: THREE.Vector3[]) {
-    while ( new_positions.length > this.positions.length ) {
+  private load(positions: THREE.Vector3[]) {
+    while (positions.length > this.positions.length) {
       this.addPoint();
     }
-    while ( new_positions.length < this.positions.length ) {
+    while (positions.length < this.positions.length) {
       this.removePoint();
     }
-
-    for ( let i = 0; i < this.positions.length; i ++ ) {
-      this.positions[i].copy(new_positions[i]);
+    for (let i = 0; i < this.positions.length; i++) {
+      this.positions[i].copy(positions[i]);
     }
-
     this.updateSplineOutline();
   }
   private addSplineObject(position?: THREE.Vector3) {
@@ -307,6 +327,7 @@ export class Model {
     this.splineHelperObjects.push(object);
     return object;
   }
+  // 更新曲线渲染位置
   private updateSplineOutline() {
     Object.keys(this.splines).forEach((k) => {
       // @ts-ignore
@@ -318,6 +339,10 @@ export class Model {
 
       for (let i = 0; i < this.ARC_SEGMENTS; i++) {
         const t = i / (this.ARC_SEGMENTS - 1);
+        // .getPoint ( t : Float, optionalTarget : Vector ) : Vector
+        // t - 曲线上的位置。必须在[0,1]范围内
+        // optionalTarget — (可选) 如果需要, 结果将复制到此向量中，否则将创建一个新向量
+        // 返回曲线上给定位置的点
         spline.getPoint(t, this.point);
         position.setXYZ(i, this.point.x, this.point.y, this.point.z);
       }
@@ -364,14 +389,14 @@ export class Model {
   }
   // 导出样条
   exportSpline() {
-    const strplace = [];
+    const arr: string[] = [];
     for (let i = 0; i < this.splinePointsLength; i++) {
       const p = this.splineHelperObjects[i].position;
-      strplace.push( `new THREE.Vector3(${p.x}, ${p.y}, ${p.z})` );
+      arr.push(`new THREE.Vector3(${p.x}, ${p.y}, ${p.z})`);
     }
 
-    console.log(strplace.join(',\n'));
-    const code = '[' + (strplace.join(',\n\t')) + ']';
+    console.log(arr.join(',\n'));
+    const code = '[' + (arr.join(',\n\t')) + ']';
     prompt('copy and paste code', code);
   }
 
@@ -407,6 +432,7 @@ export class Model {
     window.onresize = () => {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
+      this.bind();
 
       if (this.camera) {
         // 摄像机视锥体的长宽比，通常是使用画布的宽/画布的高。默认值是1（正方形画布）
