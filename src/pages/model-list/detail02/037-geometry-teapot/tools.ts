@@ -35,11 +35,11 @@ export class Model {
   private textureCube: null | THREE.Texture
   private materials: {
     wireframe: THREE.MeshBasicMaterial,
-    flat: THREE.MeshBasicMaterial,
-    smooth: THREE.MeshBasicMaterial,
-    glossy: THREE.MeshBasicMaterial,
-    textured: THREE.MeshBasicMaterial,
-    reflective: THREE.MeshBasicMaterial,
+    flat: THREE.MeshPhongMaterial,
+    smooth: THREE.MeshLambertMaterial,
+    glossy: THREE.MeshPhongMaterial,
+    textured: THREE.MeshPhongMaterial,
+    reflective: THREE.MeshPhongMaterial,
   }
   private readonly path: string
   constructor(container: HTMLDivElement) {
@@ -74,11 +74,11 @@ export class Model {
     this.textureCube = null;
     this.materials = {
       wireframe: new THREE.MeshBasicMaterial(),
-      flat: new THREE.MeshBasicMaterial(),
-      smooth: new THREE.MeshBasicMaterial(),
-      glossy: new THREE.MeshBasicMaterial(),
-      textured: new THREE.MeshBasicMaterial(),
-      reflective: new THREE.MeshBasicMaterial(),
+      flat: new THREE.MeshPhongMaterial(),
+      smooth: new THREE.MeshLambertMaterial(),
+      glossy: new THREE.MeshPhongMaterial(),
+      textured: new THREE.MeshPhongMaterial(),
+      reflective: new THREE.MeshPhongMaterial(),
     };
     this.path = "/examples/textures/cube/pisa/";
   }
@@ -113,9 +113,14 @@ export class Model {
 
     // 材质 MAP
     const textureMap = new THREE.TextureLoader().load('/examples/textures/uv_grid_opengl.jpg');
+    // .wrapS : number 定义了纹理贴图在水平方向上将如何包裹，在UV映射中对应于U
     textureMap.wrapS = THREE.RepeatWrapping;
+    // .wrapT : number 定义了纹理贴图在垂直方向上将如何包裹，在UV映射中对应于V
     textureMap.wrapT = THREE.RepeatWrapping;
+    // .anisotropy : number 沿着轴，通过具有最高纹素密度的像素的样本数
+    // 默认情况下，这个值为1。设置一个较高的值将会产生比基本的mipmap更清晰的效果，代价是需要使用更多纹理样本
     textureMap.anisotropy = 16;
+    // .encoding : number 默认值为THREE.LinearEncoding
     textureMap.encoding = THREE.sRGBEncoding;
 
     // 映射 MAP
@@ -123,11 +128,22 @@ export class Model {
     this.textureCube = new THREE.CubeTextureLoader().setPath(this.path).load(urls);
     this.textureCube.encoding = THREE.sRGBEncoding;
 
+    // MeshBasicMaterial 基础网格材质(MeshBasicMaterial) 一个以简单着色（平面或线框）方式来绘制几何体的材质
+    // .wireframe : Boolean 将几何体渲染为线框。默认值为false（即渲染为平面多边形）
     this.materials['wireframe'] = new THREE.MeshBasicMaterial({wireframe: true});
+    // Phong网格材质(MeshPhongMaterial) 一种用于具有镜面高光的光泽表面的材质
+    // .specular : Color 材质的高光颜色。默认值为0x111111（深灰色）的颜色Color
+    // .flatShading : Boolean 定义材质是否使用平面着色进行渲染。默认值为false
+    // .side : Integer 定义将要渲染哪一面 - 正面，背面或两者。 默认为THREE.FrontSide。其他选项有THREE.BackSide和THREE.DoubleSide
     this.materials['flat'] = new THREE.MeshPhongMaterial({specular: 0x000000, flatShading: true, side: THREE.DoubleSide});
+    // Lambert网格材质(MeshLambertMaterial) 一种非光泽表面的材质，没有镜面高光
+    // .side : Integer 定义将要渲染哪一面 - 正面，背面或两者。 默认为THREE.FrontSide。其他选项有THREE.BackSide和THREE.DoubleSide
     this.materials['smooth'] = new THREE.MeshLambertMaterial({side: THREE.DoubleSide});
     this.materials['glossy'] = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
+    // .map : Texture 颜色贴图。可以选择包括一个alpha通道，通常与.transparent 或.alphaTest。默认为null。 纹理贴图颜色由漫反射颜色.color调节
+    // .side : Integer 定义将要渲染哪一面 - 正面，背面或两者。 默认为THREE.FrontSide。其他选项有THREE.BackSide和THREE.DoubleSide
     this.materials['textured'] = new THREE.MeshPhongMaterial({map: textureMap, side: THREE.DoubleSide});
+    // .envMap : Texture 环境贴图。默认值为null
     this.materials['reflective'] = new THREE.MeshPhongMaterial({envMap: this.textureCube, side: THREE.DoubleSide});
 
     // 执行渲染
