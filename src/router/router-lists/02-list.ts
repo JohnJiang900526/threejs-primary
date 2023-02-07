@@ -8,8 +8,15 @@ import GeometryShapes from "@/pages/model-list/detail02/035-geometry-shapes/inde
 import GeometrySplineEditor from "@/pages/model-list/detail02/036-geometry-spline-editor/index.vue";
 import GeometryTeapot from "@/pages/model-list/detail02/037-geometry-teapot/index.vue";
 import GeometryTerrain from "@/pages/model-list/detail02/038-geometry-terrain/index.vue";
+import GeometryTerrainRaycast from "@/pages/model-list/detail02/039-geometry-terrain-raycast/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-terrain-raycast',
+    name: 'GeometryTerrainRaycast',
+    meta: {title: "geometry-terrain-raycast"},
+    component: GeometryTerrainRaycast,
+  },
   {
     path: '/list/geometry-terrain',
     name: 'GeometryTerrain',
