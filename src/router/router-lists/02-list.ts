@@ -7,8 +7,15 @@ import GeometryNurbs from "@/pages/model-list/detail02/034-geometry-nurbs/index.
 import GeometryShapes from "@/pages/model-list/detail02/035-geometry-shapes/index.vue";
 import GeometrySplineEditor from "@/pages/model-list/detail02/036-geometry-spline-editor/index.vue";
 import GeometryTeapot from "@/pages/model-list/detail02/037-geometry-teapot/index.vue";
+import GeometryTerrain from "@/pages/model-list/detail02/038-geometry-terrain/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-terrain',
+    name: 'GeometryTerrain',
+    meta: {title: "geometry-terrain"},
+    component: GeometryTerrain,
+  },
   {
     path: '/list/geometry-teapot',
     name: 'GeometryTeapot',
