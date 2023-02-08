@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "040",
+    title: "040.WEBGL Geometry文字",
+    path: "/list/geometry-text"
+  },
+  {
     key: "039",
     title: "039.WEBGL Geometry地形光线投射",
     path: "/list/geometry-terrain-raycast"
