@@ -10,8 +10,15 @@ import GeometryTeapot from "@/pages/model-list/detail02/037-geometry-teapot/inde
 import GeometryTerrain from "@/pages/model-list/detail02/038-geometry-terrain/index.vue";
 import GeometryTerrainRaycast from "@/pages/model-list/detail02/039-geometry-terrain-raycast/index.vue";
 import GeometryText from "@/pages/model-list/detail02/040-geometry-text/index.vue";
+import GeometryTextShape from "@/pages/model-list/detail02/041-geometry-text-shape/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/geometry-text-shape',
+    name: 'GeometryTextShape',
+    meta: {title: "geometry-text-shape"},
+    component: GeometryTextShape,
+  },
   {
     path: '/list/geometry-text',
     name: 'GeometryText',
