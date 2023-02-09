@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon, Popup} from 'vant';
+  import { Icon, Popup, Slider} from 'vant';
   import Page from "@/base/page/index.vue";
   import Block from "@/base/block/index.vue";
 </script>
@@ -8,7 +8,7 @@
   <div class="webgl-instancing-dynamic-page">
     <Page title="webgl-instancing-dynamic">
       <div ref="container" class="key-frame-page-inner">
-        <div v-show="false" class="actions">
+        <div v-show="true" class="actions">
           <Icon @click="openHandle" name="wap-nav" color="#fff"/>
         </div>
       </div>
@@ -17,7 +17,13 @@
     <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
       <Page @click-left="closeHandle" :default-click="false" title="模型设置">
         <div class="settings-content">
-          <Block title="修改操作"></Block>
+          <Block title="修改操作">
+            <div class="item-param slider">
+              <Slider 
+                v-model="count" :min="0" :max="1000" :step="1" 
+                @update:model-value="countChange" bar-height="4px" active-color="#238bfe"></Slider>
+            </div>
+          </Block>
 
         </div>
       </Page>
@@ -34,6 +40,7 @@ export default defineComponent({
   data() {
     return {
       show: false,
+      count: 10000
     };
   },
   mounted() {
@@ -44,6 +51,11 @@ export default defineComponent({
     render() {
       objModel = new Model(this.$refs.container as HTMLDivElement);
       objModel.init();
+    },
+    countChange(count: number) {
+      if (objModel) {
+        objModel.setCount(count);
+      }
     },
 
     // 打开设置面板

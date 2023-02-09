@@ -13,6 +13,8 @@ export class Model {
   private amount: number
   private count: number
   private dummy: THREE.Object3D
+  private geometry: THREE.BufferGeometry | THREE.InstancedBufferGeometry
+  private material: THREE.MeshNormalMaterial
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -25,6 +27,8 @@ export class Model {
     this.amount = 10;
     this.count = Math.pow(this.amount, 3);
     this.dummy = new THREE.Object3D();
+    this.geometry = new THREE.BufferGeometry();
+    this.material = new THREE.MeshNormalMaterial();
   }
 
   // 初始化方法入口
@@ -61,29 +65,47 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 设置模型个数
+  setCount(count: number) {
+    this.count = count;
+    this.addMesh();
+  }
+
+  // 创建模型
+  private addMesh() {
+    if (this.mesh) {
+      this.mesh.dispose();
+      this.scene.remove(this.mesh);
+  
+      this.mesh = new THREE.InstancedMesh(this.geometry, this.material, this.count);
+      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      this.scene.add(this.mesh);
+    } else {
+      this.mesh = new THREE.InstancedMesh(this.geometry, this.material, this.count);
+      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      this.scene.add(this.mesh);
+    }
+  }
+
   // 加载模型
-  loadModel() {
+  private loadModel() {
     const loader = new THREE.BufferGeometryLoader();
     const url = "/examples/models/json/suzanne_buffergeometry.json";
 
     loader.load(url, (geometry) => {
-      const material = new THREE.MeshNormalMaterial();
+      this.geometry = geometry;
+      this.geometry.computeVertexNormals();
+      this.geometry.scale(0.5, 0.5, 0.5);
 
-      geometry.computeVertexNormals();
-      geometry.scale(0.5, 0.5, 0.5);
-
-      this.mesh = new THREE.InstancedMesh(geometry, material, this.count);
-      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.scene.add(this.mesh);
+      this.addMesh();
     });
   }
 
   // 性能统计
   private initStats() {
     this.stats = Stats();
-    const dom = this.stats.domElement;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    this.stats.domElement.style.position = "absolute";
+    this.container.appendChild(this.stats.domElement);
   }
 
   // 持续动画
