@@ -13,8 +13,15 @@ import GeometryText from "@/pages/model-list/detail02/040-geometry-text/index.vu
 import GeometryTextShape from "@/pages/model-list/detail02/041-geometry-text-shape/index.vue";
 import GeometryTextStroke from "@/pages/model-list/detail02/042-geometry-text-stroke/index.vue";
 import WebglHelpers from "@/pages/model-list/detail02/043-webgl-helpers/index.vue";
+import InstancingDynamic from "@/pages/model-list/detail02/044-instancing-dynamic/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-dynamic',
+    name: 'InstancingDynamic',
+    meta: {title: "instancing-dynamic"},
+    component: InstancingDynamic,
+  },
   {
     path: '/list/webgl-helpers',
     name: 'WebglHelpers',

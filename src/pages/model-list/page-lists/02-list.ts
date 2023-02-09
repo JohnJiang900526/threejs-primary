@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "044",
+    title: "044.WEBGL 实例化动态",
+    path: "/list/instancing-dynamic"
+  },
+  {
     key: "043",
     title: "043.WEBGL 帮助",
     path: "/list/webgl-helpers"
