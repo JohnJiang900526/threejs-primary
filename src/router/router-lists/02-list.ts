@@ -11,6 +11,7 @@ import GeometryTerrain from "@/pages/model-list/detail02/038-geometry-terrain/in
 import GeometryTerrainRaycast from "@/pages/model-list/detail02/039-geometry-terrain-raycast/index.vue";
 import GeometryText from "@/pages/model-list/detail02/040-geometry-text/index.vue";
 import GeometryTextShape from "@/pages/model-list/detail02/041-geometry-text-shape/index.vue";
+import GeometryTextStroke from "@/pages/model-list/detail02/042-geometry-text-stroke/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
   {
@@ -18,6 +19,12 @@ const routerList02: RouteRecordRaw[] = [
     name: 'GeometryTextShape',
     meta: {title: "geometry-text-shape"},
     component: GeometryTextShape,
+  },
+  {
+    path: '/list/geometry-text-stroke',
+    name: 'GeometryTextStroke',
+    meta: {title: "geometry-text-stroke"},
+    component: GeometryTextStroke,
   },
   {
     path: '/list/geometry-text',

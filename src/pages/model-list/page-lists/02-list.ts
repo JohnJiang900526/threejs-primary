@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "042",
+    title: "042.WEBGL Geometry文字笔画",
+    path: "/list/geometry-text-stroke"
+  },
+  {
     key: "041",
     title: "041.WEBGL Geometry文字形状",
     path: "/list/geometry-text-shape"
