@@ -67,7 +67,7 @@ export default defineComponent({
 
   .geometry-text-shape-page {
     .absolute-page();
-    background-color: #000000;
+    background-color: #f0f0f0;
     .selection {
       position: absolute;
       display: flex;
