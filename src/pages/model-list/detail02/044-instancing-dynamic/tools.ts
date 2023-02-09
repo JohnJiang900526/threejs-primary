@@ -38,7 +38,7 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 创建相机
-    this.camera = new THREE.PerspectiveCamera(100, this.width/this.height, 1, 100);
+    this.camera = new THREE.PerspectiveCamera(120, this.width/this.height, 1, 1000);
     this.camera.position.set(this.amount * 0.9, this.amount * 0.9, this.amount * 0.9);
     this.camera.lookAt(0, 0, 0);
 
