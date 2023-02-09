@@ -12,8 +12,15 @@ import GeometryTerrainRaycast from "@/pages/model-list/detail02/039-geometry-ter
 import GeometryText from "@/pages/model-list/detail02/040-geometry-text/index.vue";
 import GeometryTextShape from "@/pages/model-list/detail02/041-geometry-text-shape/index.vue";
 import GeometryTextStroke from "@/pages/model-list/detail02/042-geometry-text-stroke/index.vue";
+import WebglHelpers from "@/pages/model-list/detail02/043-webgl-helpers/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-helpers',
+    name: 'WebglHelpers',
+    meta: {title: "webgl-helpers"},
+    component: WebglHelpers,
+  },
   {
     path: '/list/geometry-text-shape',
     name: 'GeometryTextShape',
