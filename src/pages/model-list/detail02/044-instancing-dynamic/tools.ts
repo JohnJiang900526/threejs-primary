@@ -68,11 +68,11 @@ export class Model {
   // 设置模型个数
   setCount(count: number) {
     this.count = count;
-    this.addMesh();
+    this.setMesh();
   }
 
   // 创建模型
-  private addMesh() {
+  private setMesh() {
     if (this.mesh) {
       this.mesh.dispose();
       this.scene.remove(this.mesh);
@@ -97,7 +97,7 @@ export class Model {
       this.geometry.computeVertexNormals();
       this.geometry.scale(0.5, 0.5, 0.5);
 
-      this.addMesh();
+      this.setMesh();
     });
   }
 
