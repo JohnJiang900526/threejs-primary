@@ -76,15 +76,21 @@ export class Model {
     if (this.mesh) {
       this.mesh.dispose();
       this.scene.remove(this.mesh);
-  
-      this.mesh = new THREE.InstancedMesh(this.geometry, this.material, this.count);
-      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.scene.add(this.mesh);
-    } else {
-      this.mesh = new THREE.InstancedMesh(this.geometry, this.material, this.count);
-      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.scene.add(this.mesh);
     }
+
+    // 实例化网格（InstancedMesh）
+    // 一种具有实例化渲染支持的特殊版本的Mesh。
+    // 可以使用 InstancedMesh 来渲染大量具有相同几何体与材质、但具有不同世界变换的物体
+    // 使用 InstancedMesh 将帮助你减少 draw call 的数量，从而提升你应用程序的整体渲染性能
+    // InstancedMesh( geometry : BufferGeometry, material : Material, count : Integer )
+    // geometry - 一个 BufferGeometry 的实例
+    // material - 一个 Material 的实例。默认为一个新的 MeshBasicMaterial
+    // count - 实例的数量
+    this.mesh = new THREE.InstancedMesh(this.geometry, this.material, this.count);
+    // .setUsage ( value : Usage ) : this
+    // 将usage设置为value。查看所有可能的输入值的使用常数
+    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.scene.add(this.mesh);
   }
 
   // 加载模型
@@ -93,10 +99,18 @@ export class Model {
     const url = "/examples/models/json/suzanne_buffergeometry.json";
 
     loader.load(url, (geometry) => {
+      // BufferGeometry
+      // 是面片、线或点几何体的有效表述。包括顶点位置，面片索引、法相量、颜色值、UV 坐标和自定义缓存属性值。
+      // 使用 BufferGeometry 可以有效减少向 GPU 传输上述数据所需的开销
       this.geometry = geometry;
+      // .computeVertexNormals () : undefined
+      // 通过面片法向量的平均值计算每个顶点的法向量
       this.geometry.computeVertexNormals();
+      // .scale ( x : Float, y : Float, z : Float ) : this
+      // 缩放几何体。该操作一般在一次处理中完成，不会循环处理。
+      // 典型的用法是通过调用 Object3D.scale 实时旋转几何体
       this.geometry.scale(0.5, 0.5, 0.5);
-
+      // 创建模型
       this.setMesh();
     });
   }
@@ -130,8 +144,14 @@ export class Model {
             this.dummy.position.set(offset - x, offset - y, offset - z);
             this.dummy.rotation.y = (Math.sin(x / 4 + time) + Math.sin(y / 4 + time) + Math.sin(z / 4 + time));
             this.dummy.rotation.z = this.dummy.rotation.y * 2;
-            this.dummy.updateMatrix();
+            // .setMatrixAt ( index : Integer, matrix : Matrix4 ) : undefined
+            // index: 实例的索引。值必须在 [0, count] 区间。
+            // matrix: 一个4x4矩阵，表示单个实例本地变换。
+            // 设置给定的本地变换矩阵到已定义的实例。 
+            // 请确保在更新所有矩阵后将 .instanceMatrix.needsUpdate 设置为true。
             this.mesh.setMatrixAt(i++, this.dummy.matrix);
+            // 更新局部变换。
+            this.dummy.updateMatrix();
           }
         }
       }
