@@ -5,8 +5,8 @@
 </script>
 
 <template>
-  <div class="webgl-instancing-performance-page">
-    <Page title="webgl-instancing-performance">
+  <div class="webgl-instancing-raycast-page">
+    <Page title="webgl-instancing-raycast">
       <div ref="container" class="key-frame-page-inner">
         <div v-show="true" class="actions">
           <Icon @click="openHandle" name="wap-nav" color="#000"/>
@@ -25,20 +25,6 @@
             </div>
           </Block>
 
-          <Block title="Method">
-            <radio-group v-model="method" @change="methodChange">
-              <div class="item-param">
-                <radio name="INSTANCED">INSTANCED</radio>
-              </div>
-              <div class="item-param">
-                <radio name="MERGED">MERGED</radio>
-              </div>
-              <div class="item-param">
-                <radio name="NAIVE">NAIVE</radio>
-              </div>
-            </radio-group>
-          </Block>
-
         </div>
       </Page>
     </Popup>
@@ -55,7 +41,6 @@ export default defineComponent({
     return {
       show: false,
       count: 1000,
-      method: "INSTANCED"
     };
   },
   mounted() {
@@ -70,12 +55,6 @@ export default defineComponent({
     countChange(count: number) {
       if (objModel) {
         objModel.setCount(count);
-      }
-    },
-    methodChange(method: string) {
-      if (objModel) {
-        this.closeHandle();
-        objModel.setMethod(method);
       }
     },
 
@@ -98,9 +77,9 @@ export default defineComponent({
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .webgl-instancing-performance-page {
+  .webgl-instancing-raycast-page {
     .absolute-page();
-    background-color: #ffffff;
+    background-color: #000000;
     .selection {
       position: absolute;
       display: flex;

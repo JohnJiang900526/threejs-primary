@@ -15,8 +15,15 @@ import GeometryTextStroke from "@/pages/model-list/detail02/042-geometry-text-st
 import WebglHelpers from "@/pages/model-list/detail02/043-webgl-helpers/index.vue";
 import InstancingDynamic from "@/pages/model-list/detail02/044-instancing-dynamic/index.vue";
 import InstancingPerformance from "@/pages/model-list/detail02/045-instancing-performance/index.vue";
+import InstancingRaycast from "@/pages/model-list/detail02/046-instancing-raycast/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-raycast',
+    name: 'InstancingRaycast',
+    meta: {title: "instancing-raycast"},
+    component: InstancingRaycast,
+  },
   {
     path: '/list/instancing-performance',
     name: 'InstancingPerformance',
