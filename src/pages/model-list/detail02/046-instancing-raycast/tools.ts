@@ -83,6 +83,8 @@ export class Model {
   // 设置模型个数
   setCount(count: number) {
     this.count = count;
+
+    this.initMesh();
   }
 
   private initMesh() {

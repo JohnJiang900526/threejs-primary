@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon, Popup, Slider, RadioGroup, Radio} from 'vant';
+  import { Icon, Popup, Slider} from 'vant';
   import Page from "@/base/page/index.vue";
   import Block from "@/base/block/index.vue";
 </script>
@@ -9,7 +9,7 @@
     <Page title="webgl-instancing-raycast">
       <div ref="container" class="key-frame-page-inner">
         <div v-show="true" class="actions">
-          <Icon @click="openHandle" name="wap-nav" color="#000"/>
+          <Icon @click="openHandle" name="wap-nav" color="#fff"/>
         </div>
       </div>
     </Page>
