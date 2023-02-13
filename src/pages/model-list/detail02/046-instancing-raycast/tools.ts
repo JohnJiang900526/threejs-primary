@@ -66,6 +66,9 @@ export class Model {
     this.controls.enableZoom = false;
     this.controls.enablePan = false;
 
+    // 事件绑定
+    this.bind();
+
     // 性能统计
     this.initStats();
     // 动画
@@ -92,7 +95,7 @@ export class Model {
 
     const geometry = new THREE.IcosahedronGeometry(0.5, 3);
     const material = new THREE.MeshPhongMaterial({color: 0xffffff});
-    this.mesh = new THREE.InstancedMesh( geometry, material, this.count );
+    this.mesh = new THREE.InstancedMesh(geometry, material, this.count);
 
     let i = 0;
     const offset = ( this.amount - 1 ) / 2;
@@ -127,6 +130,28 @@ export class Model {
       mesh.geometry.dispose();
       this.scene.remove(mesh);
     });
+    this.color = new THREE.Color();
+  }
+
+  // 事件绑定
+  private bind() {
+    if (this.isMobile()) {
+      window.onmousemove = null;
+      window.ontouchmove = (event) => {
+        const e = event.touches[0];
+
+        this.mouse.x = (e.clientX / this.width) * 2 - 1;
+				this.mouse.y = -((e.clientY - 45) / this.height) * 2 + 1;
+      }
+    } else {
+      window.ontouchmove = null;
+      window.onmousemove = (e) => {
+        e.preventDefault();
+
+				this.mouse.x = (e.clientX / this.width) * 2 - 1;
+				this.mouse.y = -((e.clientY - 45) / this.height) * 2 + 1;
+      };
+    }
   }
 
   // 性能统计
@@ -174,6 +199,8 @@ export class Model {
     window.onresize = () => {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
+      // 事件绑定
+      this.bind();
 
       if (this.camera) {
         // 摄像机视锥体的长宽比，通常是使用画布的宽/画布的高。默认值是1（正方形画布）
