@@ -14,8 +14,15 @@ import GeometryTextShape from "@/pages/model-list/detail02/041-geometry-text-sha
 import GeometryTextStroke from "@/pages/model-list/detail02/042-geometry-text-stroke/index.vue";
 import WebglHelpers from "@/pages/model-list/detail02/043-webgl-helpers/index.vue";
 import InstancingDynamic from "@/pages/model-list/detail02/044-instancing-dynamic/index.vue";
+import InstancingPerformance from "@/pages/model-list/detail02/045-instancing-performance/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-performance',
+    name: 'InstancingPerformance',
+    meta: {title: "instancing-performance"},
+    component: InstancingPerformance,
+  },
   {
     path: '/list/instancing-dynamic',
     name: 'InstancingDynamic',
