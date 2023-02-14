@@ -16,8 +16,15 @@ import WebglHelpers from "@/pages/model-list/detail02/043-webgl-helpers/index.vu
 import InstancingDynamic from "@/pages/model-list/detail02/044-instancing-dynamic/index.vue";
 import InstancingPerformance from "@/pages/model-list/detail02/045-instancing-performance/index.vue";
 import InstancingRaycast from "@/pages/model-list/detail02/046-instancing-raycast/index.vue";
+import InstancingScatter from "@/pages/model-list/detail02/047-instancing-scatter/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-scatter',
+    name: 'InstancingScatter',
+    meta: {title: "instancing-scatter"},
+    component: InstancingScatter,
+  },
   {
     path: '/list/instancing-raycast',
     name: 'InstancingRaycast',
