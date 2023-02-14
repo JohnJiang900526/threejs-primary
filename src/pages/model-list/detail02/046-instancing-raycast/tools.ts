@@ -87,26 +87,29 @@ export class Model {
   setCount(count: number) {
     this.count = count;
 
+    // 初始化 Mesh
     this.initMesh();
   }
 
   private initMesh() {
+    // 清除原生模型
     this.clean();
 
     const geometry = new THREE.IcosahedronGeometry(0.5, 3);
     const material = new THREE.MeshPhongMaterial({color: 0xffffff});
+
     this.mesh = new THREE.InstancedMesh(geometry, material, this.count);
 
     let i = 0;
-    const offset = ( this.amount - 1 ) / 2;
+    const offset = (this.amount - 1) / 2;
     const matrix = new THREE.Matrix4();
-    for ( let x = 0; x < this.amount; x ++ ) {
-      for ( let y = 0; y < this.amount; y ++ ) {
-        for ( let z = 0; z < this.amount; z ++ ) {
-          matrix.setPosition( offset - x, offset - y, offset - z );
-          this.mesh.setMatrixAt( i, matrix );
-          this.mesh.setColorAt( i, this.color );
-          i ++;
+    for (let x = 0; x < this.amount; x++) {
+      for (let y = 0; y < this.amount; y++) {
+        for (let z = 0; z < this.amount; z++) {
+          matrix.setPosition(offset - x, offset - y, offset - z);
+          this.mesh.setMatrixAt(i, matrix);
+          this.mesh.setColorAt(i, this.color);
+          i++;
         }
       }
     }
@@ -119,8 +122,7 @@ export class Model {
     const meshes: THREE.Mesh[] = [];
 
     this.scene.traverse((item: THREE.Object3D | THREE.Mesh) => {
-      // @ts-ignore
-      if (item.isMesh) {
+      if ((item as THREE.Mesh).isMesh) {
         meshes.push(item as THREE.Mesh);
       }
     });
@@ -130,6 +132,7 @@ export class Model {
       mesh.geometry.dispose();
       this.scene.remove(mesh);
     });
+
     this.color = new THREE.Color();
   }
 
@@ -168,22 +171,39 @@ export class Model {
     });
 
     // 统计信息更新
-    if (this.stats) {
-      this.stats.update();
-    }
+    if (this.stats) { this.stats.update(); }
+
     // 控制器更新
     if (this.controls && this.camera && this.mesh) {
       this.controls.update();
-
+      // .setFromCamera ( coords : Vector2, camera : Camera ) : undefined
+      // coords —— 在标准化设备坐标中鼠标的二维坐标 —— X分量与Y分量应当在-1到1之间
+      // camera —— 射线所来源的摄像机
+      // 使用一个新的原点和方向来更新射线
       this.raycaster.setFromCamera(this.mouse, this.camera);
+      // .intersectObject ( object : Object3D, recursive : Boolean, optionalTarget : Array ) : Array
+      // object —— 检查与射线相交的物体
+      // recursive —— 若为true，则同时也会检查所有的后代。否则将只会检查对象本身。默认值为true
+      // optionalTarget — （可选）设置结果的目标数组。如果不设置这个值，则一个新的Array会被实例化；
+      // 如果设置了这个值，则在每次调用之前必须清空这个数组（例如：array.length = 0;）
+      // 检测所有在射线与物体之间，包括或不包括后代的相交部分。返回结果时，相交部分将按距离进行排序，最近的位于第一个
+      // 该方法返回一个包含有交叉部分的数组
       const intersection = this.raycaster.intersectObject(this.mesh);
       if (intersection.length > 0) {
         const instanceId = intersection[0].instanceId as number;
+        // .getColorAt ( index : Integer, color : Color ) : undefined
+        // index -- 实例的索引。值必须在[0,count]范围内
+        // color -- 此颜色对象将被设置为已定义实例的颜色
+        // 获取已定义实例的颜色
         this.mesh.getColorAt(instanceId, this.color);
         if (this.color.equals(this.white)) {
+          // .setColorAt ( index : Integer, color : Color ) : undefined
+          // index: The index of an instance. Values have to be in the range [0, count].
+          // color: The color of a single instance.
+          // Sets the given color to the defined instance. 
+          // Make sure you set .instanceColor.needsUpdate to true after updating all the colors.
           this.mesh.setColorAt(instanceId, this.color.setHex(Math.random() * 0xffffff));
-          // @ts-ignore
-          this.mesh.instanceColor.needsUpdate = true;
+          (this.mesh.instanceColor as THREE.InstancedBufferAttribute).needsUpdate = true;
         }
       }
     }
