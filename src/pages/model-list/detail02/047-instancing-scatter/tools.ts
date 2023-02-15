@@ -104,7 +104,7 @@ export class Model {
   }
 
   // 判断是否为移动端
-  isMobile() {
+  private isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
   }
@@ -202,10 +202,14 @@ export class Model {
     (this.blossomMesh as THREE.InstancedMesh).setMatrixAt(i, this.dummy.matrix);
   }
 
-  scaleCurve(t: number) {
-    return Math.abs(this.easeOutCubic((t > 0.5 ? 1 - t : t) * 2));
+  private scaleCurve(t: number) {
+    const easeOutCubic = (t: number) => {
+      return (--t) * t * t + 1;
+    };
+
+    return Math.abs(easeOutCubic((t > 0.5 ? 1 - t : t) * 2));
   }
-  resampleParticle(i: number) {
+  private resampleParticle(i: number) {
     this.sampler.sample(this._position, this._normal);
     this._normal.add(this._position);
 
@@ -216,10 +220,6 @@ export class Model {
 
     (this.stemMesh as THREE.InstancedMesh).setMatrixAt(i, this.dummy.matrix);
     (this.blossomMesh as THREE.InstancedMesh).setMatrixAt(i, this.dummy.matrix);
-  }
-
-  easeOutCubic(t: number) {
-    return (--t) * t * t + 1;
   }
 
   // 性能统计
