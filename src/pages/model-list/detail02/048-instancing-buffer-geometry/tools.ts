@@ -77,6 +77,7 @@ export class Model {
 
   // 创建几何 核心
   private createGeometry() {
+    // 三角形的个数
     const triangles = 5000;
     let geometry = new THREE.BufferGeometry();
 
@@ -114,7 +115,7 @@ export class Model {
       const cy = y + Math.random() * d - d2;
       const cz = z + Math.random() * d - d2;
 
-      positions[i ] = ax;
+      positions[i] = ax;
       positions[i + 1] = ay;
       positions[i + 2] = az;
 
@@ -131,10 +132,16 @@ export class Model {
       pB.set(bx, by, bz);
       pC.set(cx, cy, cz);
 
+      // .subVectors ( a : Vector3, b : Vector3 ) : this
+      // 将该向量设置为a - b
       cb.subVectors(pC, pB);
       ab.subVectors(pA, pB);
+      // .cross ( v : Vector3 ) : this
+      // 将该向量设置为它本身与传入的v的叉积（cross product）
       cb.cross(ab);
-
+      // .normalize () : this
+      // 将该向量转换为单位向量（unit vector）， 
+      // 也就是说，将该向量的方向设置为和原向量相同，但是其长度（length）为1
       cb.normalize();
 
       const nx = cb.x;
@@ -178,20 +185,21 @@ export class Model {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.computeBoundingSphere();
 
-    let material: THREE.MeshPhongMaterial| THREE.LineBasicMaterial = new THREE.MeshPhongMaterial({
+    this.mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
       color: 0xaaaaaa, 
       specular: 0xffffff, 
       shininess: 250,
-      side: THREE.DoubleSide, 
+      side: THREE.DoubleSide,
       vertexColors: true
-    });
-    this.mesh = new THREE.Mesh(geometry, material);
+    }));
     this.scene.add(this.mesh);
 
     geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute( new Float32Array(4 * 3), 3));
-    material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true});
-    this.line = new THREE.Line(geometry, material);
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(4 * 3), 3));
+    this.line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ 
+      color: 0xffffff, 
+      transparent: true,
+    }));
     this.scene.add(this.line);
   }
 
@@ -232,26 +240,31 @@ export class Model {
       this.mesh.rotation.x = time * 0.15;
       this.mesh.rotation.y = time * 0.25;
       this.raycaster.setFromCamera(this.pointer, this.camera);
-    }
-    const intersects = this.raycaster.intersectObject(this.mesh);
 
-    if ( intersects.length > 0 ) {
-      const intersect = intersects[ 0 ];
-      const face = intersect.face as THREE.Face;
-
-      const linePosition = this.line.geometry.attributes.position as THREE.BufferAttribute;
-      const meshPosition = this.mesh.geometry.attributes.position as THREE.BufferAttribute;
-
-      linePosition.copyAt(0, meshPosition, face.a);
-      linePosition.copyAt(1, meshPosition, face.b);
-      linePosition.copyAt(2, meshPosition, face.c);
-      linePosition.copyAt(3, meshPosition, face.a);
-
-      this.mesh.updateMatrix();
-      this.line.geometry.applyMatrix4(this.mesh.matrix);
-      this.line.visible = true;
-    } else {
-      this.line.visible = false;
+      const intersects = this.raycaster.intersectObject(this.mesh);
+      if (intersects.length > 0) {
+        const intersect = intersects[0];
+        const face = intersect.face as THREE.Face;
+  
+        const linePosition = this.line.geometry.attributes.position as THREE.BufferAttribute;
+        const meshPosition = this.mesh.geometry.attributes.position as THREE.BufferAttribute;
+  
+        // .copyAt ( index1 : Integer, bufferAttribute : BufferAttribute, index2 : Integer ) : this
+        // 将一个矢量从 bufferAttribute[index2] 拷贝到 array[index1] 中
+        linePosition.copyAt(0, meshPosition, face.a);
+        linePosition.copyAt(1, meshPosition, face.b);
+        linePosition.copyAt(2, meshPosition, face.c);
+        linePosition.copyAt(3, meshPosition, face.a);
+  
+        // 更新矩阵
+        this.mesh.updateMatrix();
+        // 应用矩阵 .applyMatrix4 ( matrix : Matrix4 ) : this
+        // 用给定矩阵转换几何体的顶点坐标
+        this.line.geometry.applyMatrix4(this.mesh.matrix);
+        this.line.visible = true;
+      } else {
+        this.line.visible = false;
+      }
     }
 
     // 统计信息更新
