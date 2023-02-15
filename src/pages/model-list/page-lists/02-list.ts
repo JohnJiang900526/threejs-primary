@@ -10,8 +10,13 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "048",
+    title: "048.WEBGL 实例化缓冲几何",
+    path: "/list/instancing-buffer-geometry"
+  },
+  {
     key: "047",
-    title: "047.WEBGL 实例化散点图",
+    title: "047.WEBGL 实例化分散",
     path: "/list/instancing-scatter"
   },
   {

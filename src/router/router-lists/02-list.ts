@@ -17,8 +17,16 @@ import InstancingDynamic from "@/pages/model-list/detail02/044-instancing-dynami
 import InstancingPerformance from "@/pages/model-list/detail02/045-instancing-performance/index.vue";
 import InstancingRaycast from "@/pages/model-list/detail02/046-instancing-raycast/index.vue";
 import InstancingScatter from "@/pages/model-list/detail02/047-instancing-scatter/index.vue";
+import InstancingBufferGeometry from "@/pages/model-list/detail02/048-instancing-buffer-geometry/index.vue";
+
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-buffer-geometry',
+    name: 'InstancingBufferGeometry',
+    meta: {title: "instancing-buffer-geometry"},
+    component: InstancingBufferGeometry,
+  },
   {
     path: '/list/instancing-scatter',
     name: 'InstancingScatter',
