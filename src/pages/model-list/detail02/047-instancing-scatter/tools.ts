@@ -24,7 +24,7 @@ export class Model {
   private blossomGeometry: null | THREE.BufferGeometry
   private stemMaterial: null | THREE.Material
   private blossomMaterial: null | THREE.Material
-  private sampler: any
+  private sampler: null | MeshSurfaceSampler
   private count: number
   private ages: Float32Array
   private scales: Float32Array
@@ -84,6 +84,12 @@ export class Model {
     const pointLight = new THREE.PointLight(0xAA8899, 0.75);
     pointLight.position.set(50, -25, 75);
     this.scene.add(pointLight);
+    // 半球光（HemisphereLight）半球光不能投射阴影
+    // 光源直接放置于场景之上，光照颜色从天空光线颜色渐变到地面光线颜色
+    // HemisphereLight( skyColor : Integer, groundColor : Integer, intensity : Float )
+    // skyColor - (可选参数) 天空中发出光线的颜色。 缺省值 0xffffff
+    // groundColor - (可选参数) 地面发出光线的颜色。 缺省值 0xffffff
+    // intensity - (可选参数) 光照强度。 缺省值 1
     this.scene.add(new THREE.HemisphereLight());
 
     // 加载对应的模型
@@ -104,7 +110,7 @@ export class Model {
   }
 
   // 判断是否为移动端
-  private isMobile() {
+  isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
   }
@@ -124,8 +130,16 @@ export class Model {
 
   // 重新取样
   resample() {
+    // 实用程序类，用于对网格表面上的加权随机点进行采样。
+    // 加权采样对于某些地形区域中较重的树叶生长或网格特定部分的集中颗粒排放等效果是有用的。
+    // 顶点权重可以通过编程编写，或者在Blender等3D工具中手工绘制顶点颜色
     this.sampler = new MeshSurfaceSampler(this.surface);
+    // .setWeightAttribute ( name : String ) : this
+    // 指定从表面采样时用作权重的顶点属性。权重较高的人脸更有可能被采样，
+    // 而权重为零的人脸根本不会被采样。对于向量属性，采样时只使用.x
     this.sampler.setWeightAttribute(this.api.distribution === 'weighted' ? 'uv' : null);
+    // 处理输入几何图形并准备返回样本。
+    // 几何体或采样器的任何配置都必须在调用此方法之前发生。对于有n个面的曲面，时间复杂度为O(n)
     this.sampler.build();
 
     for ( let i = 0; i < this.count; i ++ ) {
@@ -144,16 +158,30 @@ export class Model {
     const url = "/examples/models/gltf/Flower/Flower.glb";
 
     loader.load(url, (gltf) => {
+      // 根茎
       const _stemMesh = gltf.scene.getObjectByName('Stem') as THREE.InstancedMesh;
+      // 花簇
       const _blossomMesh = gltf.scene.getObjectByName('Blossom') as THREE.InstancedMesh;
 
       this.stemGeometry = (_stemMesh as THREE.InstancedMesh).geometry.clone();
       this.blossomGeometry = (_blossomMesh as THREE.InstancedMesh).geometry.clone();
 
       const defaultTransform = new THREE.Matrix4();
+      // .makeRotationX ( theta : Float ) : this
+      // theta — 以弧度为单位的旋转角度
+      // 把该矩阵设置为绕x轴旋转弧度theta (θ)大小的矩阵。 结果如下
       defaultTransform.makeRotationX(Math.PI);
+      // .multiply ( m : Matrix4 ) : this
+      // 将当前矩阵乘以矩阵m
+      // .makeScale ( x : Float, y : Float, z : Float ) : this
+      // x - 在X轴方向的缩放比
+      // y - 在Y轴方向的缩放比
+      // z - 在Z轴方向的缩放比
+      // 将这个矩阵设置为缩放变换
       defaultTransform.multiply(new THREE.Matrix4().makeScale(7, 7, 7));
 
+      // .applyMatrix4 ( matrix : Matrix4 ) : this
+      // 用给定矩阵转换几何体的顶点坐标
       this.stemGeometry.applyMatrix4(defaultTransform);
       this.blossomGeometry.applyMatrix4(defaultTransform);
 
@@ -171,9 +199,12 @@ export class Model {
         this.blossomMesh.setColorAt(i, color);
       }
 
+      // .setUsage ( value : Usage ) : this 用途
+      // 将usage设置为value。查看所有可能的输入值的使用常数
       this.stemMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       this.blossomMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
+      // 重新取样
       this.resample();
 
       this.scene.add(this.stemMesh);
@@ -182,8 +213,9 @@ export class Model {
     });
   }
 
+  // 更新调色
   private updateParticle(i: number) {
-    this.ages[ i ] += 0.005;
+    this.ages[i] += 0.005;
 
     if (this.ages[i] >= 1) {
       this.ages[i] = 0.001;
@@ -194,14 +226,24 @@ export class Model {
 
     const prevScale = this.scales[i];
     this.scales[i] = this.scaleCurve(this.ages[i]);
-    this._scale.set(this.scales[i] / prevScale, this.scales[i] / prevScale, this.scales[i] / prevScale);
+    const scale = this.scales[i] / prevScale;
+    this._scale.set(scale, scale, scale);
 
+    // .getMatrixAt ( index : Integer, matrix : Matrix4 ) : undefined
+    // index: 实例的索引。值必须在 [0, count] 区间
+    // matrix: 该4x4矩阵将会被设为已定义实例的本地变换矩阵
+    // 获得已定义实例的本地变换矩阵
     (this.stemMesh as THREE.InstancedMesh).getMatrixAt(i, this.dummy.matrix);
     this.dummy.matrix.scale(this._scale);
+    // .setMatrixAt ( index : Integer, matrix : Matrix4 ) : undefined
+    // index: 实例的索引。值必须在 [0, count] 区间。
+    // matrix: 一个4x4矩阵，表示单个实例本地变换。
+    // 设置给定的本地变换矩阵到已定义的实例。 请确保在更新所有矩阵后将 .instanceMatrix.needsUpdate 设置为true。
     (this.stemMesh as THREE.InstancedMesh).setMatrixAt(i, this.dummy.matrix);
     (this.blossomMesh as THREE.InstancedMesh).setMatrixAt(i, this.dummy.matrix);
   }
 
+  // 缩放曲线
   private scaleCurve(t: number) {
     const easeOutCubic = (t: number) => {
       return (--t) * t * t + 1;
@@ -209,12 +251,15 @@ export class Model {
 
     return Math.abs(easeOutCubic((t > 0.5 ? 1 - t : t) * 2));
   }
+
+  // 重新取样调色板
   private resampleParticle(i: number) {
-    this.sampler.sample(this._position, this._normal);
+    const scale = this.scales[i];
+    (this.sampler as MeshSurfaceSampler).sample(this._position, this._normal);
     this._normal.add(this._position);
 
     this.dummy.position.copy(this._position);
-    this.dummy.scale.set(this.scales[i], this.scales[i], this.scales[i]);
+    this.dummy.scale.set(scale, scale, scale);
     this.dummy.lookAt(this._normal);
     this.dummy.updateMatrix();
 
@@ -235,16 +280,16 @@ export class Model {
       this.animate();
     });
 
+    // 执行场景的自动旋转
+    const time = Date.now() * 0.001;
+    this.scene.rotation.x = Math.sin(time / 4);
+    this.scene.rotation.y = Math.sin(time / 2);
+    
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
-
+    
     // 执行动画
     if (this.stemMesh && this.blossomMesh) {
-      const time = Date.now() * 0.001;
-
-      this.scene.rotation.x = Math.sin(time / 4);
-      this.scene.rotation.y = Math.sin(time / 2);
-
       for (let i = 0; i < this.api.count; i++) {
         this.updateParticle(i);
       }
