@@ -144,6 +144,7 @@ export class Model {
       // 也就是说，将该向量的方向设置为和原向量相同，但是其长度（length）为1
       cb.normalize();
 
+      // 法线
       const nx = cb.x;
       const ny = cb.y;
       const nz = cb.z;
