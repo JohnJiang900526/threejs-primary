@@ -19,9 +19,16 @@ import InstancingRaycast from "@/pages/model-list/detail02/046-instancing-raycas
 import InstancingScatter from "@/pages/model-list/detail02/047-instancing-scatter/index.vue";
 import InstancingBufferGeometry from "@/pages/model-list/detail02/048-instancing-buffer-geometry/index.vue";
 import InstancingCubes from "@/pages/model-list/detail02/049-interactive-cubes/index.vue";
+import InstancingCubesGpu from "@/pages/model-list/detail02/050-interactive-cubes-gpu/index.vue";
 
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-cubes-gpu',
+    name: 'InstancingCubesGpu',
+    meta: {title: "instancing-cubes-gpu"},
+    component: InstancingCubesGpu,
+  },
   {
     path: '/list/instancing-cubes',
     name: 'InstancingCubes',
