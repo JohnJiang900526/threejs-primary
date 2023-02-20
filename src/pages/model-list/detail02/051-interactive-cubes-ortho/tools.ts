@@ -83,10 +83,8 @@ export class Model {
     const geometry = new THREE.BoxGeometry(20, 20, 20);
 
     for (let i = 0; i < 2000; i++) {
-      const object = new THREE.Mesh(
-        geometry, 
-        new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }) 
-      );
+      const material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff })
+      const object = new THREE.Mesh(geometry, material);
 
       object.position.x = Math.random() * 800 - 400;
       object.position.y = Math.random() * 800 - 400;
@@ -96,9 +94,10 @@ export class Model {
       object.rotation.y = Math.random() * 2 * Math.PI;
       object.rotation.z = Math.random() * 2 * Math.PI;
 
-      object.scale.x = Math.random() + 0.5;
-      object.scale.y = Math.random() + 0.5;
-      object.scale.z = Math.random() + 0.5;
+      const scale = Math.random() + 0.5;
+      object.scale.x = scale;
+      object.scale.y = scale;
+      object.scale.z = scale;
 
       this.scene.add( object );
     }
