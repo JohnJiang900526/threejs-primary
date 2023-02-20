@@ -66,14 +66,24 @@ export class Model {
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
 
-    // 创建控制器
+    // 创建控制器 轨迹球控制器（TrackballControls）
+    // TrackballControls 与 OrbitControls 相类似。然而，它不能恒定保持摄像机的up向量。 
+    // 这意味着，如果摄像机绕过“北极”和“南极”，则不会翻转以保持“右侧朝上”
     this.controls = new TrackballControls(this.camera, this.renderer.domElement);
+    // .rotateSpeed : Number 旋转的速度，其默认值为1.0
     this.controls.rotateSpeed = 1.0;
+    // .zoomSpeed : Number 缩放的速度，其默认值为1.2
     this.controls.zoomSpeed = 1.2;
+    // .panSpeed : Number 平移的速度，其默认值为0.3
     this.controls.panSpeed = 0.8;
+    // .noZoom : Boolean 是否禁用缩放，默认为false
     this.controls.noZoom = false;
+    // .noPan : Boolean 是否禁用平移，默认为false
     this.controls.noPan = false;
+    // .staticMoving : Boolean 阻尼是否被禁用。默认为false
     this.controls.staticMoving = true;
+    // .dynamicDampingFactor : Number 
+    // 设置阻尼的强度。仅在staticMoving设为false时考虑。默认为0.2
     this.controls.dynamicDampingFactor = 0.3;
 
     // 事件绑定
@@ -94,12 +104,23 @@ export class Model {
 
   // 创建几何
   private createGeometry() {
-    const pickingMaterial = new THREE.MeshBasicMaterial({ 
-      vertexColors: true 
-    });
+    // Phong网格材质(MeshPhongMaterial)
+    // 一种用于具有镜面高光的光泽表面的材质
     const defaultMaterial = new THREE.MeshPhongMaterial({ 
-      color: 0xffffff, flatShading: true, 
-      vertexColors: true, shininess: 0	
+      color: 0xffffff, 
+      // 定义材质是否使用平面着色进行渲染。默认值为false
+      flatShading: true, 
+      // 是否使用顶点着色。默认值为false
+      vertexColors: true, 
+      // .specular高亮的程度，越高的值越闪亮。默认值为 30
+      shininess: 0	
+    });
+    // 基础网格材质(MeshBasicMaterial)
+    // 一个以简单着色（平面或线框）方式来绘制几何体的材质
+    // 这种材质不受光照的影响
+    const pickingMaterial = new THREE.MeshBasicMaterial({ 
+      // 是否使用顶点着色。默认值为false
+      vertexColors: true 
     });
 
     const geometriesDrawn: THREE.BoxGeometry[] = [];
@@ -128,6 +149,7 @@ export class Model {
       scale.z = Math.random() * 200 + 100;
 
       quaternion.setFromEuler(rotation);
+      // 将该矩阵设置为由平移、旋转和缩放组成的变换
       matrix.compose(position, quaternion, scale);
       geometry.applyMatrix4(matrix);
 
@@ -138,7 +160,7 @@ export class Model {
 
       this.applyVertexColors(geometry, color.setHex(i));
       geometriesPicking.push(geometry);
-      this.pickingData[i] = { position, rotation, scale };
+      this.pickingData[i] = {position, rotation, scale};
     }
 
     const objects = new THREE.Mesh(
@@ -148,25 +170,27 @@ export class Model {
     this.scene.add(objects);
 
     this.pickingScene.add(new THREE.Mesh(
-      BufferGeometryUtils.mergeBufferGeometries(geometriesPicking ), 
+      BufferGeometryUtils.mergeBufferGeometries(geometriesPicking), 
       pickingMaterial
     ));
 
     this.highlightBox = new THREE.Mesh(
       new THREE.BoxGeometry(),
+      // Lambert网格材质(MeshLambertMaterial)
+      // 一种非光泽表面的材质，没有镜面高光
       new THREE.MeshLambertMaterial({color: 0xffff00})
     );
-    this.scene.add( this.highlightBox );
+    this.scene.add(this.highlightBox);
   }
 
   // 应用颜色
   private applyVertexColors(geometry: THREE.BoxGeometry, color: THREE.Color) {
     const position = geometry.attributes.position;
     const colors = [];
-    for ( let i = 0; i < position.count; i ++ ) {
-      colors.push( color.r, color.g, color.b );
+    for (let i = 0; i < position.count; i++) {
+      colors.push(color.r, color.g, color.b);
     }
-    geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   }
 
   // 事件绑定
@@ -227,17 +251,17 @@ export class Model {
       this.camera.clearViewOffset();
 
       const pixelBuffer = new Uint8Array(4);
+      // .readRenderTargetPixels (renderTarget : WebGLRenderTarget, x : Float, y : Float, width : Float, height : Float, buffer : TypedArray, activeCubeFaceIndex : Integer ) : undefined
+      // 将renderTarget中的像素数据读取到传入的缓冲区中。这是WebGLRenderingContext.readPixels()的包装器
       this.renderer.readRenderTargetPixels(this.pickingTexture, 0, 0, 1, 1, pixelBuffer);
       const id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
       const data = this.pickingData[id];
 
       if (data) {
-        if (data.position && data.rotation && data.scale) {
-          this.highlightBox.position.copy(data.position);
-          this.highlightBox.rotation.copy(data.rotation);
-          this.highlightBox.scale.copy(data.scale).add(this.offset);
-          this.highlightBox.visible = true;
-        }
+        this.highlightBox.position.copy(data.position);
+        this.highlightBox.rotation.copy(data.rotation);
+        this.highlightBox.scale.copy(data.scale).add(this.offset);
+        this.highlightBox.visible = true;
       } else {
         this.highlightBox.visible = false;
       }
@@ -249,6 +273,7 @@ export class Model {
     window.onresize = () => {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
+      // 绑定事件
       this.bind();
 
       if (this.camera) {
