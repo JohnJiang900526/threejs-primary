@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "051",
+    title: "051.WEBGL 实例化立方体ortho",
+    path: "/list/instancing-cubes-ortho"
+  },
+  {
     key: "050",
     title: "050.WEBGL 实例化立方体gpu",
     path: "/list/instancing-cubes-gpu"
