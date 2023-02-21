@@ -14,7 +14,7 @@ export class Model {
   private theta: number
   private INTERSECTED: null | THREE.Mesh
   private radius: number
-  private parentTransform: THREE.Object3D
+  private transform: THREE.Object3D
   private sphereInter: THREE.Mesh
   constructor(container: HTMLDivElement) {
     this.container = container;
@@ -29,7 +29,7 @@ export class Model {
     this.theta = 0;
     this.INTERSECTED = null;
     this.radius = 100;
-    this.parentTransform = new THREE.Object3D();
+    this.transform = new THREE.Object3D();
     this.sphereInter = new THREE.Mesh();
   }
 
@@ -43,6 +43,7 @@ export class Model {
     this.camera = new THREE.PerspectiveCamera(150, this.width/this.height, 1, 10000);
 
     // 创建红点集合
+    // 球缓冲几何体（SphereGeometry）一个用于生成球体的类 
     this.sphereInter = new THREE.Mesh(
       new THREE.SphereGeometry(5), 
       new THREE.MeshBasicMaterial({
@@ -97,18 +98,24 @@ export class Model {
 
     lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
 
-    this.parentTransform = new THREE.Object3D();
-    this.parentTransform.position.x = Math.random() * 40 - 20;
-    this.parentTransform.position.y = Math.random() * 40 - 20;
-    this.parentTransform.position.z = Math.random() * 40 - 20;
+    this.transform = new THREE.Object3D();
+    this.transform.position.set(
+      Math.random() * 40 - 20,
+      Math.random() * 40 - 20,
+      Math.random() * 40 - 20,
+    );
 
-    this.parentTransform.rotation.x = Math.random() * 2 * Math.PI;
-    this.parentTransform.rotation.y = Math.random() * 2 * Math.PI;
-    this.parentTransform.rotation.z = Math.random() * 2 * Math.PI;
+    this.transform.rotation.set(
+      Math.random() * 2 * Math.PI,
+      Math.random() * 2 * Math.PI,
+      Math.random() * 2 * Math.PI,
+    );
 
-    this.parentTransform.scale.x = Math.random() + 0.5;
-    this.parentTransform.scale.y = Math.random() + 0.5;
-    this.parentTransform.scale.z = Math.random() + 0.5;
+    this.transform.scale.set(
+      Math.random() + 0.5,
+      Math.random() + 0.5,
+      Math.random() + 0.5,
+    );
 
     for (let i = 0; i < 50; i++) {
       let object: THREE.Line | THREE.LineSegments;
@@ -118,29 +125,45 @@ export class Model {
       });
 
       if (Math.random() > 0.5) {
+        // 线（Line）一条连续的线
+        // 它几乎和LineSegments是一样的，唯一的区别是它在渲染时使用的是gl.LINE_STRIP， 而不是gl.LINES
+        // Line( geometry : BufferGeometry, material : Material )
+        // geometry —— 表示线段的顶点，默认值是一个新的BufferGeometry
+        // material —— 线的材质，默认值是一个新的具有随机颜色的LineBasicMaterial
         object = new THREE.Line(lineGeometry, lineMaterial);
       } else {
+        // 线段（LineSegments）在若干对的顶点之间绘制的一系列的线
+        // 它和Line几乎是相同的，唯一的区别是它在渲染时使用的是gl.LINES， 而不是gl.LINE_STRIP
+        // LineSegments( geometry : BufferGeometry, material : Material )
+        // geometry —— 表示每条线段的两个顶点
+        // material —— 线的材质，默认值是LineBasicMaterial
         object = new THREE.LineSegments(lineGeometry, lineMaterial);
       }
 
-      object.position.x = Math.random() * 400 - 200;
-      object.position.y = Math.random() * 400 - 200;
-      object.position.z = Math.random() * 400 - 200;
+      object.position.set(
+        Math.random() * 400 - 200,
+        Math.random() * 400 - 200,
+        Math.random() * 400 - 200,
+      );
 
-      object.rotation.x = Math.random() * 2 * Math.PI;
-      object.rotation.y = Math.random() * 2 * Math.PI;
-      object.rotation.z = Math.random() * 2 * Math.PI;
+      object.rotation.set(
+        Math.random() * 2 * Math.PI,
+        Math.random() * 2 * Math.PI,
+        Math.random() * 2 * Math.PI,
+      );
 
-      object.scale.x = Math.random() + 0.5;
-      object.scale.y = Math.random() + 0.5;
-      object.scale.z = Math.random() + 0.5;
+      object.scale.set(
+        Math.random() + 0.5,
+        Math.random() + 0.5,
+        Math.random() + 0.5,
+      );
 
-      this.parentTransform.add(object);
+      this.transform.add(object);
     }
 
-    // @ts-ignore
+    // @ts-ignore 阈值
     this.raycaster.params.Line.threshold = 3;
-    this.scene.add(this.parentTransform);
+    this.scene.add(this.transform);
   }
 
   // 事件绑定
@@ -186,7 +209,7 @@ export class Model {
 
       // 获取目标 控制红点显示和隐藏
       this.raycaster.setFromCamera(this.pointer, this.camera);
-      const intersects = this.raycaster.intersectObjects(this.parentTransform.children, false);
+      const intersects = this.raycaster.intersectObjects(this.transform.children, false);
       if (intersects.length > 0) {
         this.sphereInter.position.copy(intersects[0].point);
         this.sphereInter.visible = true;
