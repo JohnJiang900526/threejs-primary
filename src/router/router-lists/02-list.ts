@@ -22,8 +22,15 @@ import InstancingCubes from "@/pages/model-list/detail02/049-interactive-cubes/i
 import InstancingCubesGpu from "@/pages/model-list/detail02/050-interactive-cubes-gpu/index.vue";
 import InstancingCubesOrtho from "@/pages/model-list/detail02/051-interactive-cubes-ortho/index.vue";
 import InstancingCubesLines from "@/pages/model-list/detail02/052-interactive-lines/index.vue";
+import InstancingCubesPoints from "@/pages/model-list/detail02/053-interactive-points/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-points',
+    name: 'InstancingCubesPoints',
+    meta: {title: "instancing-points"},
+    component: InstancingCubesPoints,
+  },
   {
     path: '/list/instancing-lines',
     name: 'InstancingCubesLines',
