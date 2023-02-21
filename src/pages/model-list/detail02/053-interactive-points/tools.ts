@@ -115,19 +115,17 @@ export class Model {
     geometry.setAttribute('customColor', new THREE.Float32BufferAttribute(colors, 3));
     geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
-    const material = new THREE.ShaderMaterial({
+    this.particles = new THREE.Points(geometry, new THREE.ShaderMaterial({
       uniforms: {
         color: { value: new THREE.Color(0xffffff)},
         pointTexture: { 
           value: new THREE.TextureLoader().load('/examples/textures/sprites/disc.png') 
         },
-        alphaTest: {  value: 0.9 }
+        alphaTest: { value: 0.9 }
       },
       vertexShader: this.vertexShader,
       fragmentShader: this.fragmentShader
-    });
-
-    this.particles = new THREE.Points(geometry, material);
+    }));
     this.scene.add(this.particles);
   }
 
