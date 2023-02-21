@@ -83,23 +83,26 @@ export class Model {
     const geometry = new THREE.BoxGeometry(20, 20, 20);
 
     for (let i = 0; i < 2000; i++) {
-      const material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff })
-      const object = new THREE.Mesh(geometry, material);
+      const object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+        color: Math.random() * 0xffffff
+      }));
 
+      // 控制位置
       object.position.x = Math.random() * 800 - 400;
       object.position.y = Math.random() * 800 - 400;
       object.position.z = Math.random() * 800 - 400;
 
+      // 控制旋转朝向
       object.rotation.x = Math.random() * 2 * Math.PI;
       object.rotation.y = Math.random() * 2 * Math.PI;
       object.rotation.z = Math.random() * 2 * Math.PI;
 
-      const scale = Math.random() + 0.5;
-      object.scale.x = scale;
-      object.scale.y = scale;
-      object.scale.z = scale;
-
-      this.scene.add( object );
+      // 控制长宽高
+      object.scale.x = Math.random() + 0.5;
+      object.scale.y = Math.random() + 0.5;
+      object.scale.z = Math.random() + 0.5;
+      // 加入场景
+      this.scene.add(object);
     }
   }
 
@@ -107,16 +110,16 @@ export class Model {
   // 事件绑定
   private bind() {
     if (this.isMobile()) {
-      this.container.onpointermove = null;
-      this.container.ontouchstart = (event) => {
+      window.onpointermove = null;
+      window.ontouchstart = (event) => {
         const e = event.touches[0];
 
         this.pointer.x = (e.clientX / this.width) * 2 - 1;
 				this.pointer.y = - ((e.clientY - 45) / this.height) * 2 + 1;
       };
     } else {
-      this.container.ontouchstart = null;
-      this.container.onpointermove = (e) => {
+      window.ontouchstart = null;
+      window.onpointermove = (e) => {
         this.pointer.x = (e.clientX / this.width) * 2 - 1;
 				this.pointer.y = - ((e.clientY - 45) / this.height) * 2 + 1;
       }
@@ -137,6 +140,8 @@ export class Model {
     if (this.camera) {
       // 视角旋转
       this.theta += 0.1;
+      // .degToRad ( degrees : Float ) : Float
+      // 将度转化为弧度
       this.camera.position.x = this.radius * Math.sin(THREE.MathUtils.degToRad(this.theta));
       this.camera.position.y = this.radius * Math.sin(THREE.MathUtils.degToRad(this.theta));
       this.camera.position.z = this.radius * Math.cos(THREE.MathUtils.degToRad(this.theta));
