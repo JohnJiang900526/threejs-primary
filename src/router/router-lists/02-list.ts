@@ -21,21 +21,29 @@ import InstancingBufferGeometry from "@/pages/model-list/detail02/048-instancing
 import InstancingCubes from "@/pages/model-list/detail02/049-interactive-cubes/index.vue";
 import InstancingCubesGpu from "@/pages/model-list/detail02/050-interactive-cubes-gpu/index.vue";
 import InstancingCubesOrtho from "@/pages/model-list/detail02/051-interactive-cubes-ortho/index.vue";
-import InstancingCubesLines from "@/pages/model-list/detail02/052-interactive-lines/index.vue";
-import InstancingCubesPoints from "@/pages/model-list/detail02/053-interactive-points/index.vue";
+import InstancingLines from "@/pages/model-list/detail02/052-interactive-lines/index.vue";
+import InstancingPoints from "@/pages/model-list/detail02/053-interactive-points/index.vue";
+import InstancingRaycastingPoints from "@/pages/model-list/detail02/054-interactive-raycasting-points/index.vue";
+
 
 const routerList02: RouteRecordRaw[] = [
   {
+    path: '/list/instancing-raycasting-points',
+    name: 'InstancingRaycastingPoints',
+    meta: {title: "instancing-raycasting-points"},
+    component: InstancingRaycastingPoints,
+  },
+  {
     path: '/list/instancing-points',
-    name: 'InstancingCubesPoints',
+    name: 'InstancingPoints',
     meta: {title: "instancing-points"},
-    component: InstancingCubesPoints,
+    component: InstancingPoints,
   },
   {
     path: '/list/instancing-lines',
-    name: 'InstancingCubesLines',
+    name: 'InstancingLines',
     meta: {title: "instancing-lines"},
-    component: InstancingCubesLines,
+    component: InstancingLines,
   },
   {
     path: '/list/instancing-cubes-ortho',
