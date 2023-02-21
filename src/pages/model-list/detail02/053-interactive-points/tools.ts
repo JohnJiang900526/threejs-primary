@@ -91,27 +91,36 @@ export class Model {
 
   // 创建点
   private createPoints() {
-    let boxGeometry: THREE.BufferGeometry | THREE.BoxGeometry = new THREE.BoxGeometry(
-      200, 200, 200, 
-      16, 16, 16
-    );
+    const boxGeometry = new THREE.BoxGeometry(200, 200, 200, 16, 16, 16);
 
     boxGeometry.deleteAttribute('normal');
     boxGeometry.deleteAttribute('uv');
-    boxGeometry = BufferGeometryUtils.mergeVertices(boxGeometry);
 
-    const positionAttribute = boxGeometry.getAttribute('position');
+    const boxGeometryCopy = BufferGeometryUtils.mergeVertices(boxGeometry);
+    const position = boxGeometryCopy.getAttribute('position');
+    const count = position.count;
+
     const colors: number[] = [];
     const sizes: number[] = [];
     const color = new THREE.Color();
-    for (let i = 0, l = positionAttribute.count; i < l; i++) {
-      color.setHSL(0.01 + 0.1 * ( i / l ), 1.0, 0.5);
+
+    for (let i = 0; i < count; i++) {
+      // .setHSL ( h : Float, s : Float, l : Float, colorSpace : string = LinearSRGBColorSpace ) : this
+      // h — 色相值处于0到1之间
+      // s — 饱和度值处于0到1之间
+      // l — 亮度值处于0到1之间
+      // 采用HLS值设置此颜色 设置色彩模式
+      color.setHSL(0.01 + 0.1 * (i / count), 1.0, 0.5);
+      // .toArray ( array : Array, offset : Integer ) : Array
+      // array - 存储颜色的可选数组
+      // offset - 数组的可选偏移量
+      // 返回一个格式为[ r, g, b ] 数组
       color.toArray(colors, i * 3);
       sizes[i] = this.PARTICLE_SIZE * 0.5;
     }
 
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', positionAttribute);
+    geometry.setAttribute('position', position);
     geometry.setAttribute('customColor', new THREE.Float32BufferAttribute(colors, 3));
     geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
@@ -123,7 +132,13 @@ export class Model {
         },
         alphaTest: { value: 0.9 }
       },
+      // 顶点着色器的GLSL代码。这是shader程序的实际代码
+      // vertexShader 和 fragmentShader 代码是从DOM（HTML文档）中获取的； 
+      // 它也可以作为一个字符串直接传递或者通过AJAX加载。
       vertexShader: this.vertexShader,
+      // 片元着色器的GLSL代码
+      // vertexShader 和 fragmentShader 代码是从DOM（HTML文档）中获取的； 
+      // 它也可以作为一个字符串直接传递或者通过AJAX加载。
       fragmentShader: this.fragmentShader
     }));
     this.scene.add(this.particles);
@@ -165,9 +180,9 @@ export class Model {
       this.particles.rotation.y += 0.001/2;
 
       // 获取目标
-      const geometry = this.particles.geometry;
-      const attributes = geometry.attributes;
       this.raycaster.setFromCamera(this.pointer, this.camera);
+
+      const attributes = this.particles.geometry.attributes;
       const intersects = this.raycaster.intersectObject(this.particles);
       if (intersects.length > 0) {
         if (this.INTERSECTED != intersects[0].index) {
