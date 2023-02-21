@@ -43,9 +43,12 @@ export class Model {
     this.camera = new THREE.PerspectiveCamera(150, this.width/this.height, 1, 10000);
 
     // 创建红点集合
-    this.sphereInter = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshBasicMaterial({
-      color: 0xff0000
-    }));
+    this.sphereInter = new THREE.Mesh(
+      new THREE.SphereGeometry(5), 
+      new THREE.MeshBasicMaterial({
+        color: 0xff0000
+      })
+    );
     this.sphereInter.visible = false;
     this.scene.add(this.sphereInter);
 
@@ -77,7 +80,7 @@ export class Model {
   // 创建线条
   private createLines() {
     const lineGeometry = new THREE.BufferGeometry();
-    const points = [];
+    const points: number[] = [];
 
     const point = new THREE.Vector3();
     const direction = new THREE.Vector3();
