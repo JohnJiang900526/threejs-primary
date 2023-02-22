@@ -24,9 +24,15 @@ import InstancingCubesOrtho from "@/pages/model-list/detail02/051-interactive-cu
 import InstancingLines from "@/pages/model-list/detail02/052-interactive-lines/index.vue";
 import InstancingPoints from "@/pages/model-list/detail02/053-interactive-points/index.vue";
 import InstancingRaycastingPoints from "@/pages/model-list/detail02/054-interactive-raycasting-points/index.vue";
-
+import InstancingVoxelPainter from "@/pages/model-list/detail02/055-interactive-voxel-painter/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/instancing-voxel-painter',
+    name: 'InstancingVoxelPainter',
+    meta: {title: "instancing-voxel-painter"},
+    component: InstancingVoxelPainter,
+  },
   {
     path: '/list/instancing-raycasting-points',
     name: 'InstancingRaycastingPoints',
