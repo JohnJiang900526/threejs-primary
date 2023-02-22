@@ -62,32 +62,31 @@ export class Model {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
   }
-
-
+  // 切换红色
   toggleRed() {
     if (this.camera) {
       this.camera.layers.toggle(0);
     }
   }
-
+  // 切换绿色
   toggleGreen() {
     if (this.camera) {
       this.camera.layers.toggle(1);
     }
   }
-
+  // 切换蓝色
   toggleBlue() {
     if (this.camera) {
       this.camera.layers.toggle(2);
     }
   }
-
+  // 启用所有
   enableAll() {
     if (this.camera) {
       this.camera.layers.enableAll();
     }
   }
-
+  // 禁止所有
   disableAll() {
     if (this.camera) {
       this.camera.layers.disableAll();
@@ -105,17 +104,23 @@ export class Model {
       const material = new THREE.MeshLambertMaterial({color: colors[layer]});
       const object = new THREE.Mesh(geometry, material);
 
-      object.position.x = Math.random() * 800 - 400;
-      object.position.y = Math.random() * 800 - 400;
-      object.position.z = Math.random() * 800 - 400;
+      object.position.set(
+        Math.random() * 800 - 400,
+        Math.random() * 800 - 400,
+        Math.random() * 800 - 400,
+      );
 
-      object.rotation.x = Math.random() * 2 * Math.PI;
-      object.rotation.y = Math.random() * 2 * Math.PI;
-      object.rotation.z = Math.random() * 2 * Math.PI;
+      object.rotation.set(
+        Math.random() * 2 * Math.PI,
+        Math.random() * 2 * Math.PI,
+        Math.random() * 2 * Math.PI,
+      );
 
-      object.scale.x = Math.random() + 0.5;
-      object.scale.y = Math.random() + 0.5;
-      object.scale.z = Math.random() + 0.5;
+      object.scale.set(
+        Math.random() + 0.5,
+        Math.random() + 0.5,
+        Math.random() + 0.5,
+      );
 
       object.layers.set(layer);
       this.scene.add(object);
