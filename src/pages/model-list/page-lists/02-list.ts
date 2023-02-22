@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list01: listType[] = [
   {
+    key: "056",
+    title: "056.WEBGL 图层",
+    path: "/list/webgl-layers"
+  },
+  {
     key: "055",
     title: "055.WEBGL 实例化添加方格",
     path: "/list/instancing-voxel-painter"

@@ -25,8 +25,15 @@ import InstancingLines from "@/pages/model-list/detail02/052-interactive-lines/i
 import InstancingPoints from "@/pages/model-list/detail02/053-interactive-points/index.vue";
 import InstancingRaycastingPoints from "@/pages/model-list/detail02/054-interactive-raycasting-points/index.vue";
 import InstancingVoxelPainter from "@/pages/model-list/detail02/055-interactive-voxel-painter/index.vue";
+import WebglLayers from "@/pages/model-list/detail02/056-webgl-layers/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-layers',
+    name: 'WebglLayers',
+    meta: {title: "webgl-layers"},
+    component: WebglLayers,
+  },
   {
     path: '/list/instancing-voxel-painter',
     name: 'InstancingVoxelPainter',
