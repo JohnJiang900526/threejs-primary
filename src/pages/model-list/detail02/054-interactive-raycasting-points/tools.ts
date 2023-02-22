@@ -52,19 +52,19 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 创建相机
-    this.camera = new THREE.PerspectiveCamera(60, this.width/this.height, 1, 10000 );
+    this.camera = new THREE.PerspectiveCamera(60, this.width/this.height, 1, 10000);
     this.camera.position.set(10, 10, 10);
     this.camera.lookAt(this.scene.position);
     this.camera.updateMatrix();
+
+    // 创建模型
+    this.createModel();
 
     // 创建渲染器
     this.renderer = new THREE.WebGLRenderer({antialias: true});
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
-
-    // 创建模型
-    this.createModel();
 
     // 事件绑定
     this.bind();
@@ -84,35 +84,37 @@ export class Model {
 
   // 创建模型
   private createModel() {
-    const buffer = this.generatePointcloud(new THREE.Color(1, 0, 0), this.w, this.length);
+    const buffer = this.generatePointCloud(new THREE.Color(1, 0, 0), this.w, this.length);
     buffer.scale.set(5, 10, 10);
     buffer.position.set(-5, 0, 0);
     this.scene.add(buffer);
 
-    const indexed = this.generateIndexedPointcloud(new THREE.Color(0, 1, 0), this.w, this.length);
+    const indexed = this.indexedPointCloud(new THREE.Color(0, 1, 0), this.w, this.length);
     indexed.scale.set(5, 10, 10);
     indexed.position.set(0, 0, 0);
     this.scene.add(indexed);
 
-    const offset = this.generateIndexedWithOffsetPointcloud(new THREE.Color(0, 1, 1), this.w, this.length);
+    const offset = this.indexedOffsetPointCloud(new THREE.Color(0, 1, 1), this.w, this.length);
     offset.scale.set(5, 10, 10);
     offset.position.set(5, 0, 0);
     this.scene.add(offset);
 
+    // 缓存THREE.Points实例
     this.pointclouds = [buffer, indexed, offset];
 
-    const sphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
-    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+    const material = new THREE.MeshBasicMaterial({color: 0xff0000});
     for (let i = 0; i < 40; i++) {
-      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      const sphere = new THREE.Mesh(geometry, material);
       this.scene.add(sphere);
       this.spheres.push(sphere);
     }
-    // @ts-ignore
+    // @ts-ignore 阈值
     this.raycaster.params.Points.threshold = this.threshold;
   }
 
-  private generatePointCloudGeometry(color: THREE.Color, width: number, length: number) {
+  // 基础实例方法
+  private pointCloudGeometry(color: THREE.Color, width: number = 80, length: number = 160) {
     const geometry = new THREE.BufferGeometry();
     const num = width * length;
 
@@ -143,44 +145,53 @@ export class Model {
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    // 计算当前几何体的的边界矩形，该操作会更新已有 [param:.boundingBox]
+    // 边界矩形不会默认计算，需要调用该接口指定计算边界矩形，否则保持默认值 null
     geometry.computeBoundingBox();
     return geometry;
   }
 
-  private generatePointcloud(color: THREE.Color, width: number, length: number) {
-    const geometry = this.generatePointCloudGeometry(color, width, length);
-    const material = new THREE.PointsMaterial({ size: this.pointSize, vertexColors: true });
+  // 基本实例调用
+  private generatePointCloud(color: THREE.Color, width: number, length: number) {
+    const geometry = this.pointCloudGeometry(color, width, length);
+    const material = new THREE.PointsMaterial({size: this.pointSize, vertexColors: true});
 
     return new THREE.Points(geometry, material);
   }
 
-  private generateIndexedPointcloud(color: THREE.Color, width: number, length: number) {
-    const geometry = this.generatePointCloudGeometry(color, width, length);
+  // 设置Index的实例
+  private indexedPointCloud(color: THREE.Color, width: number, length: number) {
+    const geometry = this.pointCloudGeometry(color, width, length);
+    const material = new THREE.PointsMaterial({size: this.pointSize, vertexColors: true});
+
     const num = width * length;
+    // Uint16Array 类型数组表示在平台字节顺序中的16位无符号整数数组
+    // 可以使用对象的方法引用数组中的元素, 或者使用标准数组索引语法
     const indices = new Uint16Array(num);
 
-    for (let i = 0; i < num; i++) {
-      indices[i] = i;
-    }
+    for (let i = 0; i < num; i++) { indices[i] = i; }
 
+    // .setIndex ( index : BufferAttribute ) : this
+    // 设置缓存的 .index
     geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-    const material = new THREE.PointsMaterial({ size: this.pointSize, vertexColors: true });
     return new THREE.Points(geometry, material);
   }
 
-  private generateIndexedWithOffsetPointcloud(color: THREE.Color, width: number, length: number) {
-    const geometry = this.generatePointCloudGeometry(color, width, length);
+  // 设置idnex和添加分组
+  private indexedOffsetPointCloud(color: THREE.Color, width: number, length: number) {
+    const geometry = this.pointCloudGeometry(color, width, length);
+    const material = new THREE.PointsMaterial({size: this.pointSize, vertexColors: true});
+
     const num = width * length;
     const indices = new Uint16Array(num);
 
-    for (let i = 0; i < num; i++) {
-      indices[i] = i;
-    }
+    for (let i = 0; i < num; i++) { indices[i] = i; }
 
     geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    // .addGroup ( start : Integer, count : Integer, materialIndex : Integer ) : undefined
+    // 为当前几何体增加一个 group，详见 groups 属性
     geometry.addGroup(0, indices.length);
 
-    const material = new THREE.PointsMaterial({ size: this.pointSize, vertexColors: true });
     return new THREE.Points(geometry, material);
   }
 
@@ -219,7 +230,6 @@ export class Model {
       this.camera.applyMatrix4(this.rotateY);
       // 更新物体及其后代的全局变换
       this.camera.updateMatrixWorld();
-
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
       const intersections = this.raycaster.intersectObjects(this.pointclouds, false);
@@ -234,7 +244,14 @@ export class Model {
       }
 
       this.spheres.forEach((sphere) => {
+        // .multiplyScalar ( s : Float ) : this
+        // 将该向量与所传入的标量s进行相乘
         sphere.scale.multiplyScalar(0.98);
+        // .clampScalar ( min : Float, max : Float ) : this
+        // min - 分量将被限制为的最小值
+        // max - 分量将被限制为的最大值
+        // 如果该向量的x值、y值或z值大于最大值，则它们将被最大值所取代。
+        // 如果该向量的x值、y值或z值小于最小值，则它们将被最小值所取代。
         sphere.scale.clampScalar(0.01, 1);
       });
 
