@@ -26,8 +26,15 @@ import InstancingPoints from "@/pages/model-list/detail02/053-interactive-points
 import InstancingRaycastingPoints from "@/pages/model-list/detail02/054-interactive-raycasting-points/index.vue";
 import InstancingVoxelPainter from "@/pages/model-list/detail02/055-interactive-voxel-painter/index.vue";
 import WebglLayers from "@/pages/model-list/detail02/056-webgl-layers/index.vue";
+import WebglLensflares from "@/pages/model-list/detail02/057-webgl-lensflares/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-lensflares',
+    name: 'WebglLensflares',
+    meta: {title: "webgl-lensflares"},
+    component: WebglLensflares,
+  },
   {
     path: '/list/webgl-layers',
     name: 'WebglLayers',
