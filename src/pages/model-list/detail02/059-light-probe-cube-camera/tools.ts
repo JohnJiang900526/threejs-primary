@@ -18,7 +18,7 @@ export class Model {
   private stats: null | Stats;
   private cubeRenderTarget: THREE.WebGLCubeRenderTarget
   private lightProbe: THREE.LightProbe
-  private directionalLight: THREE.DirectionalLight
+  private light: THREE.DirectionalLight
   private API: {
     lightProbeIntensity: number,
     directionalLightIntensity: number,
@@ -39,7 +39,7 @@ export class Model {
     this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget();
     this.stats = null;
     this.lightProbe = new THREE.LightProbe();
-    this.directionalLight = new THREE.DirectionalLight();
+    this.light = new THREE.DirectionalLight();
     this.API = {
       lightProbeIntensity: 1.0,
       directionalLightIntensity: 0.2,
@@ -57,16 +57,24 @@ export class Model {
     this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 1000);
     this.camera.position.set(0, 0, 30);
 
+    // 被CubeCamera作为它的WebGLRenderTarget使用
     this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
+    // 立方相机（CubeCamera）创建6个渲染到WebGLCubeRenderTarget的摄像机
+    // CubeCamera( near : Number, far : Number, renderTarget : WebGLCubeRenderTarget )
+    // near -- 近剪切面的距离
+    // far -- 远剪切面的距离
+    // renderTarget -- The destination cube render target.
+    // 构造一个包含6个PerspectiveCameras（透视摄像机）的立方摄像机， 
+    // 并将其拍摄的场景渲染到一个WebGLCubeRenderTarget上
     this.cubeCamera = new THREE.CubeCamera(1, 1000, this.cubeRenderTarget);
 
     // 光线 平行光（DirectionalLight）
     // DirectionalLight( color : Integer, intensity : Float )
     // color - (可选参数) 16进制表示光的颜色。 缺省值为 0xffffff (白色)
     // intensity - (可选参数) 光照的强度。缺省值为1
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, this.API.directionalLightIntensity);
-    this.directionalLight.position.set(10, 10, 10);
-    this.scene.add(this.directionalLight);
+    this.light = new THREE.DirectionalLight(0xffffff, this.API.directionalLightIntensity);
+    this.light.position.set(10, 10, 10);
+    this.scene.add(this.light);
 
     // 光照探针
     // LightProbe( sh : SphericalHarmonics3, intensity : Float )
@@ -107,20 +115,16 @@ export class Model {
       `${this.prefix}pz.png`, `${this.prefix}nz.png`,
     ];
     loader.load(urls, (texture) => {
-      texture.encoding = THREE.sRGBEncoding
-
+      texture.encoding = THREE.sRGBEncoding;
       this.scene.background = texture;
-
       if (this.cubeCamera) {
         this.cubeCamera.update(this.renderer as THREE.WebGLRenderer, this.scene);
       }
-
       this.lightProbe.copy(LightProbeGenerator.fromCubeRenderTarget(
         this.renderer as THREE.WebGLRenderer, 
-        this.cubeRenderTarget 
+        this.cubeRenderTarget
       ));
 			this.scene.add(new LightProbeHelper(this.lightProbe, 5));
-
       this.render();
     });
   }
