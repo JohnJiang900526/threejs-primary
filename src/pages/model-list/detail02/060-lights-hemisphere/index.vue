@@ -17,11 +17,11 @@
     <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
       <Page @click-left="closeHandle" :default-click="false" title="模型设置">
         <div class="settings-content">
-          <Block title="操作">
-            <Space size="2rem" direction="vertical"> 
-              <Button @click="hemisphereToggle" size="small" type="primary">hemisphereToggle</Button>
-              <Button @click="directionalToggle" size="small" type="primary">directionalToggle</Button>
-              <Button @click="allLightToggle" size="small" type="primary">allLightToggle</Button>
+          <Block title="Toggle">
+            <Space size="2rem" wrap> 
+              <Button @click="hemisphereToggle" size="small" type="primary">半球光Toggle</Button>
+              <Button @click="directionalToggle" size="small" type="primary">直线光Toggle</Button>
+              <Button @click="allLightToggle" size="small" type="primary">所有光Toggle</Button>
             </Space>
           </Block>
         </div>
