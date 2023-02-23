@@ -14,16 +14,9 @@ export class Model {
   private controls: null | OrbitControls
   private camera: null | THREE.PerspectiveCamera;
   private cubeCamera: null | THREE.CubeCamera
-  private mesh: THREE.Mesh
   private stats: null | Stats;
   private cubeRenderTarget: THREE.WebGLCubeRenderTarget
   private lightProbe: THREE.LightProbe
-  private light: THREE.DirectionalLight
-  private API: {
-    lightProbeIntensity: number,
-    directionalLightIntensity: number,
-    envMapIntensity: number
-  }
   private prefix: string
   constructor(container: HTMLDivElement) {
     this.container = container;
@@ -35,16 +28,9 @@ export class Model {
     this.controls = null;
     this.camera = null;
     this.cubeCamera = null;
-    this.mesh = new THREE.Mesh();
     this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget();
     this.stats = null;
     this.lightProbe = new THREE.LightProbe();
-    this.light = new THREE.DirectionalLight();
-    this.API = {
-      lightProbeIntensity: 1.0,
-      directionalLightIntensity: 0.2,
-      envMapIntensity: 1
-    };
     this.prefix = "/examples/textures/cube/pisa/";
   }
 
@@ -67,14 +53,6 @@ export class Model {
     // 构造一个包含6个PerspectiveCameras（透视摄像机）的立方摄像机， 
     // 并将其拍摄的场景渲染到一个WebGLCubeRenderTarget上
     this.cubeCamera = new THREE.CubeCamera(1, 1000, this.cubeRenderTarget);
-
-    // 光线 平行光（DirectionalLight）
-    // DirectionalLight( color : Integer, intensity : Float )
-    // color - (可选参数) 16进制表示光的颜色。 缺省值为 0xffffff (白色)
-    // intensity - (可选参数) 光照的强度。缺省值为1
-    this.light = new THREE.DirectionalLight(0xffffff, this.API.directionalLightIntensity);
-    this.light.position.set(10, 10, 10);
-    this.scene.add(this.light);
 
     // 光照探针
     // LightProbe( sh : SphericalHarmonics3, intensity : Float )

@@ -29,8 +29,15 @@ import WebglLayers from "@/pages/model-list/detail02/056-webgl-layers/index.vue"
 import WebglLensflares from "@/pages/model-list/detail02/057-webgl-lensflares/index.vue";
 import WebglLightProbe from "@/pages/model-list/detail02/058-webgl-light-probe/index.vue";
 import WebglLightProbeCubeCamera from "@/pages/model-list/detail02/059-light-probe-cube-camera/index.vue";
+import LightsHemisphere from "@/pages/model-list/detail02/060-lights-hemisphere/index.vue";
 
 const routerList02: RouteRecordRaw[] = [
+  {
+    path: '/list/lights-hemisphere',
+    name: 'LightsHemisphere',
+    meta: {title: "lights-hemisphere"},
+    component: LightsHemisphere,
+  },
   {
     path: '/list/light-probe-cube-camera',
     name: 'WebglLightProbeCubeCamera',
