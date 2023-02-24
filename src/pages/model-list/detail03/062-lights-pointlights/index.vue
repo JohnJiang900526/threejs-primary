@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon, Popup, RadioGroup, Radio, Checkbox, Slider } from 'vant';
+  import { Icon, Popup } from 'vant';
   import Page from "@/base/page/index.vue";
   import Block from "@/base/block/index.vue";
 </script>

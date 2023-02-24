@@ -19,6 +19,7 @@
     "three": "^0.147.0",
     "vant": "^4.0.7",
     "vue": "^3.2.45",
+    "vue-color": "^2.8.1",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
     "@types/jsdom": "^20.0.1",
     "@types/node": "^18.11.9",
     "@types/three": "^0.146.0",
+    "@types/vue-color": "^2.4.4",
     "@vitejs/plugin-vue": "^3.2.0",
     "@vue/eslint-config-typescript": "^11.0.0",
     "@vue/test-utils": "^2.2.4",
