@@ -12,7 +12,7 @@
 
       <h1 class="title">欢迎来到我的three.js训练场</h1>
 
-      <div class="entry" @click="entry"> 进入体验</div>
+      <div class="entry" @click="entry"> 进入训练场</div>
     </div>
   </div>
 </template>
