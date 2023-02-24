@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "063",
+    title: "063.WEBGL 光照聚光",
+    path: "/list/lights-spotlight"
+  },
+  {
     key: "062",
     title: "062.WEBGL 光照点光",
     path: "/list/lights-pointlights"

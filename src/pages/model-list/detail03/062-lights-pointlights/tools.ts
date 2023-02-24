@@ -64,7 +64,7 @@ export class Model {
   }
 
   // 加载模型
-  loadModel() {
+  private loadModel() {
     const loader = new OBJLoader();
     const url = '/examples/models/obj/walt/WaltHead.obj';
 
