@@ -48,6 +48,7 @@ export class Model {
     bulbPower: string,
     hemiIrradiance: string
   }
+  private readonly positions: number[][];
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -94,6 +95,11 @@ export class Model {
       bulbPower: Object.keys(this.bulbLuminousPowers)[4],
       hemiIrradiance: Object.keys(this.hemiLuminousIrradiances)[0]
     };
+    this.positions = [
+      [-0.5, 0.25, -1],
+      [0, 0.25, -3],
+      [2, 0.25, 0]
+    ];
   }
 
   // 初始化方法入口
@@ -135,12 +141,15 @@ export class Model {
 
   // 创建模型
   private createModel() {
+    // 创建电灯泡
     const bulbGeometry = new THREE.SphereGeometry(0.02, 16, 8);
-
     this.bulbLight = new THREE.PointLight(0xffee88, 1, 100, 2);
     this.bulbMat = new THREE.MeshStandardMaterial({
+      // 材质的放射（光）颜色，基本上是不受其他光照影响的固有颜色。默认为黑色
       emissive: 0xffffee,
+      // 放射光强度。调节发光颜色。默认为1
       emissiveIntensity: 1,
+      // 材质的颜色(Color)，默认值为白色 (0xffffff)
       color: 0x000000
     });
     this.bulbLight.add(new THREE.Mesh(bulbGeometry, this.bulbMat));
@@ -148,52 +157,68 @@ export class Model {
     this.bulbLight.castShadow = true;
     this.scene.add(this.bulbLight);
 
+    // 半球光
     this.hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.02);
 		this.scene.add(this.hemiLight);
 
+    // 地板材质
     this.floorMat = new THREE.MeshStandardMaterial({
+      // 材质的粗糙程度。0.0表示平滑的镜面反射，1.0表示完全漫反射。默认值为1.0。
+      // 如果还提供roughnessMap，则两个值相乘
       roughness: 0.8,
+      // 材质的颜色(Color)，默认值为白色 (0xffffff)
       color: 0xffffff,
+      // 材质与金属的相似度。非金属材质，如木材或石材，使用0.0，金属使用1.0，通常没有中间值。 
+      // 默认值为0.0。0.0到1.0之间的值可用于生锈金属的外观。如果还提供了metalnessMap，则两个值相乘
       metalness: 0.2,
+      // 凹凸贴图会对材质产生多大影响。典型范围是0-1。默认值为1
       bumpScale: 0.0005
     });
-
-    // 加载材质
+    // 加载纹理
     const path = "/examples/textures/";
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(`${path}hardwood2_diffuse.jpg`, (map) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(`${path}hardwood2_diffuse.jpg`, (map) => {
       map.wrapS = THREE.RepeatWrapping;
       map.wrapT = THREE.RepeatWrapping;
+      // 沿着轴，通过具有最高纹素密度的像素的样本数。 默认情况下，这个值为1。
+      // 设置一个较高的值将会产生比基本的mipmap更清晰的效果，代价是需要使用更多纹理样本
       map.anisotropy = 4;
       map.repeat.set(10, 24);
       map.encoding = THREE.sRGBEncoding;
+      // 颜色贴图。可以选择包括一个alpha通道，通常与.transparent 或.alphaTest。默认为null。 
+      // 纹理贴图颜色由漫反射颜色.color调节
       this.floorMat.map = map;
       this.floorMat.needsUpdate = true;
     });
-    textureLoader.load(`${path}hardwood2_bump.jpg`, (map) => {
+    loader.load(`${path}hardwood2_bump.jpg`, (map) => {
       map.wrapS = THREE.RepeatWrapping;
       map.wrapT = THREE.RepeatWrapping;
       map.anisotropy = 4;
       map.repeat.set(10, 24);
+      // 用于创建凹凸贴图的纹理。黑色和白色值映射到与光照相关的感知深度。
+      // 凹凸实际上不会影响对象的几何形状，只影响光照。
+      // 如果定义了法线贴图，则将忽略该贴图
       this.floorMat.bumpMap = map;
       this.floorMat.needsUpdate = true;
     });
-    textureLoader.load(`${path}hardwood2_roughness.jpg`, (map) => {
+    loader.load(`${path}hardwood2_roughness.jpg`, (map) => {
       map.wrapS = THREE.RepeatWrapping;
       map.wrapT = THREE.RepeatWrapping;
       map.anisotropy = 4;
       map.repeat.set(10, 24);
+      // 该纹理的绿色通道用于改变材质的粗糙度
       this.floorMat.roughnessMap = map;
       this.floorMat.needsUpdate = true;
     });
 
+    // 箱体材质
     this.cubeMat = new THREE.MeshStandardMaterial({
       roughness: 0.7,
       color: 0xffffff,
       bumpScale: 0.002,
       metalness: 0.2
     });
-    textureLoader.load(`${path}brick_diffuse.jpg`, (map) => {
+    loader.load(`${path}brick_diffuse.jpg`, (map) => {
       map.wrapS = THREE.RepeatWrapping;
       map.wrapT = THREE.RepeatWrapping;
       map.anisotropy = 4;
@@ -202,7 +227,7 @@ export class Model {
       this.cubeMat.map = map;
       this.cubeMat.needsUpdate = true;
     });
-    textureLoader.load(`${path}brick_bump.jpg`, (map) => {
+    loader.load(`${path}brick_bump.jpg`, (map) => {
       map.wrapS = THREE.RepeatWrapping;
       map.wrapT = THREE.RepeatWrapping;
       map.anisotropy = 4;
@@ -211,60 +236,64 @@ export class Model {
       this.cubeMat.needsUpdate = true;
     });
 
+    // 球体材质
     this.ballMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       roughness: 0.5,
       metalness: 1.0
     });
-    textureLoader.load(`${path}planets/earth_atmos_2048.jpg`, (map) => {
+    loader.load(`${path}planets/earth_atmos_2048.jpg`, (map) => {
       map.anisotropy = 4;
       map.encoding = THREE.sRGBEncoding;
       this.ballMat.map = map;
       this.ballMat.needsUpdate = true;
     });
-    textureLoader.load(`${path}planets/earth_specular_2048.jpg`, (map) => {
+    loader.load(`${path}planets/earth_specular_2048.jpg`, (map) => {
       map.anisotropy = 4;
       map.encoding = THREE.sRGBEncoding;
+      // 该纹理的蓝色通道用于改变材质的金属度
       this.ballMat.metalnessMap = map;
       this.ballMat.needsUpdate = true;
     });
 
+    // 创建地板
     const floorGeometry = new THREE.PlaneGeometry(20, 20);
-    const floorMesh = new THREE.Mesh(floorGeometry, this.floorMat);
-    floorMesh.receiveShadow = true;
-    floorMesh.rotation.x = -Math.PI / 2.0;
-    this.scene.add(floorMesh);
+    const floor = new THREE.Mesh(floorGeometry, this.floorMat);
+    floor.receiveShadow = true;
+    floor.rotation.x = -Math.PI/2;
+    this.scene.add(floor);
 
+    // 创建球体
     const ballGeometry = new THREE.SphereGeometry(0.25, 32, 32);
-    const ballMesh = new THREE.Mesh(ballGeometry, this.ballMat);
-    ballMesh.position.set(1, 0.25, 1);
-    ballMesh.rotation.y = Math.PI;
-    ballMesh.castShadow = true;
-    this.scene.add(ballMesh);
+    const ball = new THREE.Mesh(ballGeometry, this.ballMat);
+    ball.position.set(1, 0.25, 1);
+    ball.rotation.y = Math.PI;
+    ball.castShadow = true;
+    this.scene.add(ball);
 
+    // 创建三个箱子
     const boxGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    const boxMesh = new THREE.Mesh(boxGeometry, this.cubeMat);
-    boxMesh.position.set(-0.5, 0.25, -1);
-    boxMesh.castShadow = true;
-    this.scene.add(boxMesh);
+    this.positions.forEach((arr) => {
+      const box = new THREE.Mesh(boxGeometry, this.cubeMat);
+      const [x, y, z] = arr;
 
-    const boxMesh2 = new THREE.Mesh(boxGeometry, this.cubeMat);
-    boxMesh2.position.set(0, 0.25, -3);
-    boxMesh2.castShadow = true;
-    this.scene.add(boxMesh2);
-
-    const boxMesh3 = new THREE.Mesh(boxGeometry, this.cubeMat);
-    boxMesh3.position.set(2, 0.25, 0);
-    boxMesh3.castShadow = true;
-    this.scene.add(boxMesh3);
+      box.position.set(x, y, z);
+      box.castShadow = true;
+      this.scene.add(box);
+    });
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    // 是否使用物理上正确的光照模式。 默认是false
     this.renderer.physicallyCorrectLights = true;
+    // 定义渲染器的输出编码。默认为THREE.LinearEncoding
     this.renderer.outputEncoding = THREE.sRGBEncoding;
+    // - enabled: 如果设置开启，允许在场景中使用阴影贴图。默认是 false
     this.renderer.shadowMap.enabled = true;
+    // 色调映射
+    // 默认是NoToneMapping。查看Renderer constants以获取其它备选项
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
@@ -283,6 +312,7 @@ export class Model {
     window.requestAnimationFrame(() => { this.animate(); });
 
     if (this.renderer) {
+      // 色调映射的曝光级别。默认是1
       this.renderer.toneMappingExposure = Math.pow(this.params.exposure, 5.0);
       this.renderer.shadowMap.enabled = this.params.shadows;
       this.bulbLight.castShadow = this.params.shadows;
@@ -296,8 +326,9 @@ export class Model {
 
       // @ts-ignore
       this.bulbLight.power = this.bulbLuminousPowers[this.params.bulbPower];
+      // 放射光强度。调节发光颜色。默认为1
       this.bulbMat.emissiveIntensity = this.bulbLight.intensity / Math.pow(0.02, 2.0); 
-      // @ts-ignore
+      // @ts-ignore 光照强度。 缺省值 1
       this.hemiLight.intensity = this.hemiLuminousIrradiances[this.params.hemiIrradiance];
 
       const time = Date.now() * 0.0005;
