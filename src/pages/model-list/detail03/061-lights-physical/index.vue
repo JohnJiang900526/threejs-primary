@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon, Popup, Space, Button } from 'vant';
+  import { Icon, Popup, RadioGroup, Radio, Checkbox, Slider } from 'vant';
   import Page from "@/base/page/index.vue";
   import Block from "@/base/block/index.vue";
 </script>
@@ -17,17 +17,38 @@
     <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
       <Page @click-left="closeHandle" :default-click="false" title="模型设置">
         <div class="settings-content">
-          <Block title="Toggle">
-            <Space size="2rem" wrap> 
-              <Button @click="hemisphereToggle" size="small" type="primary">半球光Toggle</Button>
-              <Button @click="directionalToggle" size="small" type="primary">直线光Toggle</Button>
-              <Button @click="allLightToggle" size="small" type="primary">所有光Toggle</Button>
-
-              <Button @click="hemiLightHelperToggle" size="small" type="primary">半球光ToggleHelper</Button>
-              <Button @click="directionalToggleHelper" size="small" type="primary">直线光ToggleHelper</Button>
-              <Button @click="allHelperToggle" size="small" type="primary">所有光ToggleHelper</Button>
-            </Space>
+          <Block title="exposure">
+            <div class="item-param">exposure</div>
+            <div class="item-param slider">
+              <Slider 
+                v-model="exposure" :min="0" :max="1" :step="0.01" 
+                @change="exposureChange" 
+                bar-height="4px" active-color="#238bfe"/>
+            </div>
           </Block>
+
+          <Block title="shadows">
+            <div class="item-param">
+              <Checkbox v-model="shadows" @change="shadowsChange">shadows</Checkbox>
+            </div>
+          </Block>
+
+          <Block title="hemiIrradiance">
+            <radio-group v-model="hemiIrradiance" @change="hemiIrradianceChange">
+              <div v-for="item in hemiIrradianceData" :key="item" class="item-param">
+                <radio :name="item">{{item}}</radio>
+              </div>
+            </radio-group>
+          </Block>
+
+          <Block title="bulbPower">
+            <radio-group v-model="bulbPower" @change="bulbPowerChange">
+              <div v-for="item in bulbPowerData" :key="item" class="item-param">
+                <radio :name="item">{{item}}</radio>
+              </div>
+            </radio-group>
+          </Block>
+
         </div>
       </Page>
     </Popup>
@@ -43,6 +64,33 @@ export default defineComponent({
   data() {
     return {
       show: false,
+      exposure: 0.68,
+      shadows: true,
+      hemiIrradiance: "0.0001 lx (Moonless Night)",
+      hemiIrradianceData:[
+        '0.0001 lx (Moonless Night)',
+        '0.002 lx (Night Airglow)',
+        '0.5 lx (Full Moon)',
+        '3.4 lx (City Twilight)',
+        '50 lx (Living Room)',
+        '100 lx (Very Overcast)',
+        '350 lx (Office Room)',
+        '400 lx (Sunrise/Sunset)',
+        '1000 lx (Overcast)',
+        '18000 lx (Daylight)',
+        '50000 lx (Direct Sun)',
+      ],
+      bulbPower: '400 lm (40W)',
+      bulbPowerData: [
+        '110000 lm (1000W)',
+        '3500 lm (300W)',
+        '1700 lm (100W)',
+        '800 lm (60W)',
+        '400 lm (40W)',
+        '180 lm (25W)',
+        '20 lm (4W)',
+        'Off',
+      ]
     };
   },
   mounted() {
@@ -54,40 +102,28 @@ export default defineComponent({
       objModel = new Model(this.$refs.container as HTMLDivElement);
       objModel.init();
     },
-    hemisphereToggle() {
+    exposureChange(exposure: number) {
       if (objModel) {
         this.closeHandle();
-        objModel.hemisphereToggle();
+        objModel.setAttr({exposure});
       }
     },
-    directionalToggle() {
+    shadowsChange(shadows: boolean) {
       if (objModel) {
         this.closeHandle();
-        objModel.directionalToggle();
+        objModel.setAttr({shadows});
       }
     },
-    allLightToggle() {
+    hemiIrradianceChange(hemiIrradiance: string) {
       if (objModel) {
         this.closeHandle();
-        objModel.allLightToggle();
+        objModel.setAttr({hemiIrradiance});
       }
     },
-    hemiLightHelperToggle() {
+    bulbPowerChange(bulbPower: string) {
       if (objModel) {
         this.closeHandle();
-        objModel.hemiLightHelperToggle();
-      }
-    },
-    directionalToggleHelper() {
-      if (objModel) {
-        this.closeHandle();
-        objModel.directionalToggleHelper();
-      }
-    },
-    allHelperToggle() {
-      if (objModel) {
-        this.closeHandle();
-        objModel.allHelperToggle();
+        objModel.setAttr({bulbPower});
       }
     },
     // 打开设置面板
@@ -114,7 +150,7 @@ export default defineComponent({
 
   .webgl-lights-physical-page {
     .absolute-page();
-    background-color: #f0f0f0;
+    background-color: #000000;
     .selection {
       position: absolute;
       display: flex;
