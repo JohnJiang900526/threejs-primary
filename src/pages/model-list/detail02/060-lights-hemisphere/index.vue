@@ -22,6 +22,10 @@
               <Button @click="hemisphereToggle" size="small" type="primary">半球光Toggle</Button>
               <Button @click="directionalToggle" size="small" type="primary">直线光Toggle</Button>
               <Button @click="allLightToggle" size="small" type="primary">所有光Toggle</Button>
+
+              <Button @click="hemiLightHelperToggle" size="small" type="primary">半球光ToggleHelper</Button>
+              <Button @click="directionalToggleHelper" size="small" type="primary">直线光ToggleHelper</Button>
+              <Button @click="allHelperToggle" size="small" type="primary">所有光ToggleHelper</Button>
             </Space>
           </Block>
         </div>
@@ -66,6 +70,24 @@ export default defineComponent({
       if (objModel) {
         this.closeHandle();
         objModel.allLightToggle();
+      }
+    },
+    hemiLightHelperToggle() {
+      if (objModel) {
+        this.closeHandle();
+        objModel.hemiLightHelperToggle();
+      }
+    },
+    directionalToggleHelper() {
+      if (objModel) {
+        this.closeHandle();
+        objModel.directionalToggleHelper();
+      }
+    },
+    allHelperToggle() {
+      if (objModel) {
+        this.closeHandle();
+        objModel.allHelperToggle();
       }
     },
     // 打开设置面板
