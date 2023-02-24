@@ -8,7 +8,7 @@ export interface listType {
 }
 
 // 列表数据
-const list01: listType[] = [
+const list: listType[] = [
   {
     key: "030",
     title: "030.WEBGL Geometry挤压形状",
@@ -166,5 +166,5 @@ const list01: listType[] = [
   },
 ];
 
-export default list01;
+export default list;
 

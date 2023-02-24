@@ -31,7 +31,7 @@ import WebglLightProbe from "@/pages/model-list/detail02/058-webgl-light-probe/i
 import WebglLightProbeCubeCamera from "@/pages/model-list/detail02/059-light-probe-cube-camera/index.vue";
 import LightsHemisphere from "@/pages/model-list/detail02/060-lights-hemisphere/index.vue";
 
-const routerList02: RouteRecordRaw[] = [
+const routerList: RouteRecordRaw[] = [
   {
     path: '/list/lights-hemisphere',
     name: 'LightsHemisphere',
@@ -214,4 +214,4 @@ const routerList02: RouteRecordRaw[] = [
   },
 ];
 
-export default routerList02;
+export default routerList;

@@ -32,7 +32,7 @@ import GeometryCube from "@/pages/model-list/detail01/028-geometry-cube/index.vu
 import GeometryDynamic from "@/pages/model-list/detail01/029-geometry-dynamic/index.vue";
 import GeometryExtrudeShape from "@/pages/model-list/detail01/030-geometry-extrude-shape/index.vue";
 
-const routerList01: RouteRecordRaw[] = [
+const routerList: RouteRecordRaw[] = [
   {
     path: '/list/geometry-extrude-shape',
     name: 'GeometryExtrudeShape',
@@ -221,4 +221,4 @@ const routerList01: RouteRecordRaw[] = [
   },
 ];
 
-export default routerList01;
+export default routerList;
