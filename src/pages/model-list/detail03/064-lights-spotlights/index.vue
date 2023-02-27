@@ -70,7 +70,7 @@ export default defineComponent({
 
   .webgl-lights-spotlights-page {
     .absolute-page();
-    background-color: #000000;
+    background-color: #333333;
     .selection {
       position: absolute;
       display: flex;

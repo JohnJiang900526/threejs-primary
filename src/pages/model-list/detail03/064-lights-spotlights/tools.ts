@@ -55,13 +55,13 @@ export class Model {
   init() {
     // 创建场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000000);
+    this.scene.background = new THREE.Color(0x333333);
 
     // 创建相机
     this.camera = new THREE.PerspectiveCamera(40, this.aspect, 1, 2000);
-    this.camera.position.set(46, 22, -21);
+    this.camera.position.set(40, 40, 40);
 
-    // 创建模型
+    // 创建模型 地板和箱体
     this.createFloorAndBox();
 
     // 创建灯光
@@ -164,7 +164,6 @@ export class Model {
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
-    this.renderer.setAnimationLoop(() => { this.render(); });
     this.container.appendChild(this.renderer.domElement);
   }
 
