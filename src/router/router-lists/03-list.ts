@@ -3,8 +3,15 @@ import type { RouteRecordRaw } from "vue-router";
 import LightsPhysical from "@/pages/model-list/detail03/061-lights-physical/index.vue";
 import LightsPointlights from "@/pages/model-list/detail03/062-lights-pointlights/index.vue";
 import LightsSpotLight from "@/pages/model-list/detail03/063-lights-spotlight/index.vue";
+import LightsSpotLights from "@/pages/model-list/detail03/064-lights-spotlights/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/lights-spotlights',
+    name: 'LightsSpotLights',
+    meta: {title: "lights-spotlights"},
+    component: LightsSpotLights,
+  },
   {
     path: '/list/lights-spotlight',
     name: 'LightsSpotLight',
