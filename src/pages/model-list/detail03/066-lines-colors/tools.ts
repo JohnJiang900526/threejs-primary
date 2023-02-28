@@ -12,10 +12,8 @@ export class Model {
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
   
-  private mouseX: number
-  private mouseY: number
-  private halfX: number
-  private halfY: number
+  private pointer: THREE.Vector2
+  private half: THREE.Vector2
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,10 +24,8 @@ export class Model {
     this.camera = null;
     this.stats = null;
 
-    this.mouseX = 0;
-    this.mouseY = 0;
-    this.halfX = this.width/2;
-    this.halfY = this.height/2;
+    this.pointer = new THREE.Vector2();
+    this.half = new THREE.Vector2(this.width/2, this.height/2);
   }
 
   // 初始化方法入口
@@ -180,14 +176,14 @@ export class Model {
       this.container.ontouchmove = (event) => {
         const e = event.touches[0];
 
-        this.mouseX = e.clientX - this.halfX;
-				this.mouseY = (e.clientY - 45) - this.halfY;
+        this.pointer.x = e.clientX - this.half.x;
+				this.pointer.y = (e.clientY - 45) - this.half.y;
       };
     } else {
       this.container.ontouchmove = null;
       this.container.onpointermove = (e) => {
-        this.mouseX = e.clientX - this.halfX;
-				this.mouseY = (e.clientY - 45) - this.halfY;
+        this.pointer.x = e.clientX - this.half.x;
+				this.pointer.y = (e.clientY - 45) - this.half.y;
       };
     }
   }
@@ -202,11 +198,12 @@ export class Model {
   // 持续动画
   private animate() {
     if (this.camera) {
-      this.camera.position.x += (this.mouseX - this.camera.position.x) * 0.05;
-      this.camera.position.y += (-this.mouseY + 200 - this.camera.position.y) * 0.05;
+      const time = Date.now() * 0.0005;
+      const {x, y } = this.pointer;
+      this.camera.position.x += (x - this.camera.position.x) * 0.05;
+      this.camera.position.y += (-y + 200 - this.camera.position.y) * 0.05;
       this.camera.lookAt(this.scene.position);
 
-      const time = Date.now() * 0.0005;
       this.scene.children.forEach((obj, index) => {
         if ((obj as THREE.Line).isLine) {
           obj.rotation.y = time * ( index % 2 ? 1 : -1);
@@ -230,8 +227,7 @@ export class Model {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
-      this.halfX = this.width/2;
-      this.halfY = this.height/2;
+      this.half.set(this.width/2, this.height/2);
 
       this.bind();
       if (this.camera) {
