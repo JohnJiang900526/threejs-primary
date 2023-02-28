@@ -4,8 +4,15 @@ import LightsPhysical from "@/pages/model-list/detail03/061-lights-physical/inde
 import LightsPointlights from "@/pages/model-list/detail03/062-lights-pointlights/index.vue";
 import LightsSpotLight from "@/pages/model-list/detail03/063-lights-spotlight/index.vue";
 import LightsSpotLights from "@/pages/model-list/detail03/064-lights-spotlights/index.vue";
+import LightsRectareaLight from "@/pages/model-list/detail03/065-lights-rectarea-light/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/lights-rectarea-light',
+    name: 'LightsRectareaLight',
+    meta: {title: "lights-rectarea-light"},
+    component: LightsRectareaLight,
+  },
   {
     path: '/list/lights-spotlights',
     name: 'LightsSpotLights',
