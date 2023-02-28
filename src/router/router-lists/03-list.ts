@@ -5,8 +5,15 @@ import LightsPointlights from "@/pages/model-list/detail03/062-lights-pointlight
 import LightsSpotLight from "@/pages/model-list/detail03/063-lights-spotlight/index.vue";
 import LightsSpotLights from "@/pages/model-list/detail03/064-lights-spotlights/index.vue";
 import LightsRectareaLight from "@/pages/model-list/detail03/065-lights-rectarea-light/index.vue";
+import LinesColors from "@/pages/model-list/detail03/066-lines-colors/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/lines-colors',
+    name: 'LinesColors',
+    meta: {title: "lines-colors"},
+    component: LinesColors,
+  },
   {
     path: '/list/lights-rectarea-light',
     name: 'LightsRectareaLight',

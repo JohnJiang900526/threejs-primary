@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "066",
+    title: "066.WEBGL 线的颜色",
+    path: "/list/lines-colors"
+  },
+  {
     key: "065",
     title: "065.WEBGL 矩形灯光",
     path: "/list/lights-rectarea-light"
