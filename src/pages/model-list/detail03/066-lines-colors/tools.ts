@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import * as GeometryUtils from 'three/examples/jsm/utils/GeometryUtils';
 
+type Iarr = [THREE.LineBasicMaterial, number, [number, number, number], THREE.BufferGeometry];
+
 export class Model {
   private width: number;
   private height: number;
@@ -68,7 +70,9 @@ export class Model {
     const geometry2 = new THREE.BufferGeometry();
     const geometry3 = new THREE.BufferGeometry();
 
-    const subdivisions = 6;
+    // 分支个数
+    const divisions = 6;
+    // 顶点
     let vertices = [];
     let colors1 = [];
     let colors2 = [];
@@ -76,20 +80,22 @@ export class Model {
 
     const point = new THREE.Vector3();
     const color = new THREE.Color();
+    // CatmullRomCurve3 使用Catmull-Rom算法， 从一系列的点创建一条平滑的三维样条曲线
     const spline = new THREE.CatmullRomCurve3(hilbertPoints);
+    const num = hilbertPoints.length * divisions;
 
-    for (let i = 0; i < hilbertPoints.length * subdivisions; i++) {
-      const t = i / (hilbertPoints.length * subdivisions);
+    for (let i = 0; i < num; i++) {
+      const t = i / num;
       spline.getPoint(t, point);
-      vertices.push( point.x, point.y, point.z );
+      vertices.push(point.x, point.y, point.z);
 
-      color.setHSL(0.6, 1.0, Math.max( 0, - point.x / 200) + 0.5);
-      colors1.push(color.r, color.g, color.b );
+      color.setHSL(0.6, 1.0, Math.max(0, -point.x / 200) + 0.5);
+      colors1.push(color.r, color.g, color.b);
 
-      color.setHSL(0.9, 1.0, Math.max( 0, - point.y / 200) + 0.5);
-      colors2.push( color.r, color.g, color.b );
+      color.setHSL(0.9, 1.0, Math.max(0, -point.y / 200) + 0.5);
+      colors2.push(color.r, color.g, color.b);
 
-      color.setHSL( i / (hilbertPoints.length * subdivisions), 1.0, 0.5);
+      color.setHSL(i / num, 1.0, 0.5);
       colors3.push(color.r, color.g, color.b);
     }
 
@@ -113,7 +119,7 @@ export class Model {
 
     for (let i = 0; i < hilbertPoints.length; i++) {
       const point = hilbertPoints[i];
-      vertices.push( point.x, point.y, point.z );
+      vertices.push(point.x, point.y, point.z);
 
       color.setHSL(0.6, 1.0, Math.max(0, (200 - hilbertPoints[i].x) / 400) * 0.5 + 0.5);
       colors1.push(color.r, color.g, color.b );
@@ -133,32 +139,28 @@ export class Model {
     geometry5.setAttribute('color', new THREE.Float32BufferAttribute(colors2, 3));
     geometry6.setAttribute('color', new THREE.Float32BufferAttribute(colors3, 3));
 
-    const	material = new THREE.LineBasicMaterial( { color: 0xffffff, vertexColors: true } );
-    let line = new THREE.Line();
-    let p: any[] = [];
-
-    const scale = 0.3;
-    const d = 225;
-
-    const parameters = [
-      [ material, scale * 1.5, [-d, -d/2, 0], geometry1],
-      [ material, scale * 1.5, [0, -d/2, 0], geometry2],
-      [ material, scale * 1.5, [d, -d/2, 0], geometry3],
-
-      [ material, scale * 1.5, [-d, d/2, 0], geometry4],
-      [ material, scale * 1.5, [0, d/2, 0], geometry5],
-      [ material, scale * 1.5, [d, d/2, 0], geometry6],
+    // 收集数据 插入场景
+    const	material = new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      // 是否使用顶点着色。默认值为false。
+      vertexColors: true
+    });
+    const scale = 0.45, d = 225;
+    const arr: Iarr[]= [
+      [material, scale, [-d, -d/2, 0], geometry1],
+      [material, scale, [0, -d/2, 0], geometry2],
+      [material, scale, [d, -d/2, 0], geometry3],
+      [material, scale, [-d, d/2, 0], geometry4],
+      [material, scale, [0, d/2, 0], geometry5],
+      [material, scale, [d, d/2, 0], geometry6],
     ];
 
-    for (let i = 0; i < parameters.length; i++) {
-      p = parameters[ i ];
-      line = new THREE.Line(p[3], p[0]);
-      line.scale.x = line.scale.y = line.scale.z = p[1];
-      line.position.x = p[2][0];
-      line.position.y = p[2][1];
-      line.position.z = p[2][2];
+    arr.forEach((item) => {
+      const line = new THREE.Line(item[3], item[0]);
+      line.scale.set(item[1], item[1], item[1]);
+      line.position.set(item[2][0], item[2][1], item[2][2]);
       this.scene.add(line);
-    }
+    });
   }
 
   // 创建渲染器
