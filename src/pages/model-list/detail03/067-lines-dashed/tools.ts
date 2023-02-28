@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import * as GeometryUtils from 'three/examples/jsm/utils/GeometryUtils';
 
-type Iarr = [THREE.LineBasicMaterial, number, [number, number, number], THREE.BufferGeometry];
-
 export class Model {
   private width: number;
   private height: number;
