@@ -6,8 +6,15 @@ import LightsSpotLight from "@/pages/model-list/detail03/063-lights-spotlight/in
 import LightsSpotLights from "@/pages/model-list/detail03/064-lights-spotlights/index.vue";
 import LightsRectareaLight from "@/pages/model-list/detail03/065-lights-rectarea-light/index.vue";
 import LinesColors from "@/pages/model-list/detail03/066-lines-colors/index.vue";
+import LinesDashed from "@/pages/model-list/detail03/067-lines-dashed/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/lines-dashed',
+    name: 'LinesDashed',
+    meta: {title: "lines-dashed"},
+    component: LinesDashed,
+  },
   {
     path: '/list/lines-colors',
     name: 'LinesColors',
