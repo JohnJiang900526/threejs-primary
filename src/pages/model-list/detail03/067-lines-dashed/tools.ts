@@ -61,19 +61,30 @@ export class Model {
       const divisions = 6;
       const points = GeometryUtils.hilbert3D(
         new THREE.Vector3(0, 0, 0),
-        25.0, 1,
+        20.0, 1,
         0, 1, 2, 3, 4, 5, 6, 7
       );
 
+      // 创建曲线
       const spline = new THREE.CatmullRomCurve3(points);
+      // .getPoints ( divisions : Integer ) : Array
+      // divisions -- 要将曲线划分为的分段数。默认是 5.
       const samples = spline.getPoints(points.length * divisions);
+      // .setFromPoints ( points : Array ) : this
+      // 通过点队列设置该 BufferGeometry 的 attribute
       const geometry = new THREE.BufferGeometry().setFromPoints(samples);
+      // 虚线材质(LineDashedMaterial) 一种用于绘制虚线样式几何体的材质
       const line = new THREE.Line(geometry, new THREE.LineDashedMaterial({ 
-        color: 0xffffff, 
-        dashSize: 1, 
-        gapSize: 0.5 
+        color: 0xffffff,
+        // 虚线的大小，是指破折号和间隙之和。默认值为 3
+        dashSize: 1,
+        // 间隙的大小，默认值为 1
+        gapSize: 0.5
       }));
+      // 计算LineDashedMaterial所需的距离的值的数组。 对于几何体中的每一个顶点，
+      // 这个方法计算出了当前点到线的起始点的累积长度
       line.computeLineDistances();
+      line.name = "curve-line";
       this.objects.push(line);
       this.scene.add(line);
     })();
@@ -81,13 +92,14 @@ export class Model {
     // 箱体
     (() => {
       const geometry = this.createBox(50, 50, 50);
+      // 线段（LineSegments）
       const line = new THREE.LineSegments(geometry, new THREE.LineDashedMaterial({ 
         color: 0xffaa00, 
         dashSize: 3, 
         gapSize: 1
       }));
       line.computeLineDistances();
-  
+      line.name = "box-line";
       this.objects.push(line);
       this.scene.add(line);
     })();
@@ -100,6 +112,7 @@ export class Model {
     const depth = d * 0.5;
 
     const geometry = new THREE.BufferGeometry();
+    // 难点 不明白这个数组为什么这样设置
     const position: number[] = [
       -width, -height, -depth,
       -width, height, -depth,
@@ -159,12 +172,17 @@ export class Model {
 
   // 持续动画
   private animate() {
+    // 控制几何体旋转
     const time = Date.now() * 0.001;
-
     this.scene.traverse((obj) => {
       if ((obj as THREE.Line).isLine) {
-        obj.rotation.x = time * 0.25;
-        obj.rotation.y = time * 0.25;
+        if (obj.name === "curve-line") {
+          obj.rotation.x = time * 0.25;
+          obj.rotation.y = -time * 0.25;
+        } else {
+          obj.rotation.x = time * 0.25;
+          obj.rotation.y = time * 0.25;
+        }
       }
     });
 

@@ -70,7 +70,7 @@ export default defineComponent({
 
   .webgl-lines-dashed-page {
     .absolute-page();
-    background-color: #000000;
+    background-color: #111111;
     .selection {
       position: absolute;
       display: flex;
