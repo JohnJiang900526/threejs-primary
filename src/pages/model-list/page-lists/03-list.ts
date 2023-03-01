@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "068",
+    title: "068.WEBGL 粗线",
+    path: "/list/lines-fat"
+  },
+  {
     key: "067",
     title: "067.WEBGL 虚线",
     path: "/list/lines-dashed"
