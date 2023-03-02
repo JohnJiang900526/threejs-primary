@@ -183,10 +183,10 @@ export class Model {
 
   // 创建模型
   private createModel() {
-    // Wireframe
+    // Wireframe 实线线框
     (() => {
-      const geo = new THREE.IcosahedronGeometry(20, 1);
-      const geometry = new WireframeGeometry2(geo);
+      const primary = new THREE.IcosahedronGeometry(20, 1);
+      const geometry = new WireframeGeometry2(primary);
       this.matLine = new LineMaterial({
         color: 0x4080ff,
         linewidth: 5,
@@ -199,10 +199,10 @@ export class Model {
       this.scene.add(this.wireframe);
     })();
 
-    // Line
+    // 虚线 线框
     (() => {
-      const geo = new THREE.IcosahedronGeometry(20, 1);
-      const geometry = new THREE.WireframeGeometry(geo);
+      const primary = new THREE.IcosahedronGeometry(20, 1);
+      const geometry = new THREE.WireframeGeometry(primary);
       this.matLineBasic = new THREE.LineBasicMaterial({ 
         color: 0x4080ff 
       });
@@ -244,21 +244,41 @@ export class Model {
 
     // 执行渲染
     if (this.camera && this.renderer && this.camera2) {
+      // .setClearColor ( color : Color, alpha : Float ) : undefined
+      // 设置颜色及其透明度
       this.renderer.setClearColor(0x000000, 0);
+      // .setViewport ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
+      // 将视口大小设置为(x, y)到 (x + width, y + height).
       this.renderer.setViewport(0, 0, this.width, this.height);
+      // 分辨率
       this.matLine.resolution.set(this.width, this.height);
       this.renderer.render(this.scene, this.camera);
 
+      // .setClearColor ( color : Color, alpha : Float ) : undefined
+      // 设置颜色及其透明度
       this.renderer.setClearColor(0x222222, 1);
+      // 清除深度缓存。相当于调用.clear( false, true, false )
       this.renderer.clearDepth(); // important!
+
+      // .setScissorTest ( boolean : Boolean ) : undefined
+      // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
+      // 开启剪裁检测
       this.renderer.setScissorTest(true);
+      // 执行剪裁
       this.renderer.setScissor(20, 20, this.insetWidth, this.insetHeight);
+      // .setViewport ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
+      // 将视口大小设置为(x, y)到 (x + width, y + height).
       this.renderer.setViewport(20, 20, this.insetWidth, this.insetHeight);
 
+      // 位置
       this.camera2.position.copy(this.camera.position);
+      // 表示对象局部旋转的Quaternion（四元数）
       this.camera2.quaternion.copy(this.camera.quaternion);
+      // 分辨率
       this.matLine.resolution.set(this.insetWidth, this.insetHeight);
+      // 根据当前视口进行绘制
       this.renderer.render(this.scene, this.camera2);
+      // 关闭剪裁检测
       this.renderer.setScissorTest(false);
     }
   }

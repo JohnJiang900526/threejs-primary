@@ -10,6 +10,8 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 
+type Imaterial = THREE.LineBasicMaterial | THREE.LineDashedMaterial
+
 export class Model {
   private width: number;
   private height: number;
@@ -83,7 +85,7 @@ export class Model {
     this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 1000);
     this.camera.position.set(-60, 0, 60);
 
-    this.camera2 = new THREE.PerspectiveCamera(60, 1, 1, 1000);
+    this.camera2 = new THREE.PerspectiveCamera(40, 1, 1, 1000);
     this.camera2.position.copy(this.camera.position);
 
     // 控制器
@@ -93,10 +95,9 @@ export class Model {
 
     // 映射
     this.raycaster = new THREE.Raycaster();
-    // @ts-ignore
-    this.raycaster.params.Line2 = {
-      threshold: 0
-    };
+    this.raycaster.params = Object.assign(this.raycaster.params, {
+      Line2: { threshold: 0 }
+    });
 
     // 创建小球
     this.createSphere();
@@ -207,6 +208,7 @@ export class Model {
 
   // 创建模型
   private createModel() {
+    // positions and colors and points
     const positions = [];
     const colors = [];
     const points = [];
@@ -229,14 +231,7 @@ export class Model {
       colors.push(color.r, color.g, color.b);
     }
 
-    const lineGeometry = new LineGeometry();
-    lineGeometry.setPositions(positions);
-    lineGeometry.setColors(colors);
-
-    const segmentsGeometry = new LineSegmentsGeometry();
-    segmentsGeometry.setPositions(positions);
-    segmentsGeometry.setColors(colors);
-
+    // material
     this.matLine = new LineMaterial({
       color: 0xffffff,
       linewidth: 1,
@@ -244,7 +239,6 @@ export class Model {
       vertexColors: true,
       alphaToCoverage: true,
     });
-
     this.matThresholdLine = new LineMaterial({
       color: 0xffffff,
       linewidth: this.matLine.linewidth,
@@ -255,33 +249,43 @@ export class Model {
       visible: false,
     });
 
-    this.segments = new LineSegments2( segmentsGeometry, this.matLine );
-    this.segments.computeLineDistances();
-    this.segments.scale.set(1, 1, 1);
-    this.segments.visible = true;
-    this.scene.add(this.segments);
+    // segments 分段线
+    (() => {
+      const geometry = new LineSegmentsGeometry();
+      geometry.setPositions(positions);
+      geometry.setColors(colors);
 
-    this.thresholdSegments = new LineSegments2(segmentsGeometry, this.matThresholdLine );
-    this.thresholdSegments.computeLineDistances();
-    this.thresholdSegments.scale.set(1, 1, 1);
-    this.thresholdSegments.visible = true;
-    this.scene.add(this.thresholdSegments);
+      // 片段线
+      this.segments = new LineSegments2(geometry, this.matLine);
+      this.segments.computeLineDistances();
+      this.segments.scale.set(1, 1, 1);
+      this.scene.add(this.segments);
+  
+      // 阈值 片段线
+      this.thresholdSegments = new LineSegments2(geometry, this.matThresholdLine);
+      this.thresholdSegments.computeLineDistances();
+      this.thresholdSegments.scale.set(1, 1, 1);
+      this.scene.add(this.thresholdSegments);
+    })();
 
-    this.line = new Line2(lineGeometry, this.matLine);
-    this.line.computeLineDistances();
-    this.line.scale.set(1, 1, 1);
-    this.line.visible = false;
-    this.scene.add(this.line);
+    // line 实线
+    (() => {
+      const geometry = new LineGeometry();
+      geometry.setPositions(positions);
+      geometry.setColors(colors);
 
-    this.thresholdLine = new Line2(lineGeometry, this.matThresholdLine);
-    this.thresholdLine.computeLineDistances();
-    this.thresholdLine.scale.set(1, 1, 1);
-    this.thresholdLine.visible = false;
-    this.scene.add(this.thresholdLine);
+      this.line = new Line2(geometry, this.matLine);
+      this.line.computeLineDistances();
+      this.line.scale.set(1, 1, 1);
+      this.line.visible = false;
+      this.scene.add(this.line);
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      this.thresholdLine = new Line2(geometry, this.matThresholdLine);
+      this.thresholdLine.computeLineDistances();
+      this.thresholdLine.scale.set(1, 1, 1);
+      this.thresholdLine.visible = false;
+      this.scene.add(this.thresholdLine);
+    })();
   }
 
   // 创建小球
@@ -337,11 +341,20 @@ export class Model {
 
     // 执行渲染
     if (this.camera && this.camera2 && this.renderer && this.line && this.sphereInter && this.sphereOnLine && this.gpuPanel) {
+      // .setClearColor ( color : Color, alpha : Float ) : undefined
+      // 设置颜色及其透明度
       this.renderer.setClearColor(0x000000, 0);
+      // .setViewport ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
+      // 将视口大小设置为(x, y)到 (x + width, y + height).
       this.renderer.setViewport(0, 0, this.width, this.height);
+      // .setFromCamera ( coords : Vector2, camera : Camera ) : undefined
+      // coords —— 在标准化设备坐标中鼠标的二维坐标 —— X分量与Y分量应当在-1到1之间。
+      // camera —— 射线所来源的摄像机
+      // 使用一个新的原点和方向来更新射线
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
-      this.matLine.resolution.set(this.width, this.height); 
+      // 分辨率
+      this.matLine.resolution.set(this.width, this.height);
       this.matThresholdLine.resolution.set(this.width, this.height);
 
       const obj = this.line.visible ? this.line : this.segments;
@@ -349,19 +362,27 @@ export class Model {
 
       if (intersects.length > 0) {
         const intersect = intersects[0];
+        // 控制两个小球的位置和颜色、显示与否
         this.sphereInter.visible = true;
         this.sphereOnLine.visible = true;
         this.sphereInter.position.copy(intersect.point);
         // @ts-ignore
         this.sphereOnLine.position.copy(intersect.pointOnLine);
         
-        const i = intersect.faceIndex as number;
+        const index = intersect.faceIndex as number;
         const colors = obj.geometry.getAttribute('instanceColorStart');
-        const color = new THREE.Color().setRGB(colors.getX(i), colors.getY(i), colors.getZ(i));
-        // @ts-ignore
-        this.sphereInter.material.color.copy(color.clone().offsetHSL(0.3, 0, 0));
-        // @ts-ignore
-        this.sphereOnLine.material.color.copy(color.clone().offsetHSL(0.7, 0, 0));
+        const color = new THREE.Color().setRGB(
+          colors.getX(index), 
+          colors.getY(index), 
+          colors.getZ(index),
+        );
+
+        (this.sphereInter.material as Imaterial).color.copy(
+          color.clone().offsetHSL(0.3, 0, 0)
+        );
+        (this.sphereOnLine.material as Imaterial).color.copy(
+          color.clone().offsetHSL(0.7, 0, 0)
+        );
         this.renderer.domElement.style.cursor = 'crosshair';
       } else {
         this.sphereInter.visible = false;
@@ -374,17 +395,29 @@ export class Model {
       this.gpuPanel.endQuery();
 
       this.renderer.setClearColor(0x222222, 1);
+      // // 清除深度缓存。相当于调用.clear( false, true, false )
       this.renderer.clearDepth(); // important!
 
+      // .setScissorTest ( boolean : Boolean ) : undefined
+      // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
+      // 开启剪裁检测
       this.renderer.setScissorTest(true);
+      // .setScissor ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
+      // 将剪裁区域设为(x, y)到(x + width, y + height) 
+      // 设置剪裁检测
       this.renderer.setScissor(20, 20, this.insetWidth, this.insetHeight);
+      // 重新设置视口
       this.renderer.setViewport(20, 20, this.insetWidth, this.insetHeight);
 
+      // 位置
       this.camera2.position.copy(this.camera.position);
+      // 表示对象局部旋转的Quaternion（四元数）
       this.camera2.quaternion.copy(this.camera.quaternion);
+      // 分标率
       this.matLine.resolution.set(this.insetWidth, this.insetHeight);
+      // 重新执行渲染
       this.renderer.render(this.scene, this.camera2);
-
+      // 关闭剪裁检测
       this.renderer.setScissorTest(false);
     }
   }

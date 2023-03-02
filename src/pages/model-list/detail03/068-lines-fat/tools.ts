@@ -3,7 +3,6 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 // @ts-ignore
 import { GPUStatsPanel } from "@/common/examples/jsm/utils/GPUStatsPanel";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-// @ts-ignore
 import { Line2 } from 'three/examples/jsm/lines/Line2';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
@@ -296,6 +295,7 @@ export class Model {
 
       // 非常重要 否则CPU有飙升
       this.gpuPanel.startQuery();
+      // 渲染器执行渲染
       this.renderer.render(this.scene, this.camera);
       // 非常重要 否则CPU有飙升
       this.gpuPanel.endQuery();
@@ -306,13 +306,18 @@ export class Model {
 
       // .setScissorTest ( boolean : Boolean ) : undefined
       // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
+      // 开启剪裁检测
       this.renderer.setScissorTest(true);
       // .setScissor ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
       // 将剪裁区域设为(x, y)到(x + width, y + height) 
+      // 执行剪裁
       this.renderer.setScissor(20, 20, this.insetWidth, this.insetHeight);
+      // 重新设置视口
       this.renderer.setViewport(20, 20, this.insetWidth, this.insetHeight);
 
+      // 位置
       this.camera2.position.copy(this.camera.position);
+      // 表示对象局部旋转的Quaternion（四元数）
       this.camera2.quaternion.copy(this.camera.quaternion);
       // 分辨率
       this.matLine.resolution.set(this.insetWidth, this.insetHeight);
@@ -320,6 +325,7 @@ export class Model {
       this.renderer.render(this.scene, this.camera2);
       // .setScissorTest ( boolean : Boolean ) : undefined
       // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
+      // 关闭剪裁检测
       this.renderer.setScissorTest(false);
     }
   }
