@@ -348,12 +348,14 @@ export class Model {
 			const intersects = this.raycaster.intersectObject(obj, true);
 
       if (intersects.length > 0) {
+        const intersect = intersects[0];
         this.sphereInter.visible = true;
         this.sphereOnLine.visible = true;
-        this.sphereInter.position.copy(intersects[0].point);
+        this.sphereInter.position.copy(intersect.point);
         // @ts-ignore
-        this.sphereOnLine.position.copy(intersects[0].pointOnLine);
-        const i = intersects[0].faceIndex as number;
+        this.sphereOnLine.position.copy(intersect.pointOnLine);
+        
+        const i = intersect.faceIndex as number;
         const colors = obj.geometry.getAttribute('instanceColorStart');
         const color = new THREE.Color().setRGB(colors.getX(i), colors.getY(i), colors.getZ(i));
         // @ts-ignore
