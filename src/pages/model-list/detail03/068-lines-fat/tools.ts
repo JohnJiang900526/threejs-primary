@@ -94,6 +94,95 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 设置线的类型
+  setLineType(type: number = 0) {
+    switch(type) {
+      case 0:
+        if (this.line && this.line1) {
+          this.line.visible = true;
+          this.line1.visible = false;
+        }
+        break;
+      case 1:
+        if (this.line && this.line1) {
+          this.line.visible = false;
+          this.line1.visible = true;
+        }
+        break;
+    }
+  }
+
+  // 世界计量
+  setWorldUnits(val: boolean) {
+    if (this.matLine) {
+      this.matLine.worldUnits = val;
+      this.matLine.needsUpdate = true;
+    }
+  }
+
+  // 设置线宽
+  setLineWidth(width: number) {
+    if (this.matLine) {
+      this.matLine.linewidth = width;
+    }
+  }
+
+  // 设置alphaToCoverage
+  setAlphaToCoverage(val: boolean) {
+    if (this.matLine) {
+      this.matLine.alphaToCoverage = val;
+    }
+  }
+
+  // 设置是否为虚线
+  setLineDashed(dashed: boolean) {
+    if (this.matLine && this.line1) {
+      this.matLine.dashed = dashed;
+      this.line1.material = dashed ? this.matLineDashed : this.matLineBasic;
+    }
+  }
+
+  // 设置虚线缩放
+  setDashScale(scale: number) {
+    if (this.matLine) {
+      this.matLine.dashScale = scale;
+      this.matLineDashed.scale = scale;
+    }
+  }
+
+  // 设置dash / gap比例
+  setDashGap(val: 0 | 1 | 2) {
+    switch (val) {
+      case 0:
+        this.matLine.dashSize = 2;
+        this.matLine.gapSize = 1;
+
+        this.matLineDashed.dashSize = 2;
+        this.matLineDashed.gapSize = 1;
+        break;
+      case 1:
+        this.matLine.dashSize = 1;
+        this.matLine.gapSize = 1;
+
+        this.matLineDashed.dashSize = 1;
+        this.matLineDashed.gapSize = 1;
+        break;
+      case 2:
+        this.matLine.dashSize = 1;
+        this.matLine.gapSize = 2;
+
+        this.matLineDashed.dashSize = 1;
+        this.matLineDashed.gapSize = 2;
+        break;
+      default:
+        this.matLine.dashSize = 2;
+        this.matLine.gapSize = 1;
+
+        this.matLineDashed.dashSize = 2;
+        this.matLineDashed.gapSize = 1;
+    }
+  }
+
   // 创建模型
   private createModel() {
     // positions and colors
@@ -106,6 +195,7 @@ export class Model {
     );
 
     const spline = new THREE.CatmullRomCurve3(points);
+    // 四舍五入 取整
     const divisions = Math.round(12 * points.length);
     const point = new THREE.Vector3();
     const color = new THREE.Color();
@@ -126,21 +216,28 @@ export class Model {
 
     this.matLine = new LineMaterial({
       color: 0xffffff,
+      // 控制线宽。默认值为 1
       linewidth: 1,
+      // 是否使用顶点着色。默认值为false
       vertexColors: true,
+      // 是否为虚线
       dashed: false,
+      // 启用alpha to coverage. 只能在开启了MSAA的渲染环境中使用 
+      // (当渲染器创建的时候antialias 属性要true才能使用). 默认为 false
       alphaToCoverage: true,
     });
 
     this.line = new Line2(geometry, this.matLine);
+    // 计算LineDashedMaterial所需的距离的值的数组。 
+    // 对于几何体中的每一个顶点，这个方法计算出了当前点到线的起始点的累积长度
     this.line.computeLineDistances();
     this.line.scale.set(1, 1, 1);
     this.scene.add(this.line);
 
     // line1
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    const geometry1 = new THREE.BufferGeometry();
+    geometry1.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry1.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
     this.matLineBasic = new THREE.LineBasicMaterial({ 
       vertexColors: true
@@ -148,11 +245,11 @@ export class Model {
     this.matLineDashed = new THREE.LineDashedMaterial({ 
       vertexColors: true, 
       scale: 2, 
-      dashSize: 1, 
+      dashSize: 1,
       gapSize: 1
     });
 
-    this.line1 = new THREE.Line( geo, this.matLineBasic );
+    this.line1 = new THREE.Line(geometry1, this.matLineBasic);
     this.line1.computeLineDistances();
     this.line1.visible = false;
     this.scene.add(this.line1);
@@ -174,7 +271,8 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
 
     if (this.renderer) {
-      this.gpuPanel = new GPUStatsPanel(this.renderer.getContext() );
+      // 非常重要
+      this.gpuPanel = new GPUStatsPanel(this.renderer.getContext());
       this.stats.addPanel(this.gpuPanel);
       this.stats.showPanel(0);
     }
@@ -189,25 +287,39 @@ export class Model {
 
     // 执行渲染
     if (this.camera && this.renderer && this.camera2 && this.gpuPanel) {
+      // .setClearColor ( color : Color, alpha : Float ) : undefined
+      // 设置颜色及其透明度
       this.renderer.setClearColor(0x000000, 0);
+      // .setViewport ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
+      // 将视口大小设置为(x, y)到 (x + width, y + height).
       this.renderer.setViewport(0, 0, this.width, this.height);
 
+      // 非常重要 否则CPU有飙升
       this.gpuPanel.startQuery();
       this.renderer.render(this.scene, this.camera);
+      // 非常重要 否则CPU有飙升
       this.gpuPanel.endQuery();
 
       this.renderer.setClearColor(0x222222, 1);
+      // 清除深度缓存。相当于调用.clear( false, true, false )
       this.renderer.clearDepth(); // important!
 
+      // .setScissorTest ( boolean : Boolean ) : undefined
+      // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
       this.renderer.setScissorTest(true);
+      // .setScissor ( x : Integer, y : Integer, width : Integer, height : Integer ) : undefined
+      // 将剪裁区域设为(x, y)到(x + width, y + height) 
       this.renderer.setScissor(20, 20, this.insetWidth, this.insetHeight);
       this.renderer.setViewport(20, 20, this.insetWidth, this.insetHeight);
 
       this.camera2.position.copy(this.camera.position);
       this.camera2.quaternion.copy(this.camera.quaternion);
+      // 分辨率
       this.matLine.resolution.set(this.insetWidth, this.insetHeight);
 
       this.renderer.render(this.scene, this.camera2);
+      // .setScissorTest ( boolean : Boolean ) : undefined
+      // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
       this.renderer.setScissorTest(false);
     }
   }

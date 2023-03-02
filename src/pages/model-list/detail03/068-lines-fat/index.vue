@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Icon, Popup } from 'vant';
+  import { Icon, Popup, RadioGroup, Radio, Checkbox, Slider } from 'vant';
   import Page from "@/base/page/index.vue";
   import Block from "@/base/block/index.vue";
 </script>
@@ -8,7 +8,7 @@
   <div class="webgl-lines-fat-page">
     <Page title="webgl-lines-fat">
       <div ref="container" class="key-frame-page-inner">
-        <div v-show="false" class="actions">
+        <div v-show="true" class="actions">
           <Icon @click="openHandle" name="wap-nav" color="#fff"/>
         </div>
       </div>
@@ -17,7 +17,61 @@
     <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
       <Page @click-left="closeHandle" :default-click="false" title="模型设置">
         <div class="settings-content">
-          <Block title="设置"></Block>
+          <Block title="lineType">
+            <radio-group v-model="lineType" @change="lineTypeChange">
+              <div class="item-param">
+                <radio :name="0">LineGeometry</radio>
+              </div>
+              <div class="item-param">
+                <radio :name="1">gl.LINE</radio>
+              </div>
+            </radio-group>
+          </Block>
+
+          <Block title="WorldUnits & AlphaToCoverage & dashed">
+            <div class="item-param">
+              <Checkbox v-model="worldUnits" @change="worldUnitsChange">WorldUnits</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="alphaToCoverage" @change="alphaToCoverageChange">AlphaToCoverage</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="dashed" @change="dashedChange">Dashed</Checkbox>
+            </div>
+          </Block>
+
+          <Block title="dash / gap">
+            <radio-group v-model="dashGap" @change="dashGapChange">
+              <div class="item-param">
+                <radio :name="0">2 : 1</radio>
+              </div>
+              <div class="item-param">
+                <radio :name="1">1 : 1</radio>
+              </div>
+              <div class="item-param">
+                <radio :name="2">1 : 2</radio>
+              </div>
+            </radio-group>
+          </Block>
+
+          <Block title="width & dash scale">
+            <div class="item-param">width</div>
+            <div class="item-param slider">
+              <Slider 
+                v-model="width" :min="1" :max="10" :step="0.01" 
+                @change="widthChange" 
+                bar-height="4px" active-color="#238bfe"/>
+            </div>
+
+            <div class="item-param">dash scale</div>
+            <div class="item-param slider">
+              <Slider 
+                v-model="dashScale" :min="0.5" :max="2" :step="0.01" 
+                @change="dashScaleChange" 
+                bar-height="4px" active-color="#238bfe"/>
+            </div>
+          </Block>
+
           <div style="height: 200px"></div>
         </div>
       </Page>
@@ -34,6 +88,13 @@ export default defineComponent({
   data() {
     return {
       show: false,
+      lineType: 0,
+      worldUnits: false,
+      alphaToCoverage: true,
+      dashed: false,
+      dashGap: 1,
+      width: 1,
+      dashScale: 1
     };
   },
   mounted() {
@@ -44,6 +105,48 @@ export default defineComponent({
     render() {
       objModel = new Model(this.$refs.container as HTMLDivElement);
       objModel.init();
+    },
+    lineTypeChange(lineType: number) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setLineType(lineType);
+      }
+    },
+    worldUnitsChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setWorldUnits(val);
+      }
+    },
+    alphaToCoverageChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setAlphaToCoverage(val);
+      }
+    },
+    dashedChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setLineDashed(val);
+      }
+    },
+    dashGapChange(val: 0 | 1 | 2) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setDashGap(val);
+      }
+    },
+    widthChange(val: number) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setLineWidth(val);
+      }
+    },
+    dashScaleChange(val: number) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.setDashScale(val);
+      }
     },
     
     // 打开设置面板
