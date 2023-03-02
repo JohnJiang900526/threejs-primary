@@ -11,6 +11,11 @@ export interface listType {
 const list: listType[] = [
   {
     key: "069",
+    title: "069.WEBGL 粗线wireframe",
+    path: "/list/lines-fat-wireframe"
+  },
+  {
+    key: "069",
     title: "069.WEBGL 粗线Raycasting",
     path: "/list/lines-fat-raycasting"
   },

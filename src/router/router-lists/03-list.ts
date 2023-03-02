@@ -9,8 +9,15 @@ import LinesColors from "@/pages/model-list/detail03/066-lines-colors/index.vue"
 import LinesDashed from "@/pages/model-list/detail03/067-lines-dashed/index.vue";
 import LinesFat from "@/pages/model-list/detail03/068-lines-fat/index.vue";
 import LinesFatRaycasting from "@/pages/model-list/detail03/069-lines-fat-raycasting/index.vue";
+import LinesFatWireframe from "@/pages/model-list/detail03/070-lines-fat-wireframe/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/lines-fat-wireframe',
+    name: 'LinesFatWireframe',
+    meta: {title: "lines-fat-wireframe"},
+    component: LinesFatWireframe,
+  },
   {
     path: '/list/lines-fat-raycasting',
     name: 'LinesFatRaycasting',
