@@ -1,0 +1,215 @@
+<script setup lang="ts">
+  import { Icon, Popup, showLoadingToast, Checkbox } from 'vant';
+  import Page from "@/base/page/index.vue";
+  import Block from "@/base/block/index.vue";
+</script>
+
+<template>
+  <div class="webgl-loader-3dm-page">
+    <Page title="webgl-loader-3dm">
+      <div ref="container" class="key-frame-page-inner">
+        <div v-show="true" class="actions">
+          <Icon @click="openHandle" name="wap-nav" color="#fff"/>
+        </div>
+      </div>
+    </Page>
+
+    <Popup :show="show" position="right" @click-overlay="closeHandle" :style="{ height: '100%', width: '80%' }">
+      <Page @click-left="closeHandle" :default-click="false" title="模型设置">
+        <div class="settings-content">
+          <Block title="设置">
+            <div class="item-param">
+              <Checkbox v-model="pointclouds" @change="pointcloudsChange">pointclouds</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="textdot" @change="textdotChange">textdot</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="curves" @change="curvesChange">curves</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="brep" @change="brepChange">brep</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="subd" @change="subdChange">subd</Checkbox>
+            </div>
+            <div class="item-param">
+              <Checkbox v-model="lights" @change="lightsChange">lights</Checkbox>
+            </div>
+          </Block>
+
+          <div style="height: 200px"></div>
+        </div>
+      </Page>
+    </Popup>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import { Model } from "./tools";
+
+let objModel: Model | null;
+export default defineComponent({
+  data() {
+    return {
+      show: false,
+      pointclouds: false,
+      textdot: false,
+      curves: true,
+      brep: true,
+      subd: false,
+      lights: false,
+    };
+  },
+  mounted() {
+    this.render();
+  },
+  methods: {
+    // 渲染入口
+    render() {
+      objModel = new Model(this.$refs.container as HTMLDivElement);
+      const toast = showLoadingToast({
+        message: '模型加载中...',
+        forbidClick: true,
+        loadingType: 'spinner',
+      });
+
+      objModel.init(() => {
+        toast.close();
+      }, () => {
+        toast.close();
+      });
+    },
+    pointcloudsChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.actionHandle("pointclouds", val);
+      }
+    },
+    textdotChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.actionHandle("textdot", val);
+      }
+    },
+    curvesChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.actionHandle("curves", val);
+      }
+    },
+    brepChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.actionHandle("brep", val);
+      }
+    },
+    subdChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.actionHandle("subd", val);
+      }
+    },
+    lightsChange(val: boolean) {
+      if (objModel) {
+        this.closeHandle();
+        objModel.actionHandle("lights", val);
+      }
+    },
+    
+    // 打开设置面板
+    openHandle(e: MouseEvent) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.show = true;
+    },
+    // 关闭
+    closeHandle() {
+      this.show = false;
+    },
+  },
+  // 卸载前函数
+  beforeUnmount() {
+    objModel = null;
+  }
+});
+</script>
+<style lang='less' scoped>
+  @import "@/common/style/color.less";
+  @import "@/common/style/mixins.less";
+
+  .webgl-loader-3dm-page {
+    .absolute-page();
+    background-color: #111111;
+    .selection {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+      top: 45px;
+      z-index: 999;
+      .box {
+        height: 100px;
+				width: 100px;
+				border: 1px solid white;
+        margin-top: -45px;
+      }
+    }
+    .key-frame-page-inner {
+      position: relative;
+      .width-and-height();
+      .actions {
+        padding: 10px;
+        box-sizing: border-box;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        z-index: 1000;
+      }
+    }
+
+    .settings-content {
+      .width-and-height();
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      .item-param {
+        box-sizing: border-box;
+        padding: 10px;
+        &.slider {
+          padding: 15px 20px;
+        }
+      }
+
+      .color-block {
+        width: 120px;
+        height: 35px;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+      }
+    }
+
+    .color-content {
+      display: flex;
+      flex-direction: column;
+      .color-content-body {
+        flex: 1;
+        padding: 20px 10px;
+        box-sizing: border-box;
+      }
+
+      .color-content-footer {
+        .top-line();
+        height: 55px;
+        text-align: center;
+        padding: 10px 10px;
+        box-sizing: border-box;
+      }
+    }
+  }
+</style>
