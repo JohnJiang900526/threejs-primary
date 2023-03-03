@@ -48,7 +48,9 @@ export class Model {
     // 创建渲染器
     this.createRenderer();
 
-    // 创建控制器
+    // 创建控制器 轨迹球控制器（TrackballControls）
+    // TrackballControls 与 OrbitControls 相类似。然而，它不能恒定保持摄像机的up向量。 
+    // 这意味着，如果摄像机绕过“北极”和“南极”，则不会翻转以保持“右侧朝上”
     this.controls = new TrackballControls(this.camera, this.renderer?.domElement);
     this.controls.update();
 
