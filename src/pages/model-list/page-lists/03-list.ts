@@ -10,8 +10,13 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
-    key: "069",
-    title: "069.WEBGL 粗线wireframe",
+    key: "071",
+    title: "071.WEBGL 线球",
+    path: "/list/lines-sphere"
+  },
+  {
+    key: "070",
+    title: "070.WEBGL 粗线wireframe",
     path: "/list/lines-fat-wireframe"
   },
   {

@@ -10,8 +10,15 @@ import LinesDashed from "@/pages/model-list/detail03/067-lines-dashed/index.vue"
 import LinesFat from "@/pages/model-list/detail03/068-lines-fat/index.vue";
 import LinesFatRaycasting from "@/pages/model-list/detail03/069-lines-fat-raycasting/index.vue";
 import LinesFatWireframe from "@/pages/model-list/detail03/070-lines-fat-wireframe/index.vue";
+import LinesSphere from "@/pages/model-list/detail03/071-lines-sphere/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/lines-sphere',
+    name: 'LinesSphere',
+    meta: {title: "lines-sphere"},
+    component: LinesSphere,
+  },
   {
     path: '/list/lines-fat-wireframe',
     name: 'LinesFatWireframe',
