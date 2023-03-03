@@ -13,8 +13,15 @@ import LinesFatWireframe from "@/pages/model-list/detail03/070-lines-fat-wirefra
 import LinesSphere from "@/pages/model-list/detail03/071-lines-sphere/index.vue";
 import Loader3dm from "@/pages/model-list/detail03/072-loader-3dm/index.vue";
 import Loader3ds from "@/pages/model-list/detail03/073-loader-3ds/index.vue";
+import Loader3mf from "@/pages/model-list/detail03/074-loader-3mf/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-3mf',
+    name: 'Loader3mf',
+    meta: {title: "loader-3mf"},
+    component: Loader3mf,
+  },
   {
     path: '/list/loader-3ds',
     name: 'Loader3ds',
