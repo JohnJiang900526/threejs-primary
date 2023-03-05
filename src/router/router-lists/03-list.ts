@@ -15,8 +15,15 @@ import Loader3dm from "@/pages/model-list/detail03/072-loader-3dm/index.vue";
 import Loader3ds from "@/pages/model-list/detail03/073-loader-3ds/index.vue";
 import Loader3mf from "@/pages/model-list/detail03/074-loader-3mf/index.vue";
 import Loader3mfMaterials from "@/pages/model-list/detail03/075-loader-3mf-materials/index.vue";
+import LoaderAmf from "@/pages/model-list/detail03/076-loader-amf/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-amf',
+    name: 'LoaderAmf',
+    meta: {title: "loader-amf"},
+    component: LoaderAmf,
+  },
   {
     path: '/list/loader-3mf-materials',
     name: 'Loader3mfMaterials',

@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "076",
+    title: "076.WEBGL amf加载器",
+    path: "/list/loader-amf"
+  },
+  {
     key: "075",
     title: "075.WEBGL 3mf加载器材质",
     path: "/list/loader-3mf-materials"
