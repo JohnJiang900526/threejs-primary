@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "079",
+    title: "079.WEBGL collada运动学",
+    path: "/list/loader-collada-kinematics"
+  },
+  {
     key: "078",
     title: "078.WEBGL collada加载器",
     path: "/list/loader-collada"

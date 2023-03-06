@@ -18,8 +18,15 @@ import Loader3mfMaterials from "@/pages/model-list/detail03/075-loader-3mf-mater
 import LoaderAmf from "@/pages/model-list/detail03/076-loader-amf/index.vue";
 import LoaderBvh from "@/pages/model-list/detail03/077-loader-bvh/index.vue";
 import LoaderCollada from "@/pages/model-list/detail03/078-loader-collada/index.vue";
+import LoaderColladaKinematics from "@/pages/model-list/detail03/079-loader-collada-kinematics/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-collada-kinematics',
+    name: 'LoaderColladaKinematics',
+    meta: {title: "loader-collada-kinematics"},
+    component: LoaderColladaKinematics,
+  },
   {
     path: '/list/loader-collada',
     name: 'LoaderCollada',
