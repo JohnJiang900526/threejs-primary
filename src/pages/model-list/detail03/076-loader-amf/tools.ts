@@ -87,6 +87,10 @@ export class Model {
   // 创建地板
   private createFlooter() {
     const helper = new THREE.GridHelper(50, 50, 0xffffff, 0x555555);
+    // .rotateOnAxis ( axis : Vector3, angle : Float ) : this
+    // axis —— 一个在局部空间中的标准化向量
+    // angle —— 角度，以弧度来表示
+    // 在局部空间中绕着该物体的轴来旋转一个物体，假设这个轴已被标准化
     helper.rotateOnAxis(new THREE.Vector3( 1, 0, 0 ), 90 * ( Math.PI/180));
     this.scene.add(helper);
   }
