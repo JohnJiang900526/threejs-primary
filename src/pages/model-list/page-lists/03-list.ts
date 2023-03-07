@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "081",
+    title: "081.WEBGL draco",
+    path: "/list/loader-draco"
+  },
+  {
     key: "080",
     title: "080.WEBGL collada skinning",
     path: "/list/loader-collada-skinning"

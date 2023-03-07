@@ -20,8 +20,15 @@ import LoaderBvh from "@/pages/model-list/detail03/077-loader-bvh/index.vue";
 import LoaderCollada from "@/pages/model-list/detail03/078-loader-collada/index.vue";
 import LoaderColladaKinematics from "@/pages/model-list/detail03/079-loader-collada-kinematics/index.vue";
 import LoaderColladaKinning from "@/pages/model-list/detail03/080-loader-collada-skinning/index.vue";
+import LoaderDraco from "@/pages/model-list/detail03/081-loader-draco/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-draco',
+    name: 'LoaderDraco',
+    meta: {title: "loader-draco"},
+    component: LoaderDraco,
+  },
   {
     path: '/list/loader-collada-skinning',
     name: 'LoaderColladaKinning',
