@@ -74,7 +74,7 @@ export class Model {
   }
 
   private createFloor() {
-    const helper = new THREE.GridHelper(20, 20, 0x888888, 0x444444);
+    const helper = new THREE.GridHelper(40, 40, 0x888888, 0x444444);
     this.scene.add(helper);
   }
 
@@ -84,13 +84,9 @@ export class Model {
     const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
     this.particleLight = new THREE.Mesh(geometry, material);
+    this.particleLight.add(new THREE.PointLight(0xffffff, 0.5));
     this.scene.add(this.particleLight);
-
-    const light = new THREE.HemisphereLight(0xffeeee, 0x111122);
-    this.scene.add(light);
-
-    const pointLight = new THREE.PointLight(0xffffff, 0.3);
-    this.particleLight.add(pointLight);
+    this.scene.add(new THREE.HemisphereLight(0xffeeee, 0x111122));
   }
 
   // 加载模型
@@ -110,12 +106,12 @@ export class Model {
       this.dae.traverse((child) => {
         const obj = child as THREE.Mesh;
         if (obj.isMesh) {
-          // @ts-ignore
+          // @ts-ignore 平面着色
           obj.material.flatShading = true;
         }
       });
 
-      this.dae.scale.set(10.0, 10.0, 10.0);
+      this.dae.scale.set(8.0, 8.0, 8.0);
       this.dae.updateMatrix();
       this.kinematics = collada.kinematics as KinematicsType;
       this.scene.add(this.dae);
@@ -128,8 +124,10 @@ export class Model {
   // 设置 补间动画
   private setupTween() {
     const that = this;
+    // .randInt ( low : Integer, high : Integer ) : Integer
+    // 在区间 [low, high] 内随机一个整数
     const duration = THREE.MathUtils.randInt(1000, 5000);
-    const target: {[key: string]: any} = {};
+    const target: {[key: string]: number} = {};
 
     if (this.kinematics) {
       for (const prop in this.kinematics.joints) {
@@ -140,17 +138,19 @@ export class Model {
             const position = old ? old : joint.zeroPosition;
             
             this.tweenParameters[prop] = position;
+            // .randInt ( low : Integer, high : Integer ) : Integer
+            // 在区间 [low, high] 内随机一个整数
             target[prop] = THREE.MathUtils.randInt(joint.limits.min, joint.limits.max);
           }
         }
       }
   
-      this.kinematicsTween = new Tween<{[key: string]: number}>(this.tweenParameters).to(target, duration).easing(TWEEN.Easing.Quadratic.Out);
+      this.kinematicsTween = new Tween(this.tweenParameters).to(target, duration).easing(TWEEN.Easing.Quadratic.Out);
       this.kinematicsTween.onUpdate((object) => {
         if (that.kinematics) {
           for (const prop in that.kinematics.joints) {
             const joint = that.kinematics.joints[prop];
-            if (joint && !joint.static) {
+            if (!joint.static) {
               that.kinematics.setJointValue(prop, object[prop]);
             }
           }
