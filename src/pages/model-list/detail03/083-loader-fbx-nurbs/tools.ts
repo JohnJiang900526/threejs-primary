@@ -52,6 +52,7 @@ export class Model {
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    // 控制器的焦点，.object的轨道围绕它运行。 它可以在任何时候被手动更新，以更改控制器的焦点
     this.controls.target.set(0, 8, 0);
     this.controls.update();
     
