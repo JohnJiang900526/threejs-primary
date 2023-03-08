@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "082",
+    title: "082.WEBGL fbx",
+    path: "/list/loader-fbx"
+  },
+  {
     key: "081",
     title: "081.WEBGL draco",
     path: "/list/loader-draco"
