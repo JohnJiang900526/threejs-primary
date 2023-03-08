@@ -24,8 +24,15 @@ import LoaderDraco from "@/pages/model-list/detail03/081-loader-draco/index.vue"
 import LoaderFbx from "@/pages/model-list/detail03/082-loader-fbx/index.vue";
 import LoaderFbxNurbs from "@/pages/model-list/detail03/083-loader-fbx-nurbs/index.vue";
 import LoaderGcode from "@/pages/model-list/detail03/084-loader-gcode/index.vue";
+import LoaderGltf from "@/pages/model-list/detail03/085-loader-gltf/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-gltf',
+    name: 'LoaderGltf',
+    meta: {title: "loader-gltf"},
+    component: LoaderGltf,
+  },
   {
     path: '/list/loader-gcode',
     name: 'LoaderGcode',
