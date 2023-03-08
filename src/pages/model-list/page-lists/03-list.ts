@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "083",
+    title: "083.WEBGL fbx nurbs",
+    path: "/list/loader-fbx-nurbs"
+  },
+  {
     key: "082",
     title: "082.WEBGL fbx",
     path: "/list/loader-fbx"

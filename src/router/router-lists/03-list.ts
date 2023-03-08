@@ -22,8 +22,15 @@ import LoaderColladaKinematics from "@/pages/model-list/detail03/079-loader-coll
 import LoaderColladaKinning from "@/pages/model-list/detail03/080-loader-collada-skinning/index.vue";
 import LoaderDraco from "@/pages/model-list/detail03/081-loader-draco/index.vue";
 import LoaderFbx from "@/pages/model-list/detail03/082-loader-fbx/index.vue";
+import LoaderFbxNurbs from "@/pages/model-list/detail03/083-loader-fbx-nurbs/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-fbx-nurbs',
+    name: 'LoaderFbxNurbs',
+    meta: {title: "loader-fbx-nurbs"},
+    component: LoaderFbxNurbs,
+  },
   {
     path: '/list/loader-fbx',
     name: 'LoaderFbx',
