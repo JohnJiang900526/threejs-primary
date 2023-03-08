@@ -23,8 +23,15 @@ import LoaderColladaKinning from "@/pages/model-list/detail03/080-loader-collada
 import LoaderDraco from "@/pages/model-list/detail03/081-loader-draco/index.vue";
 import LoaderFbx from "@/pages/model-list/detail03/082-loader-fbx/index.vue";
 import LoaderFbxNurbs from "@/pages/model-list/detail03/083-loader-fbx-nurbs/index.vue";
+import LoaderGcode from "@/pages/model-list/detail03/084-loader-gcode/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-gcode',
+    name: 'LoaderGcode',
+    meta: {title: "loader-gcode"},
+    component: LoaderGcode,
+  },
   {
     path: '/list/loader-fbx-nurbs',
     name: 'LoaderFbxNurbs',
