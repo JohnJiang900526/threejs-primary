@@ -26,8 +26,16 @@ import LoaderFbxNurbs from "@/pages/model-list/detail03/083-loader-fbx-nurbs/ind
 import LoaderGcode from "@/pages/model-list/detail03/084-loader-gcode/index.vue";
 import LoaderGltf from "@/pages/model-list/detail03/085-loader-gltf/index.vue";
 import LoaderGltfCompressed from "@/pages/model-list/detail03/086-loader-gltf-compressed/index.vue";
+import LoaderGltfInstancing from "@/pages/model-list/detail03/087-loader-gltf-instancing/index.vue";
+
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-gltf-instancing',
+    name: 'LoaderGltfInstancing',
+    meta: {title: "loader-gltf-instancing"},
+    component: LoaderGltfInstancing,
+  },
   {
     path: '/list/loader-gltf-compressed',
     name: 'LoaderGltfCompressed',
