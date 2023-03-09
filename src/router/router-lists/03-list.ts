@@ -27,9 +27,16 @@ import LoaderGcode from "@/pages/model-list/detail03/084-loader-gcode/index.vue"
 import LoaderGltf from "@/pages/model-list/detail03/085-loader-gltf/index.vue";
 import LoaderGltfCompressed from "@/pages/model-list/detail03/086-loader-gltf-compressed/index.vue";
 import LoaderGltfInstancing from "@/pages/model-list/detail03/087-loader-gltf-instancing/index.vue";
+import LoaderGltfIridescence from "@/pages/model-list/detail03/088-loader-gltf-iridescence/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-gltf-iridescence',
+    name: 'LoaderGltfIridescence',
+    meta: {title: "loader-gltf-iridescence"},
+    component: LoaderGltfIridescence,
+  },
   {
     path: '/list/loader-gltf-instancing',
     name: 'LoaderGltfInstancing',

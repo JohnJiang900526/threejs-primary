@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "088",
+    title: "088.WEBGL Loader GLTF彩虹",
+    path: "/list/loader-gltf-iridescence"
+  },
+  {
     key: "087",
     title: "087.WEBGL Loader GLTF实例化",
     path: "/list/loader-gltf-instancing"
