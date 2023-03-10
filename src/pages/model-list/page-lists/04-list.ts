@@ -11,7 +11,7 @@ export interface listType {
 const list: listType[] = [
   {
     key: "092",
-    title: "092.WEBGL ifc Loader",
+    title: "092.WEBGL Loader IFC",
     path: "/list/loader-ifc"
   },
   {
