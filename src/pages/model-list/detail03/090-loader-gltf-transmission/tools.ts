@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { showLoadingToast } from "vant";
+import { showFailToast, showLoadingToast } from "vant";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 
 export class Model {
   private width: number;
@@ -16,6 +17,8 @@ export class Model {
   private controls: null | OrbitControls
   private stats: null | Stats;
 
+  private clock: THREE.Clock
+  private mixer: null | THREE.AnimationMixer
   private group: null | THREE.Group
   constructor(container: HTMLDivElement) {
     this.container = container;
@@ -28,37 +31,35 @@ export class Model {
     this.controls = null;
     this.stats = null;
 
+    this.clock = new THREE.Clock();
+    this.mixer = null;
     this.group = null;
   }
 
   // 初始化方法入口
   init() {
-    // 渲染器
-    this.createRenderer();
-
     // 场景
-    const environment = new RoomEnvironment();
-    const pmremGenerator = new THREE.PMREMGenerator(this.renderer as THREE.WebGLRenderer);
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xbbbbbb);
-    this.scene.environment = pmremGenerator.fromScene(environment).texture;
+    this.scene.background = new THREE.Color(0xb39a8a);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 0.25, 20);
-    this.camera.position.set(-0.75, 0.7, 1.25);
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.25, 20);
+    this.camera.position.set(0, 0.4, 0.7);
 
     // 加载模型和材质
-    this.loadModel();
+    this.loadModelAndTexture().catch((e) => {
+      showFailToast(e.message);
+    });
+
+    // 创建渲染器
+    this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    // .enableDamping : Boolean
-    // 将其设置为true以启用阻尼（惯性），这将给控制器带来重量感
-    // 默认值为false。请注意，如果该值被启用，你将必须在你的动画循环里调用.update()
-    this.controls.enableDamping = true;
-    this.controls.minDistance = 1;
-    this.controls.maxDistance = 100;
-    this.controls.target.set(0, 0.35, 0);
+    this.controls.enablePan = true;
+    this.controls.minDistance = 0.5;
+    this.controls.maxDistance = 1;
+    this.controls.target.set(0, 0.05, 0);
     this.controls.update();
     
     this.initStats();
@@ -72,19 +73,10 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  setSheen(sheen: number) {
-    if (this.group) {
-      const obj = this.group.getObjectByName("SheenChair_fabric") as THREE.Mesh;
-
-      // @ts-ignore
-      if (obj) { obj.material.sheen = sheen;}
-    }
-  }
-
   // 加载模型&材质
-  private loadModel () {
-    const loader = new GLTFLoader();
-    const url = "/examples/models/gltf/SheenChair.glb";
+  private async loadModelAndTexture () {
+    const rgbeLoader = new RGBELoader();
+    const gltfLoader = new GLTFLoader();
 
     const toast = showLoadingToast({
       message: '加载中...',
@@ -92,15 +84,27 @@ export class Model {
       loadingType: 'spinner',
     });
 
-    loader.load(url, (gltf) => {
-      toast.close();
+    rgbeLoader.setPath("/examples/textures/equirectangular/");
+    gltfLoader.setPath("/examples/models/gltf/");
+    // .setDRACOLoader ( dracoLoader : DRACOLoader ) : this
+    // dracoLoader — THREE.DRACOLoader的实例，用于解码使用KHR_draco_mesh_compression扩展压缩过的文件
+    gltfLoader.setDRACOLoader(new DRACOLoader().setDecoderPath('/examples/js/libs/draco/gltf/'));
 
-      this.group = gltf.scene;
-      this.group.scale.set(0.7, 0.7, 0.7);
-      this.scene.add(this.group);
-    }, undefined, () => {
-      toast.close();
-    });
+    const [texture, gltf] = await Promise.all([
+      rgbeLoader.loadAsync('royal_esplanade_1k.hdr'),
+      gltfLoader.loadAsync('IridescentDishWithOlives.glb'),
+    ]);
+
+    toast.close();
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    this.scene.background = texture;
+    this.scene.environment = texture;
+
+    this.group = gltf.scene;
+    this.scene.add(this.group);
+    this.mixer = new THREE.AnimationMixer(this.group);
+    if (!gltf.animations[0]) { return false; }
+    this.mixer.clipAction(gltf.animations[0]).play();
   }
 
   // 创建渲染器
@@ -129,8 +133,15 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
 
+    if (this.group) {
+      this.group.rotation.y += 0.005;
+    }
+
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
+    // 动画混合器更新
+    if (this.mixer) { this.mixer.update(this.clock.getDelta()); }
+    // 控制器更新
     if (this.controls) { this.controls.update(); }
     // 执行渲染
     if (this.camera && this.renderer) {

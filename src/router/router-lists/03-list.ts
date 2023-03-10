@@ -29,9 +29,16 @@ import LoaderGltfCompressed from "@/pages/model-list/detail03/086-loader-gltf-co
 import LoaderGltfInstancing from "@/pages/model-list/detail03/087-loader-gltf-instancing/index.vue";
 import LoaderGltfIridescence from "@/pages/model-list/detail03/088-loader-gltf-iridescence/index.vue";
 import LoaderGltfSheen from "@/pages/model-list/detail03/089-loader-gltf-sheen/index.vue";
+import LoaderGltfTransmission from "@/pages/model-list/detail03/090-loader-gltf-transmission/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-gltf-transmission',
+    name: 'LoaderGltfTransmission',
+    meta: {title: "loader-gltf-transmission"},
+    component: LoaderGltfTransmission,
+  },
   {
     path: '/list/loader-gltf-sheen',
     name: 'LoaderGltfSheen',
