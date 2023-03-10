@@ -10,8 +10,13 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
-    key: "090",
-    title: "090.WEBGL Loader GLTF变型模式",
+    key: "092",
+    title: "092.WEBGL ifc Loader",
+    path: "/list/loader-ifc"
+  },
+  {
+    key: "091",
+    title: "091.WEBGL Loader GLTF变型模式",
     path: "/list/loader-gltf-variants"
   },
 ];
