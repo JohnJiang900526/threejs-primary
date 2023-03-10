@@ -44,7 +44,7 @@ export class Model {
 
     // 相机
     this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.25, 20);
-    this.camera.position.set(0, 0.4, 0.7);
+    this.camera.position.set(0, 0.25, 0.7);
 
     // 加载模型和材质
     this.loadModelAndTexture().catch((e) => {
