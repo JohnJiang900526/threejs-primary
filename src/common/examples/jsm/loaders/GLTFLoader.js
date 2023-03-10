@@ -2231,7 +2231,7 @@ function getImageURIMimeType( uri ) {
 
 /* GLTF PARSER */
 
-class GLTFParser {
+export class GLTFParser {
 
 	constructor( json = {}, options = {} ) {
 
