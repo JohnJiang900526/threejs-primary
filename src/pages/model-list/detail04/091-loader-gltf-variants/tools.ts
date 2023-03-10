@@ -120,7 +120,7 @@ export class Model {
     this.selectVariant(this.variant);
   }
 
-  // 选择selectVariant
+  // 选择Variant
   private selectVariant(variant: VariantType = "midnight") {
     const variantIndex = this.extension.variants.findIndex((item) => {
       return item.name.includes(variant);
