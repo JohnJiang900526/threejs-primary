@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "093",
+    title: "093.WEBGL Loader BITMAP",
+    path: "/list/loader-bitmap"
+  },
+  {
     key: "092",
     title: "092.WEBGL Loader IFC",
     path: "/list/loader-ifc"
