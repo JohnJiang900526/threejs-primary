@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { showLoadingToast } from "vant";
 import Stats from 'three/examples/jsm/libs/stats.module';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 
 export class Model {
@@ -11,6 +11,7 @@ export class Model {
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
   private camera: null | THREE.PerspectiveCamera;
+  private controls: null | OrbitControls
   private stats: null | Stats;
 
   private group: THREE.Group;
@@ -24,6 +25,7 @@ export class Model {
     this.scene = new THREE.Scene();
     this.renderer = null;
     this.camera = null;
+    this.controls = null;
     this.stats = null;
 
     this.group = new THREE.Group();
@@ -43,23 +45,20 @@ export class Model {
     this.camera.lookAt(0, 0, 0);
 
     // group
-    this.group = new THREE.Group();
-    this.cubes = new THREE.Group();
-    this.group.add(new THREE.GridHelper(40, 120, 0x888888, 0x444444));
-    this.group.add(this.cubes);
-    this.scene.add(this.group);
-
+    this.render();
+    
     // 渲染器
     this.createRenderer();
 
-    setTimeout(() => { this.addImage(); }, 300);
-    setTimeout(() => { this.addImage(); }, 600);
-    setTimeout(() => { this.addImage(); }, 900);
+    // 控制器
+    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.enablePan = true;
+    this.controls.update();
 
-    setTimeout(() => { this.addImageBitmap(); }, 1300);
-    setTimeout(() => { this.addImageBitmap(); }, 1600);
-    setTimeout(() => { this.addImageBitmap(); }, 1900);
+    // 创建模型
+    this.createModel();
 
+    this.initStats();
     this.animate();
     this.resize();
   }
@@ -70,24 +69,37 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 创建模型
+  private createModel() {
+    setTimeout(() => { this.addImage(); }, 300);
+    setTimeout(() => { this.addImage(); }, 600);
+    setTimeout(() => { this.addImage(); }, 900);
+    setTimeout(() => { this.addImageBitmap(); }, 1300);
+    setTimeout(() => { this.addImageBitmap(); }, 1600);
+    setTimeout(() => { this.addImageBitmap(); }, 1900);
+  }
+
+  // 添加到场景
+  private render() {
+    const grid = new THREE.GridHelper(40, 120, 0x888888, 0x444444);
+    grid.position.y = -1;
+    this.group = new THREE.Group();
+    this.cubes = new THREE.Group();
+    this.group.add(this.cubes);
+
+    this.scene.add(this.group);
+    this.scene.add(grid);
+  }
+
   // 添加ImageBitmap
   private addImageBitmap() {
     const loader = new THREE.ImageBitmapLoader();
     const url = `/examples/textures/planets/earth_atmos_2048.jpg?${performance.now()}`;
-    const toast = showLoadingToast({
-      message: '加载中...',
-      forbidClick: true,
-      loadingType: 'spinner',
-    });
 
-    loader.setCrossOrigin("*");
     loader.load(url, (imageBitmap) => {
-      toast.close();
       const texture = new THREE.CanvasTexture(imageBitmap);
       const material = new THREE.MeshBasicMaterial({ map: texture });
       this.addCube(material);
-    }, undefined, () => {
-      toast.close();
     });
   }
 
@@ -95,22 +107,16 @@ export class Model {
   private addImage() {
     const loader = new THREE.ImageLoader();
     const url = `/examples/textures/planets/earth_atmos_2048.jpg?${performance.now()}`;
-    const toast = showLoadingToast({
-      message: '加载中...',
-      forbidClick: true,
-      loadingType: 'spinner',
-    });
 
-    loader.setCrossOrigin("*");
     loader.load(url, (image) => {
-      toast.close();
       const texture = new THREE.CanvasTexture(image);
       const material = new THREE.MeshBasicMaterial({
-        color: 0xff8888, map: texture
+        color: 0xff8888,
+        // .map : Texture
+        // 颜色贴图。可以选择包括一个alpha通道，通常与.transparent 或.alphaTest。默认为null
+        map: texture,
       });
       this.addCube(material);
-    }, undefined, () => {
-      toast.close();
     });
   }
 
@@ -119,15 +125,15 @@ export class Model {
     const cube = new THREE.Mesh(this.geometry, material);
 
     cube.position.set(
-      Math.random() * 2 - 1, 
-      Math.random() * 2 - 1, 
-      Math.random() * 2 - 1,
+      Math.random() * 3 - 1, 
+      Math.random() * 3 - 1, 
+      Math.random() * 3 - 1,
     );
 
     cube.rotation.set(
-      Math.random() * 2 * Math.PI,
-      Math.random() * 2 * Math.PI,
-      Math.random() * 2 * Math.PI,
+      Math.random() * 3 * Math.PI,
+      Math.random() * 3 * Math.PI,
+      Math.random() * 3 * Math.PI,
     );
     this.cubes.add(cube);
   }
@@ -152,11 +158,16 @@ export class Model {
     window.requestAnimationFrame(() => { this.animate(); });
 
     if (this.group) {
-      this.group.rotation.y = performance.now()/3000;
+      this.group.traverse((cube) => {
+        cube.rotation.y += 0.005;
+        cube.rotation.z += 0.005;
+      });
     }
 
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
+    if (this.controls) { this.controls.update(); }
+
     // 执行渲染
     if (this.camera && this.renderer) {
       this.renderer.render(this.scene, this.camera);
