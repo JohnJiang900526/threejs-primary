@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "095",
+    title: "095.WEBGL Loader Idraw",
+    path: "/list/loader-idraw"
+  },
+  {
     key: "094",
     title: "094.WEBGL Loader KMZ",
     path: "/list/loader-kmz"

@@ -4,9 +4,16 @@ import LoaderGltfVariants from "@/pages/model-list/detail04/091-loader-gltf-vari
 import LoaderIfc from "@/pages/model-list/detail04/092-loader-ifc/index.vue";
 import LoaderBitmap from "@/pages/model-list/detail04/093-loader-bitmap/index.vue";
 import LoaderKmz from "@/pages/model-list/detail04/094-loader-kmz/index.vue";
+import LoaderIdraw from "@/pages/model-list/detail04/095-loader-idraw/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-idraw',
+    name: 'LoaderIdraw',
+    meta: {title: "loader-idraw"},
+    component: LoaderIdraw,
+  },
   {
     path: '/list/loader-kmz',
     name: 'LoaderKmz',
