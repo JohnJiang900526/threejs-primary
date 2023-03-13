@@ -94,7 +94,7 @@ export class Model {
       toast.close();
 
       this.box = kmz.scene;
-      this.box.position.y = 0.5;
+      this.box.position.y = 1;
       this.scene.add(this.box);
     }, undefined, () => {
       toast.close();
@@ -130,7 +130,7 @@ export class Model {
     window.requestAnimationFrame(() => { this.animate(); });
 
     if (this.box) {
-      this.box.rotation.y += 0.05;
+      this.box.rotation.y += 0.005;
     }
 
     // 统计信息更新
