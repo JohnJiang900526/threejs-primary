@@ -5,9 +5,16 @@ import LoaderIfc from "@/pages/model-list/detail04/092-loader-ifc/index.vue";
 import LoaderBitmap from "@/pages/model-list/detail04/093-loader-bitmap/index.vue";
 import LoaderKmz from "@/pages/model-list/detail04/094-loader-kmz/index.vue";
 import LoaderIdraw from "@/pages/model-list/detail04/095-loader-idraw/index.vue";
+import LoaderLwo from "@/pages/model-list/detail04/096-loader-lwo/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-lwo',
+    name: 'LoaderLwo',
+    meta: {title: "loader-lwo"},
+    component: LoaderLwo,
+  },
   {
     path: '/list/loader-idraw',
     name: 'LoaderIdraw',

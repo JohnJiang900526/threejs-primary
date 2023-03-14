@@ -11,6 +11,11 @@ export interface listType {
 const list: listType[] = [
   {
     key: "095",
+    title: "095.WEBGL Loader lwo",
+    path: "/list/loader-lwo"
+  },
+  {
+    key: "095",
     title: "095.WEBGL Loader Idraw",
     path: "/list/loader-idraw"
   },
