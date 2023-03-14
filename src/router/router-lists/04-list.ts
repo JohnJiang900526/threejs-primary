@@ -6,9 +6,16 @@ import LoaderBitmap from "@/pages/model-list/detail04/093-loader-bitmap/index.vu
 import LoaderKmz from "@/pages/model-list/detail04/094-loader-kmz/index.vue";
 import LoaderIdraw from "@/pages/model-list/detail04/095-loader-idraw/index.vue";
 import LoaderLwo from "@/pages/model-list/detail04/096-loader-lwo/index.vue";
+import LoaderMd2 from "@/pages/model-list/detail04/097-loader-md2/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-md2',
+    name: 'LoaderMd2',
+    meta: {title: "loader-md2"},
+    component: LoaderMd2,
+  },
   {
     path: '/list/loader-lwo',
     name: 'LoaderLwo',
