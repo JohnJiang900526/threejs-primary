@@ -8,9 +8,16 @@ import LoaderIdraw from "@/pages/model-list/detail04/095-loader-idraw/index.vue"
 import LoaderLwo from "@/pages/model-list/detail04/096-loader-lwo/index.vue";
 import LoaderMd2 from "@/pages/model-list/detail04/097-loader-md2/index.vue";
 import LoaderMd2Control from "@/pages/model-list/detail04/098-loader-md2-control/index.vue";
+import LoaderMdd from "@/pages/model-list/detail04/099-loader-mdd/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-mdd',
+    name: 'LoaderMdd',
+    meta: {title: "loader-mdd"},
+    component: LoaderMdd,
+  },
   {
     path: '/list/loader-md2-control',
     name: 'LoaderMd2Control',

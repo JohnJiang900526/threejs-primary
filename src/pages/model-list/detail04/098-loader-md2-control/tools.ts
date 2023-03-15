@@ -190,9 +190,15 @@ export class Model {
       this.characters.push(character);
     }
 
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
     const baseCharacter = new MD2CharacterComplex();
     baseCharacter.scale = 3;
     baseCharacter.onLoadComplete = () => {
+      toast.close();
       let k = 0;
       
       for (let j = 0; j < nRows; j++) {
