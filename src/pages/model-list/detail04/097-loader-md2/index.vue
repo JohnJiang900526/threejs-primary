@@ -101,13 +101,13 @@ export default defineComponent({
         z-index: 1000;
       }
       .lil-gui.root {
-        position: absolute;
-        right: auto;
-        top: auto;
         max-height: 50%;
         max-width: 80%;
+        position: absolute;
+        top: auto;
         bottom: 0;
         left: 0;
+        right: auto;
       }
     }
 

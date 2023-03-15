@@ -3,7 +3,7 @@ import { showLoadingToast } from 'vant';
 import { GUI } from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { MD2Character } from 'three/examples/jsm/misc/MD2Character';
+import { MD2Character, type MD2PartsConfig } from 'three/examples/jsm/misc/MD2Character';
 
 
 export class Model {
@@ -21,15 +21,11 @@ export class Model {
   private gui: null | GUI
   private playbackConfig: {
     speed: number,
-    wireframe: boolean
+    wireframe: boolean,
+    [key: string]: any
   }
   private clock: THREE.Clock
-  private config: {
-    baseUrl: string,
-    body: string,
-    skins: string[],
-    weapons: [string, string][]
-  }
+  private config: MD2PartsConfig
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -56,17 +52,17 @@ export class Model {
         'dead.png', 'gearwhore.png'
       ],
       weapons: [
-        [ 'weapon.md2', 'weapon.png' ],
-        [ 'w_bfg.md2', 'w_bfg.png' ],
-        [ 'w_blaster.md2', 'w_blaster.png' ],
-        [ 'w_chaingun.md2', 'w_chaingun.png' ],
-        [ 'w_glauncher.md2', 'w_glauncher.png' ],
-        [ 'w_hyperblaster.md2', 'w_hyperblaster.png' ],
-        [ 'w_machinegun.md2', 'w_machinegun.png' ],
-        [ 'w_railgun.md2', 'w_railgun.png' ],
-        [ 'w_rlauncher.md2', 'w_rlauncher.png' ],
-        [ 'w_shotgun.md2', 'w_shotgun.png' ],
-        [ 'w_sshotgun.md2', 'w_sshotgun.png' ]
+        ['weapon.md2', 'weapon.png'],
+        ['w_bfg.md2', 'w_bfg.png'],
+        ['w_blaster.md2', 'w_blaster.png'],
+        ['w_chaingun.md2', 'w_chaingun.png'],
+        ['w_glauncher.md2', 'w_glauncher.png'],
+        ['w_hyperblaster.md2', 'w_hyperblaster.png'],
+        ['w_machinegun.md2', 'w_machinegun.png'],
+        ['w_railgun.md2', 'w_railgun.png'],
+        ['w_rlauncher.md2', 'w_rlauncher.png'],
+        ['w_shotgun.md2', 'w_shotgun.png'],
+        ['w_sshotgun.md2', 'w_sshotgun.png'],
       ]
     };
   }
@@ -112,6 +108,7 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 处理label
   private labelize(text: string) {
     const parts = text.split('.');
     if (parts.length > 1) {
@@ -121,58 +118,50 @@ export class Model {
     return text;
   }
 
+  // 皮肤
   private setupSkinsGUI() {
     const character = this.character;
     const gui = this.gui as GUI;
     const folder = gui.addFolder("皮肤");
 
-    const generateCallback = function (i: number) {
-      return () => { character.setSkin(i); };
-    };
-
-    for ( let i = 0; i < character.skinsBody.length; i++ ) {
-      const name = character.skinsBody[ i ].name;
-      // @ts-ignore
-      this.playbackConfig[name] = generateCallback(i);
+    character.skinsBody.forEach((texture, index) => {
+      const name = texture.name;
+      this.playbackConfig[name] = () => {
+        character.setSkin(index);
+      }
       folder.add(this.playbackConfig, name).name(this.labelize(name));
-    }
+    });
   }
-
+  // 武器
   private setupWeaponsGUI() {
     const character = this.character;
     const gui = this.gui as GUI;
     const folder = gui.addFolder("武器");
 
-    const generateCallback = function (i: number) {
-      return () => { character.setWeapon(i); };
-    };
-
-    for (let i = 0; i < character.weapons.length; i++) {
-      const name = character.weapons[i].name as string;
-      // @ts-ignore
-      this.playbackConfig[name] = generateCallback(i);
-      folder.add(this.playbackConfig, name ).name(this.labelize(name));
-    }
+    character.weapons.forEach((weapon, index) => {
+      const name = weapon.name;
+      this.playbackConfig[name] = () => {
+        character.setWeapon(index);
+      };
+      folder.add(this.playbackConfig, name).name(this.labelize(name));
+    });
   }
+  // 动画
   private setupGUIAnimations() {
     const character = this.character;
     const gui = this.gui as GUI;
-
     const folder = gui.addFolder("动画");
 
-    const generateCallback = function (animationClip: THREE.AnimationClip) {
-      return () => {
-        character.setAnimation(animationClip.name)
-      };
-    };
-
-    // @ts-ignore
-    const animations = character.meshBody.geometry.animations;
-    for ( let i = 0; i < animations.length; i++) {
-      const clip = animations[i];
+    if (character.meshBody) {
       // @ts-ignore
-      this.playbackConfig[clip.name] = generateCallback(clip);
-      folder.add(this.playbackConfig, clip.name, clip.name);
+      const animations: THREE.AnimationClip[] = character.meshBody.geometry.animations;
+
+      animations.forEach((clip) => {
+        this.playbackConfig[clip.name] = () => {
+          character.setAnimation(clip.name);
+        };
+        folder.add(this.playbackConfig, clip.name);
+      });
     }
   }
 
@@ -189,13 +178,20 @@ export class Model {
     this.character.onLoadComplete = () => {
       toast.close();
 
+      // 设置皮肤
       this.setupSkinsGUI();
+      // 设置武器
       this.setupWeaponsGUI();
+      // 设置动画
       this.setupGUIAnimations();
 
       if (this.character.meshBody) {
         // @ts-ignore
-        this.character.setAnimation(this.character.meshBody.geometry.animations[0].name );
+        const animations = this.character.meshBody.geometry?.animations || [];
+        if (animations[0]) {
+          const name = animations[0].name;
+          this.character.setAnimation(name);
+        }
       }
     };
     this.scene.add(this.character.root);
@@ -208,9 +204,13 @@ export class Model {
     const material = new THREE.MeshPhongMaterial({color: 0xffffff, map: texture});
 
     const ground = new THREE.Mesh(geometry, material);
-    ground.rotation.x = - Math.PI / 2;
+    ground.rotation.x = -Math.PI / 2;
+    // .set ( x : Float, y : Float ) : this
+    // 设置该向量的x和y分量
     (ground.material.map as THREE.Texture).repeat.set(8, 8);
+    // 这个值定义了纹理贴图在水平方向上将如何包裹，在UV映射中对应于U
     (ground.material.map as THREE.Texture).wrapS = THREE.RepeatWrapping;
+    // 这个值定义了纹理贴图在垂直方向上将如何包裹，在UV映射中对应于V
     (ground.material.map as THREE.Texture).wrapT = THREE.RepeatWrapping;
     (ground.material.map as THREE.Texture).encoding = THREE.sRGBEncoding;
     ground.receiveShadow = true;
@@ -219,11 +219,14 @@ export class Model {
 
   // 创建光源
   private createLight() {
+    // 环境光会均匀的照亮场景中的所有物体
+    // 环境光不能用来投射阴影，因为它没有方向
     const ambient = new THREE.AmbientLight(0x222222);
 
     const light1 = new THREE.SpotLight(0xffffff, 5, 1000);
     light1.position.set(200, 250, 500);
     light1.angle = 0.5;
+    // penumbra - 聚光锥的半影衰减百分比。在0和1之间的值。默认为0
     light1.penumbra = 0.5;
     light1.castShadow = true;
     light1.shadow.mapSize.set(1024, 1024);
@@ -231,6 +234,7 @@ export class Model {
     const light2 = new THREE.SpotLight(0xffffff, 5, 1000);
     light2.position.set(-100, 350, 350);
     light2.angle = 0.5;
+    // penumbra - 聚光锥的半影衰减百分比。在0和1之间的值。默认为0
     light2.penumbra = 0.5;
     light2.castShadow = true;
     light2.shadow.mapSize.set(1024, 1024);
@@ -256,11 +260,11 @@ export class Model {
       title: "控制面板"
     });
 
-    this.gui.add(this.playbackConfig, 'speed', 0, 2 ).onChange(() => {
-      this.character.setPlaybackRate( this.playbackConfig.speed );
+    this.gui.add(this.playbackConfig, 'speed', 0, 2 ).name("速度").onChange(() => {
+      this.character.setPlaybackRate(this.playbackConfig.speed);
     });
 
-    this.gui.add(this.playbackConfig, 'wireframe').onChange(() => {
+    this.gui.add(this.playbackConfig, 'wireframe').name("线框").onChange(() => {
       this.character.setWireframe(this.playbackConfig.wireframe);
     });
   }
