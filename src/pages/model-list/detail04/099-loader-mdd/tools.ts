@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { showLoadingToast } from 'vant';
 import Stats from 'three/examples/jsm/libs/stats.module';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { MDDLoader } from 'three/examples/jsm/loaders/MDDLoader';
 
 
@@ -12,6 +13,7 @@ export class Model {
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
   private camera: null | THREE.PerspectiveCamera;
+  private controls: null | OrbitControls
   private stats: null | Stats;
 
   private mixer: null | THREE.AnimationMixer
@@ -24,6 +26,7 @@ export class Model {
     this.scene = new THREE.Scene();
     this.renderer = null;
     this.camera = null;
+    this.controls = null;
     this.stats = null;
 
     this.mixer = null;
@@ -46,6 +49,11 @@ export class Model {
 
     // 渲染器
     this.createRenderer();
+
+    // 渲染器
+    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.enablePan = true;
+    this.controls.update();
 
     this.initStats();
     this.animate();
@@ -109,6 +117,7 @@ export class Model {
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
     if (this.mixer) { this.mixer.update(this.clock.getDelta()); }
+    if (this.controls) { this.controls.update(); }
 
     // 执行渲染
     if (this.camera && this.renderer) {
