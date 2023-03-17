@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { showLoadingToast } from 'vant';
-import { GUI } from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
@@ -22,10 +21,10 @@ export class Model {
   private effect: null | OutlineEffect
   private helper: MMDAnimationHelper
   private clock: THREE.Clock
-  private vpds: any[]
-  private gui: null | GUI
-  private file: string
-  private files: string[]
+  private ready: boolean
+  private listener: THREE.AudioListener
+  private audio: null | THREE.Audio
+  private binder: number
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -41,22 +40,10 @@ export class Model {
     this.effect = null;
     this.helper = new MMDAnimationHelper();
     this.clock = new THREE.Clock();
-    this.vpds = [];
-    this.gui = null;
-    this.file = "/examples/models/mmd/miku/miku_v2.pmd";
-    this.files = [
-      '/examples/models/mmd/vpds/01.vpd',
-      '/examples/models/mmd/vpds/02.vpd',
-      '/examples/models/mmd/vpds/03.vpd',
-      '/examples/models/mmd/vpds/04.vpd',
-      '/examples/models/mmd/vpds/05.vpd',
-      '/examples/models/mmd/vpds/06.vpd',
-      '/examples/models/mmd/vpds/07.vpd',
-      '/examples/models/mmd/vpds/08.vpd',
-      '/examples/models/mmd/vpds/09.vpd',
-      '/examples/models/mmd/vpds/10.vpd',
-      '/examples/models/mmd/vpds/11.vpd',
-    ];
+    this.ready = false;
+    this.listener = new THREE.AudioListener();
+    this.audio = null;
+    this.binder = 0;
   }
 
   init() {
@@ -76,7 +63,9 @@ export class Model {
 
     // 相机
     this.camera = new THREE.PerspectiveCamera(65, this.aspect, 1, 2000);
-    this.camera.position.z = 25;
+    this.camera.position.z = 45;
+    this.camera.add(this.listener);
+    this.scene.add(this.camera);
 
     // 加载模型
     this.loadModel();
@@ -85,7 +74,7 @@ export class Model {
     this.createFloor();
     // 创建光线
     this.createLight();
-
+    
     // 创建渲染器
     this.createRenderer();
 
@@ -105,74 +94,18 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private initGui() {
-    this.gui = new GUI({
-      container: this.container,
-      autoPlace: true,
-      title: "控制面板"
-    });
+  // 销毁
+  destroy() {
+    this.ready = false;
+    if (this.audio) {
+      this.audio.pause();
+    }
 
-    const dictionary = this.mesh.morphTargetDictionary || {};
-    const controls:{[key: string]: number|boolean} = {};
-    const keys: string[] = Object.keys(dictionary);
+    if (this.helper) {
+      this.helper.audioManager?.audio?.pause();
+    }
 
-    const poses = this.gui.addFolder('动作变换').close();
-    const morphs = this.gui.addFolder('形体变形').close();
-
-    // 分割名称
-    const getBaseName = (s: string) => {
-      return s.slice(s.lastIndexOf('/') + 1);
-    };
-
-    const initControls = () => {
-      for (const key in dictionary) {
-        controls[key] = 0.0;
-      }
-
-      controls.pose = -1;
-      this.files.forEach((file) => {
-        controls[getBaseName(file)] = false;
-      });
-    };
-
-    const initPoses = () => {
-      const files: {[key: string]: number} = {default: -1};
-      this.files.forEach((file, index) => {
-        files[getBaseName(file)] = index;
-      });
-      poses.add(controls, 'pose', files).name("动作").onChange(onChangePose);
-    };
-    const initMorphs = () => {
-      for (const key in dictionary) {
-        morphs.add(controls, key, 0.0, 1.0, 0.01).onChange(onChangeMorph);
-      }
-    };
-
-    // 动作变换
-    const onChangePose = () => {
-      const index = parseInt(controls.pose.toString());
-      if (index === -1) {
-        this.mesh.pose();
-      } else {
-        this.helper.pose(this.mesh, this.vpds[index]);
-      }
-    };
-
-    // 身体变换
-    const onChangeMorph = () => {
-      keys.forEach((key, index) => {
-        if (this.mesh.morphTargetInfluences) {
-          this.mesh.morphTargetInfluences[index as number] = controls[key] as number;
-        }
-      });
-    };
-
-    initControls();
-    initPoses();
-    initMorphs();
-
-    onChangeMorph();
-    onChangePose();
+    window.cancelAnimationFrame(this.binder);
   }
 
   private createLight() {
@@ -203,36 +136,60 @@ export class Model {
 
   // 加载模型
   private loadModel() {
-    const length = this.files.length;
+    // MMD加载器（MMDLoader）一个用于加载MMD资源的加载器
+    // MMDLoader从MMD资源（例如PMD、PMX、VMD和VPD文件）中创建Three.js物体（对象）
+    // 如果你想要MMD资源的原始内容，请使用.loadPMD/PMX/VMD/VPD方法
+
+    // MMDLoader( manager : LoadingManager )
+    // manager — 加载器使用的loadingManager（加载管理器），默认值是THREE.DefaultLoadingManager。
+    // 创建一个新的MMDLoader
     const loader = new MMDLoader();
 
+    const file = '/examples/models/mmd/miku/miku_v2.pmd';
+    const files = ['/examples/models/mmd/vmds/wavefile_v2.vmd'];
+    const cameraFiles = '/examples/models/mmd/vmds/wavefile_camera.vmd';
+    const audioFile = '/examples/models/mmd/audios/wavefile_short.mp3';
+    const audioParams = { delayTime: 160 * 1 / 30 };
+
     const toast = showLoadingToast({
+      duration: 10000,
       message: '加载中...',
       forbidClick: true,
       loadingType: 'spinner',
     });
-
     this.helper = new MMDAnimationHelper();
-    loader.load(this.file, (object) => {
-      this.mesh = object;
-      this.mesh.position.y = -10;
-      this.scene.add(this.mesh);
-      
-      this.files.forEach((file) => {
-        loader.loadVPD(file, false, (vpd) => {
-          this.vpds.push(vpd);
+    loader.loadWithAnimation(file, files, (mmd) => {
+      this.mesh = mmd.mesh;
 
-          if (this.vpds.length === length) {
-            toast.close();
-            this.initGui();
-          }
-        }, undefined, () => {
-          toast.close();
-        });
+      this.helper.add(this.mesh, {
+        physics: true,
+        animation: mmd.animation,
       });
-    }, undefined, () => {
-      toast.close();
-    });
+
+      // .loadAnimation ( url : String, object : Object3D, onLoad : Function, onProgress : Function, onError : Function ) : undefined
+      // url — 一个包含有.vmd文件的路径或URL的字符串或字符串数组。如果两个及以上文件被指定，它们将会合并
+      // object — SkinnedMesh 或 Camera。 剪辑及其轨道将会适应到该对象
+      // onLoad — 成功加载完成后被调用的函数
+      // onProgress — （可选）当加载正在进行时被调用的函数，参数将是XMLHttpRequest实例，其包含了 .total （总的）和 .loaded （已加载的）字节数
+      // onError — （可选）如果加载过程中发生错误时被调用的函数，该函数接受一个错误来作为参数
+      // 开始从url(s)加载VMD动画文件（可能有多个文件），并使用已解析的AnimatioinClip触发回调函数
+      loader.loadAnimation(cameraFiles, this.camera as THREE.PerspectiveCamera, (animation) => {
+        this.helper.add(this.camera as THREE.PerspectiveCamera, {
+          animation: animation as THREE.AnimationClip
+        });
+
+        const audioLoader = new THREE.AudioLoader();
+        audioLoader.load(audioFile, (buffer) => {
+          toast.close();
+          this.audio = new THREE.Audio(this.listener).setBuffer(buffer);
+          this.audio.hasPlaybackControl = true;
+
+          this.helper.add(this.audio, audioParams);
+          this.scene.add(this.mesh);
+          this.ready = true;
+        }, undefined, () => { toast.close(); });
+      }, undefined, () => { toast.close(); });
+    }, undefined, () => { toast.close(); });
   }
 
   // 创建渲染器
@@ -253,17 +210,22 @@ export class Model {
 
   // 持续动画
   private animate() {
-    window.requestAnimationFrame(() => { this.animate(); });
+    this.binder = window.requestAnimationFrame(() => { this.animate(); });
 
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
     if (this.controls) { this.controls.update(); }
 
-    if (this.helper) {
-      this.helper.update(this.clock.getDelta());
-    }
+    this.scene.traverse((child) => {
+      if (child.name === "grid") {
+        child.rotation.y += 0.005;
+      }
+    });
 
-    if (this.effect && this.scene && this.camera) {
+    if (this.effect && this.scene && this.camera && this.ready) {
+      if (this.helper) {
+        this.helper.update(this.clock.getDelta());
+      }
       this.effect.render(this.scene, this.camera);
     }
   }
