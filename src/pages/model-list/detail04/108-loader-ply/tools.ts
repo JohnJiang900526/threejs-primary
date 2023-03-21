@@ -58,10 +58,7 @@ export class Model {
   }
 
   private createGround() {
-    const material = new THREE.MeshPhongMaterial({
-      color: 0x999999,
-      specular: 0x101010
-    });
+    const material = new THREE.MeshPhongMaterial({ color: 0x999999, specular: 0x101010 });
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), material);
 
     plane.rotation.x = -Math.PI / 2;
@@ -84,16 +81,24 @@ export class Model {
     light.position.set(x, y, z);
     light.castShadow = true;
 
-    const d = 1;
-    light.shadow.camera.left = -d;
-    light.shadow.camera.right = d;
-    light.shadow.camera.top = d;
-    light.shadow.camera.bottom = -d;
-
+    // 正交相机（OrthographicCamera）
+    // 这一摄像机使用orthographic projection（正交投影）来进行投影
+    // 在这种投影模式下，无论物体距离相机距离远或者近，在最终渲染的图片中物体的大小都保持不变
+    // 这对于渲染2D场景或者UI元素是非常有用的
+    light.shadow.camera.left = -1;
+    light.shadow.camera.right = 1;
+    light.shadow.camera.top = 1;
+    light.shadow.camera.bottom = -1;
     light.shadow.camera.near = 1;
     light.shadow.camera.far = 4;
 
+    // 一个Vector2定义阴影贴图的宽度和高度
+    // 较高的值会以计算时间为代价提供更好的阴影质量。
+    // 值必须是2的幂，直到给定设备的WebGLRenderer.capabilities.maxTextureSize， 
+    // 虽然宽度和高度不必相同（例如，（512,1024）有效）。 默认值为*（512,512）
     light.shadow.mapSize.set(1024, 1024);
+    // 阴影贴图偏差，在确定曲面是否在阴影中时，从标准化深度添加或减去多少。
+    // 默认值为0.此处非常小的调整（大约0.0001）可能有助于减少阴影中的伪影
     light.shadow.bias = -0.001;
     
     this.scene.add(light);
@@ -113,15 +118,14 @@ export class Model {
       const url = `/examples/models/ply/binary/Lucy100k.ply`;
       loader.load(url, (geometry) => {
         toast.close();
+        // 通过面片法向量的平均值计算每个顶点的法向量
         geometry.computeVertexNormals();
 
-        const material = new THREE.MeshStandardMaterial({ 
-          color: 0x0055ff, flatShading: true 
-        });
+        const material = new THREE.MeshStandardMaterial({color: 0x0055ff, flatShading: true});
         const mesh = new THREE.Mesh(geometry, material);
+
         mesh.position.set(-0.2, -0.02, -0.2);
         mesh.scale.multiplyScalar(0.0006);
-
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         this.scene.add(mesh);
@@ -132,24 +136,21 @@ export class Model {
       const url = `/examples/models/ply/ascii/dolphins.ply`;
       loader.load(url, (geometry) => {
         toast.close();
+        // 通过面片法向量的平均值计算每个顶点的法向量
         geometry.computeVertexNormals();
 
-        const material = new THREE.MeshStandardMaterial({
-          color: 0x0055ff, flatShading: true
-        });
+        const material = new THREE.MeshStandardMaterial({color: 0x0055ff, flatShading: true});
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
 
+        mesh.rotation.x = -Math.PI/2;
         mesh.position.y = -0.2;
         mesh.position.z = 0.3;
         mesh.scale.multiplyScalar(0.001);
-
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         this.scene.add(mesh);
       }, undefined, () => { toast.close(); });
     })();
-
   }
 
   // 创建渲染器
@@ -172,9 +173,9 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
+    const timer = Date.now() * 0.0005;
 
     if (this.camera) {
-      const timer = Date.now() * 0.0005;
       this.camera.position.x = Math.sin(timer) * 2.5;
       this.camera.position.z = Math.cos(timer) * 2.5;
       this.camera.lookAt(this.cameraTarget);
