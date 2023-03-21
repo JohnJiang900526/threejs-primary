@@ -15,9 +15,16 @@ import LoaderMmdAudio from "@/pages/model-list/detail04/102-loader-mmd-audio/ind
 import LoaderNrrd from "@/pages/model-list/detail04/103-loader-nrrd/index.vue";
 import LoaderObj from "@/pages/model-list/detail04/104-loader-obj/index.vue";
 import LoaderObjMlt from "@/pages/model-list/detail04/105-loader-obj-mlt/index.vue";
+import LoaderPcd from "@/pages/model-list/detail04/106-loader-pcd/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-pcd',
+    name: 'LoaderPcd',
+    meta: {title: "loader-pcd"},
+    component: LoaderPcd,
+  },
   {
     path: '/list/loader-obj-mlt',
     name: 'LoaderObjMlt',
