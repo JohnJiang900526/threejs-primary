@@ -228,6 +228,7 @@ export class Model {
       this.halfX = this.width/2;
       this.halfY = this.height/2;
 
+      this.bind();
       if (this.camera) {
         this.camera.aspect = this.aspect;
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
