@@ -18,9 +18,16 @@ import LoaderObjMlt from "@/pages/model-list/detail04/105-loader-obj-mlt/index.v
 import LoaderPcd from "@/pages/model-list/detail04/106-loader-pcd/index.vue";
 import LoaderPbd from "@/pages/model-list/detail04/107-loader-pdb/index.vue";
 import LoaderPly from "@/pages/model-list/detail04/108-loader-ply/index.vue";
+import LoaderPrwn from "@/pages/model-list/detail04/109-loader-prwm/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-prwn',
+    name: 'LoaderPrwn',
+    meta: {title: "loader-prwn"},
+    component: LoaderPrwn,
+  },
   {
     path: '/list/loader-ply',
     name: 'LoaderPly',
