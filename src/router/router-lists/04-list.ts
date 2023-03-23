@@ -21,9 +21,16 @@ import LoaderPly from "@/pages/model-list/detail04/108-loader-ply/index.vue";
 import LoaderPrwn from "@/pages/model-list/detail04/109-loader-prwm/index.vue";
 import LoaderStl from "@/pages/model-list/detail04/110-loader-stl/index.vue";
 import LoaderSvg from "@/pages/model-list/detail04/111-loader-svg/index.vue";
+import LoaderTilt from "@/pages/model-list/detail04/112-loader-tilt/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-tilt',
+    name: 'LoaderTilt',
+    meta: {title: "loader-tilt"},
+    component: LoaderTilt,
+  },
   {
     path: '/list/loader-svg',
     name: 'LoaderSvg',
