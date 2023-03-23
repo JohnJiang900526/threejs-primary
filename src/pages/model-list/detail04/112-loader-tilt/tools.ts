@@ -12,6 +12,7 @@ export class Model {
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
   private camera: null | THREE.PerspectiveCamera;
+  private controls: null | OrbitControls
   private stats: null | Stats;
 
   private group: THREE.Group
@@ -23,6 +24,7 @@ export class Model {
     this.scene = new THREE.Scene();
     this.renderer = null;
     this.camera = null;
+    this.controls = null;
     this.stats = null;
     
     this.group = new THREE.Group();
@@ -48,9 +50,9 @@ export class Model {
     this.createRenderer();
 
     // 控制器
-    const controls = new OrbitControls(this.camera, this.renderer?.domElement );
-    controls.target.y = this.camera.position.y;
-    controls.update();
+    this.controls = new OrbitControls(this.camera, this.renderer?.domElement );
+    this.controls.target.y = this.camera.position.y;
+    this.controls.update();
 
     this.initStats();
     this.animate();
@@ -113,6 +115,7 @@ export class Model {
 
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
+    if (this.controls) {this.controls.update();}
 
     if (this.renderer && this.scene && this.camera) {
       this.renderer.render(this.scene, this.camera);
