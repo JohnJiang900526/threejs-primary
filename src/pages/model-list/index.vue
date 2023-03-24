@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { RouterView } from "vue-router";
-  import { Cell, CellGroup, Search, Empty } from 'vant';
+  import { Cell, CellGroup, Search, Empty, PullRefresh } from 'vant';
   import Page from "@/base/page/index.vue";
 </script>
 <template>
@@ -11,17 +11,19 @@
           <Search v-model="value" @update:model-value="change" placeholder="请输入模型名称" />
         </div>
         <div class="list-content-body">
-          <div v-if="list.length > 0">
-            <cell-group>
-              <cell
-                v-for="item in list" is-link
-                @click="openAction(item.path)"
-                :key="item.key" :title="item.title"/>
-            </cell-group>
-          </div>
-          <div  v-else>
-            <Empty image="search" description="没有匹配到对应的模型，请重新搜索"/>
-          </div>
+          <pull-refresh v-model="loading" @refresh="onRefresh">
+            <div v-if = "list.length > 0">
+              <cell-group>
+                <cell
+                  v-for="item in list" is-link
+                  @click="openAction(item.path)"
+                  :key="item.key" :title="item.title"/>
+              </cell-group>
+            </div>
+            <div  v-else>
+              <Empty image="search" description="没有匹配到对应的模型，请重新搜索"/>
+            </div>
+          </pull-refresh>
         </div>
       </div>
     </Page>
@@ -37,12 +39,18 @@ import PageList from "./page-list";
 export default defineComponent({
   data () {
     return {
+      loading: false,
       value: "",
       list: [...PageList],
       defaultData: [...PageList]
     };
   },
   methods: {
+    onRefresh() {
+      setTimeout(() => {
+        this.loading = false;
+      }, 2500);
+    },
     change(val: string) {
       const arr = [...this.defaultData];
       const result = arr.filter((item) => item.title.includes(val));
