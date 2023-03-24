@@ -24,9 +24,16 @@ import LoaderSvg from "@/pages/model-list/detail04/111-loader-svg/index.vue";
 import LoaderTilt from "@/pages/model-list/detail04/112-loader-tilt/index.vue";
 import LoaderTextureDds from "@/pages/model-list/detail04/113-loader-texture-dds/index.vue";
 import LoaderTextureExr from "@/pages/model-list/detail04/114-loader-texture-exr/index.vue";
+import LoaderTextureHdr from "@/pages/model-list/detail04/115-loader-texture-hdr/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-texture-hdr',
+    name: 'LoaderTextureHdr',
+    meta: {title: "loader-texture-hdr"},
+    component: LoaderTextureHdr,
+  },
   {
     path: '/list/loader-texture-exr',
     name: 'LoaderTextureExr',
