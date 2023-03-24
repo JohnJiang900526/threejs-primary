@@ -49,7 +49,7 @@ export default defineComponent({
     onRefresh() {
       setTimeout(() => {
         this.loading = false;
-      }, 2500);
+      }, 1500);
     },
     change(val: string) {
       const arr = [...this.defaultData];
