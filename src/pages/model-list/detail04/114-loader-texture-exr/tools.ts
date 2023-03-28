@@ -138,7 +138,6 @@ export class Model {
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
 
-      this.render();
       if (this.camera) {
         const frustumHeight = this.camera.top - this.camera.bottom;
 				this.camera.left = - frustumHeight * this.aspect / 2;
@@ -150,6 +149,7 @@ export class Model {
       if (this.renderer) {
         this.renderer.setSize(this.width, this.height);
       }
+      this.render();
     };
   }
 }
