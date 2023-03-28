@@ -28,9 +28,16 @@ import LoaderTextureHdr from "@/pages/model-list/detail04/115-loader-texture-hdr
 import LoaderTextureKtx from "@/pages/model-list/detail04/116-loader-texture-ktx/index.vue";
 import LoaderTextureKtx2 from "@/pages/model-list/detail04/117-loader-texture-ktx2/index.vue";
 import LoaderTextureLogluv from "@/pages/model-list/detail04/118-loader-texture-logluv/index.vue";
+import LoaderTextureLottie from "@/pages/model-list/detail04/119-loader-texture-lottie/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-texture-lottie',
+    name: 'LoaderTextureLottie',
+    meta: {title: "loader-texture-lottie"},
+    component: LoaderTextureLottie,
+  },
   {
     path: '/list/loader-texture-logluv',
     name: 'LoaderTextureLogluv',
