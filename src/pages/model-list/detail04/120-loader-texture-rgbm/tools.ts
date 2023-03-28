@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import GUI from "lil-gui";
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { LogLuvLoader } from 'three/examples/jsm/loaders/LogLuvLoader';
+import { RGBMLoader } from 'three/examples/jsm/loaders/RGBMLoader';
 import { showLoadingToast } from 'vant';
 
 export class Model {
@@ -71,23 +71,20 @@ export class Model {
   // 加载模型
   private createModel() {
     const manager = new THREE.LoadingManager();
-    const loader = new LogLuvLoader(manager);
-    const url = "/examples/textures/memorial.tif";
+    const loader = new RGBMLoader(manager);
+    const url = "/examples/textures/memorial.png";
     const toast = showLoadingToast({
       duration: 10000,
       message: '加载中...',
       forbidClick: true,
       loadingType: 'spinner',
     });
-    loader.load(url, (texture, textureData) => {
+    loader.load(url, (texture) => {
       toast.close();
 
-      // @ts-ignore
-      const {width, height} = textureData;
-      const aspect = width / height;
       const material = new THREE.MeshBasicMaterial({ map: texture });
-      const plane = new THREE.PlaneGeometry(1.75 * aspect, 2);
-      const mesh = new THREE.Mesh(plane, material);
+      const geometry = new THREE.PlaneGeometry(1.25, 2);
+      const mesh = new THREE.Mesh(geometry, material);
       
       this.scene.add(mesh);
       this.render();
@@ -141,7 +138,7 @@ export class Model {
 
       if (this.camera) {
         const frustumHeight = this.camera.top - this.camera.bottom;
-				this.camera.left = - frustumHeight * this.aspect / 2;
+				this.camera.left = -frustumHeight * this.aspect / 2;
 				this.camera.right = frustumHeight * this.aspect / 2;
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
         this.camera.updateProjectionMatrix();
@@ -151,7 +148,6 @@ export class Model {
         this.renderer.setSize(this.width, this.height);
       }
       this.render();
-      
     };
   }
 }
