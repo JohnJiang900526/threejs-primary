@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import GUI from "lil-gui";
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { RGBMLoader } from 'three/examples/jsm/loaders/RGBMLoader';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
 import { showLoadingToast } from 'vant';
 
 export class Model {
@@ -11,13 +11,10 @@ export class Model {
   private container: HTMLDivElement;
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
-  private camera: null | THREE.OrthographicCamera;
+  private camera: null | THREE.PerspectiveCamera;
+  private controls: null | OrbitControls
   private stats: null | Stats;
 
-  private gui: GUI
-  private params: {
-    exposure: number
-  }
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,17 +23,9 @@ export class Model {
     this.scene = new THREE.Scene();
     this.renderer = null;
     this.camera = null;
+    this.controls = null;
     this.stats = null;
-    
-    this.gui = new GUI({
-      container: this.container,
-      autoPlace: true,
-      title: "控制面板"
-    });
 
-    this.params = {
-      exposure: 2.0
-    };
   }
 
   init() {
@@ -45,7 +34,11 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.OrthographicCamera(-this.aspect, this.aspect, 1, - 1, 0, 1);
+    this.camera = new THREE.PerspectiveCamera(80, this.aspect, 0.1, 1000);
+    this.camera.position.set(0, 50, 250);
+
+    // 创建光线
+    this.createLight();
 
     // 创建模型
     this.createModel();
@@ -53,12 +46,12 @@ export class Model {
     // webgl渲染器
     this.createRenderer();
 
-    // gui初始化
-    this.gui.add(this.params, 'exposure', 0.1, 20, 0.01).onChange(() => {
-      this.render();
-    });
+    // 控制器
+    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.enableZoom = false;
 
-    this.render();
+    this.initStats();
+    this.animate();
     this.resize();
   }
 
@@ -68,34 +61,40 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private createLight() {
+    const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+    this.scene.add(ambient);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(1, 1, 1);
+    this.scene.add(light);
+  }
+
   // 加载模型
   private createModel() {
-    const manager = new THREE.LoadingManager();
-    const loader = new RGBMLoader(manager);
-    const url = "/examples/textures/memorial.png";
-    const toast = showLoadingToast({
-      duration: 10000,
-      message: '加载中...',
-      forbidClick: true,
-      loadingType: 'spinner',
-    });
-    loader.load(url, (texture) => {
-      toast.close();
+    const loader = new TGALoader();
+    const geometry = new THREE.BoxGeometry( 50, 50, 50 );
 
-      const material = new THREE.MeshBasicMaterial({ map: texture });
-      const geometry = new THREE.PlaneGeometry(1.25, 2);
+    {
+      const texture = loader.load("/examples/textures/crate_grey8.tga");
+      const material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture });
       const mesh = new THREE.Mesh(geometry, material);
-      
+      mesh.position.x = -50;
       this.scene.add(mesh);
-      this.render();
-    }, undefined, () => { toast.close(); });
+    }
+
+    {
+      const texture = loader.load("/examples/textures/crate_color8.tga");
+      const material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = 50;
+      this.scene.add(mesh);
+    }
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.toneMapping = THREE.ReinhardToneMapping;
-    this.renderer.toneMappingExposure = this.params.exposure;
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
@@ -109,13 +108,6 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
-  private render() {
-    if (this.renderer && this.scene && this.camera) {
-      this.renderer.toneMappingExposure = this.params.exposure;
-      this.renderer.render(this.scene, this.camera);
-    }
-  }
-
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
@@ -124,7 +116,6 @@ export class Model {
     if (this.stats) { this.stats.update(); }
 
     if (this.renderer && this.scene && this.camera) {
-      this.renderer.toneMappingExposure = this.params.exposure;
       this.renderer.render(this.scene, this.camera);
     }
   }
@@ -137,9 +128,7 @@ export class Model {
       this.aspect = this.width/this.height;
 
       if (this.camera) {
-        const frustumHeight = this.camera.top - this.camera.bottom;
-				this.camera.left = -frustumHeight * this.aspect / 2;
-				this.camera.right = frustumHeight * this.aspect / 2;
+        this.camera.aspect = this.aspect;
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
         this.camera.updateProjectionMatrix();
       }
@@ -147,7 +136,6 @@ export class Model {
       if (this.renderer) {
         this.renderer.setSize(this.width, this.height);
       }
-      this.render();
     };
   }
 }
