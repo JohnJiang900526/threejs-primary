@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
+import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader.js';
 
 export class Model {
   private width: number;
@@ -33,8 +33,8 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.1, 1000);
-    this.camera.position.set(0, 50, 250);
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.01, 10);
+    this.camera.position.set(0, 0, 4);
 
     // 创建光线
     this.createLight();
@@ -71,22 +71,33 @@ export class Model {
 
   // 加载模型
   private createModel() {
-    const loader = new TGALoader();
-    const geometry = new THREE.BoxGeometry(50, 50, 50);
+    const loader = new TIFFLoader();
+    const geometry = new THREE.PlaneGeometry();
 
     {
-      const texture = loader.load("/examples/textures/crate_grey8.tga");
-      const material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture });
+      const texture = loader.load("/examples/textures/tiff/crate_uncompressed.tif");
+      const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.y = -50;
+      mesh.position.set(0, -1.5, 0);
+      mesh.name = "plane";
       this.scene.add(mesh);
     }
 
     {
-      const texture = loader.load("/examples/textures/crate_color8.tga");
-      const material = new THREE.MeshPhongMaterial({ color: 0xffffff, map: texture });
+      const texture = loader.load("/examples/textures/tiff/crate_lzw.tif");
+      const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.y = 50;
+      mesh.position.set(0, 0, 0);
+      mesh.name = "plane";
+      this.scene.add(mesh);
+    }
+
+    {
+      const texture = loader.load("/examples/textures/tiff/crate_jpeg.tif");
+      const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(0, 1.5, 0);
+      mesh.name = "plane";
       this.scene.add(mesh);
     }
   }
@@ -110,6 +121,14 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
+
+    this.scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+
+      if (mesh.name === "plane") {
+        mesh.rotation.y += 0.005;
+      }
+    });
 
     // 统计信息更新
     if (this.stats) { this.stats.update(); }
