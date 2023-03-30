@@ -3,8 +3,15 @@ import type { RouteRecordRaw } from "vue-router";
 import LoaderTextureTga from "@/pages/model-list/detail05/121-loader-texture-tga/index.vue";
 import LoaderTextureTiff from "@/pages/model-list/detail05/122-loader-texture-tiff/index.vue";
 import LoaderTtf from "@/pages/model-list/detail05/123-loader-ttf/index.vue";
+import LoaderUsdz from "@/pages/model-list/detail05/124-loader-usdz/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-usdz',
+    name: 'LoaderUsdz',
+    meta: {title: "loader-usdz"},
+    component: LoaderUsdz,
+  },
   {
     path: '/list/loader-ttf',
     name: 'LoaderTtf',
