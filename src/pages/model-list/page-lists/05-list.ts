@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "123",
+    title: "123.WEBGL Loader TTF",
+    path: "/list/loader-ttf"
+  },
+  {
     key: "122",
     title: "122.WEBGL Loader Texture Tiff",
     path: "/list/loader-texture-tiff"
