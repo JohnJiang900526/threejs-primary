@@ -46,7 +46,7 @@ export class Model {
     this.camera = null;
     this.stats = null;
 
-    this.cameraTarget = new THREE.Vector3(0, 150, 0);
+    this.cameraTarget = new THREE.Vector3(0, 100, 0);
     this.group = new THREE.Group();
     this.textMesh1 = new THREE.Mesh();
     this.textMesh2 = new THREE.Mesh();
@@ -178,7 +178,7 @@ export class Model {
       switch(keyCode) {
         case 8:
           e.preventDefault();
-          this.text = this.text.substring( 0, this.text.length - 1);
+          this.text = this.text.substring(0, this.text.length - 1);
           this.refreshText();
           break;
         default:
@@ -192,23 +192,30 @@ export class Model {
   private createPlane() {
     const geometry = new THREE.PlaneGeometry(10000, 10000);
     const material = new THREE.MeshBasicMaterial({ 
-      color: 0xffffff, opacity: 0.5, transparent: true 
+      opacity: 0.3,
+      color: 0xffffff, 
+      transparent: true,
     });
     const plane = new THREE.Mesh(geometry, material);
+
     plane.position.y = 100;
-    plane.rotation.x = -Math.PI / 2;
+    plane.rotation.x = -Math.PI/2;
     this.scene.add(plane);
   }
 
   private createLight() {
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.125);
-    dirLight.position.set(0, 0, 1).normalize();
-    this.scene.add( dirLight );
+    {
+      const light = new THREE.DirectionalLight(0xffffff, 0.125);
+      light.position.set(0, 0, 1).normalize();
+      this.scene.add(light);
+    }
 
-    const pointLight = new THREE.PointLight(0xffffff, 1.5);
-    pointLight.position.set(0, 100, 90);
-    pointLight.color.setHSL(Math.random(), 1, 0.5);
-    this.scene.add(pointLight);
+    {
+      const light = new THREE.PointLight(0xffffff, 1.5);
+      light.position.set(0, 100, 90);
+      light.color.setHSL(Math.random(), 1, 0.5);
+      this.scene.add(light);
+    }
   }
 
   // 加载模型
@@ -241,25 +248,24 @@ export class Model {
       bevelSize: this.bevelSize,
       bevelEnabled: true
     });
+    // 计算当前几何体的的边界矩形，该操作会更新已有 [param:.boundingBox]。
+    // 边界矩形不会默认计算，需要调用该接口指定计算边界矩形，否则保持默认值 null
     this.textGeo.computeBoundingBox();
+    // 通过面片法向量的平均值计算每个顶点的法向量
     this.textGeo.computeVertexNormals();
 
     const boundingBox = this.textGeo.boundingBox as THREE.Box3;
     const centerOffset = -0.5 * (boundingBox.max.x - boundingBox.min.x);
 
     this.textMesh1 = new THREE.Mesh(this.textGeo, this.material);
-    this.textMesh1.position.x = centerOffset;
-    this.textMesh1.position.y = this.hover;
-    this.textMesh1.position.z = 0;
+    this.textMesh1.position.set(centerOffset, this.hover, 0);
     this.textMesh1.rotation.x = 0;
     this.textMesh1.rotation.y = Math.PI * 2;
     this.group.add(this.textMesh1);
 
     if (this.mirror) {
       this.textMesh2 = new THREE.Mesh(this.textGeo, this.material);
-      this.textMesh2.position.x = centerOffset;
-      this.textMesh2.position.y = - this.hover;
-      this.textMesh2.position.z = this.fontHeight;
+      this.textMesh2.position.set(centerOffset, -this.hover, this.fontHeight);
       this.textMesh2.rotation.x = Math.PI;
       this.textMesh2.rotation.y = Math.PI * 2;
       this.group.add(this.textMesh2);
