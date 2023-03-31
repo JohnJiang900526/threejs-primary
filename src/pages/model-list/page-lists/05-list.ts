@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "126",
+    title: "126.WEBGL Loader VRML",
+    path: "/list/loader-vrml"
+  },
+  {
     key: "125",
     title: "125.WEBGL Loader VOX",
     path: "/list/loader-vox"

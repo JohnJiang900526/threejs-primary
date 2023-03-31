@@ -5,8 +5,15 @@ import LoaderTextureTiff from "@/pages/model-list/detail05/122-loader-texture-ti
 import LoaderTtf from "@/pages/model-list/detail05/123-loader-ttf/index.vue";
 import LoaderUsdz from "@/pages/model-list/detail05/124-loader-usdz/index.vue";
 import LoaderVox from "@/pages/model-list/detail05/125-loader-vox/index.vue";
+import LoaderVrml from "@/pages/model-list/detail05/126-loader-vrml/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-vrml',
+    name: 'LoaderVrml',
+    meta: {title: "loader-vrml"},
+    component: LoaderVrml,
+  },
   {
     path: '/list/loader-vox',
     name: 'LoaderVox',
