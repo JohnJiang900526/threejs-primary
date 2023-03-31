@@ -4,8 +4,15 @@ import LoaderTextureTga from "@/pages/model-list/detail05/121-loader-texture-tga
 import LoaderTextureTiff from "@/pages/model-list/detail05/122-loader-texture-tiff/index.vue";
 import LoaderTtf from "@/pages/model-list/detail05/123-loader-ttf/index.vue";
 import LoaderUsdz from "@/pages/model-list/detail05/124-loader-usdz/index.vue";
+import LoaderVox from "@/pages/model-list/detail05/125-loader-vox/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-vox',
+    name: 'LoaderVox',
+    meta: {title: "loader-vox"},
+    component: LoaderVox,
+  },
   {
     path: '/list/loader-usdz',
     name: 'LoaderUsdz',
