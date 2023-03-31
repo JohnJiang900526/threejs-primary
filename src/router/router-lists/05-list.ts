@@ -7,8 +7,15 @@ import LoaderUsdz from "@/pages/model-list/detail05/124-loader-usdz/index.vue";
 import LoaderVox from "@/pages/model-list/detail05/125-loader-vox/index.vue";
 import LoaderVrml from "@/pages/model-list/detail05/126-loader-vrml/index.vue";
 import LoaderVtk from "@/pages/model-list/detail05/127-loader-vtk/index.vue";
+import LoaderXyz from "@/pages/model-list/detail05/128-loader-xyz/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/loader-xyz',
+    name: 'LoaderXyz',
+    meta: {title: "loader-xyz"},
+    component: LoaderXyz,
+  },
   {
     path: '/list/loader-vtk',
     name: 'LoaderVtk',
