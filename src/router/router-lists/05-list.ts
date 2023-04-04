@@ -8,8 +8,15 @@ import LoaderVox from "@/pages/model-list/detail05/125-loader-vox/index.vue";
 import LoaderVrml from "@/pages/model-list/detail05/126-loader-vrml/index.vue";
 import LoaderVtk from "@/pages/model-list/detail05/127-loader-vtk/index.vue";
 import LoaderXyz from "@/pages/model-list/detail05/128-loader-xyz/index.vue";
+import WebglLod from "@/pages/model-list/detail05/129-webgl-lod/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-lod',
+    name: 'WebglLod',
+    meta: {title: "webgl-lod"},
+    component: WebglLod,
+  },
   {
     path: '/list/loader-xyz',
     name: 'LoaderXyz',
