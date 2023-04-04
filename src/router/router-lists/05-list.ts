@@ -9,8 +9,15 @@ import LoaderVrml from "@/pages/model-list/detail05/126-loader-vrml/index.vue";
 import LoaderVtk from "@/pages/model-list/detail05/127-loader-vtk/index.vue";
 import LoaderXyz from "@/pages/model-list/detail05/128-loader-xyz/index.vue";
 import WebglLod from "@/pages/model-list/detail05/129-webgl-lod/index.vue";
+import WebglMarchingcubes from "@/pages/model-list/detail05/130-webgl-marchingcubes/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-marchingcubes',
+    name: 'WebglMarchingcubes',
+    meta: {title: "webgl-marchingcubes"},
+    component: WebglMarchingcubes,
+  },
   {
     path: '/list/webgl-lod',
     name: 'WebglLod',
