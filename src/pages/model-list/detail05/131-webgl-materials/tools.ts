@@ -80,10 +80,12 @@ export class Model {
     const mesh = new THREE.Mesh(geometry, material);
 
     const x = (length % 4) * 200 - 400;
-    const { y } = mesh.position;
+    const y = mesh.position.y;
     const z = Math.floor(length / 4) * 200 - 200;
 
+    // 位置
     mesh.position.set(x, y, z);
+    // 角度
     mesh.rotation.set(
       Math.random() * 200 - 100,
       Math.random() * 200 - 100,
@@ -100,27 +102,42 @@ export class Model {
     texture.needsUpdate = true;
 
     this.materials = [];
-    this.materials.push(new THREE.MeshLambertMaterial({ 
+    // Lambert网格材质(MeshLambertMaterial) 一种非光泽表面的材质，没有镜面高光
+    this.materials.push(new THREE.MeshLambertMaterial({
+      // 颜色贴图。可以选择包括一个alpha通道，通常与.transparent 或.alphaTest。默认为null
       map: texture, 
+      // 定义此材质是否透明
       transparent: true,
     }));
 
     this.materials.push(new THREE.MeshLambertMaterial({ 
+      // 材质的颜色(Color)，默认值为白色 (0xffffff)
       color: 0xdddddd 
     }));
 
+    // Phong网格材质(MeshPhongMaterial) 一种用于具有镜面高光的光泽表面的材质
     this.materials.push(new THREE.MeshPhongMaterial({ 
+      // 材质的颜色(Color)，默认值为白色 (0xffffff)
       color: 0xdddddd, 
+      // 材质的高光颜色。默认值为0x111111（深灰色）的颜色Color
       specular: 0x009900, 
+      // .specular高亮的程度，越高的值越闪亮。默认值为 30
       shininess: 30, 
+      // 定义材质是否使用平面着色进行渲染。默认值为false
       flatShading: true,
     }));
 
+    // 法线网格材质(MeshNormalMaterial) 一种把法向量映射到RGB颜色的材质
     this.materials.push(new THREE.MeshNormalMaterial());
 
+    // 基础网格材质(MeshBasicMaterial) 一个以简单着色（平面或线框）方式来绘制几何体的材质
+    // 这种材质不受光照的影响
     this.materials.push(new THREE.MeshBasicMaterial({ 
       color: 0xffaa00, 
       transparent: true, 
+      // 在使用此材质显示对象时要使用何种混合。必须将其设置为CustomBlending才能使用自定义blendSrc, 
+      // blendDst 或者 [page:Constant blendEquation]。 混合模式所有可能的取值请参阅constants。
+      // 默认值为NormalBlending。
       blending: THREE.AdditiveBlending,
     }));
 
@@ -142,13 +159,17 @@ export class Model {
 
     this.materials.push(new THREE.MeshBasicMaterial({ 
       color: 0xffaa00, 
+      // 将几何体渲染为线框。默认值为false（即渲染为平面多边形）
       wireframe: true,
     }));
 
+    // 深度网格材质(MeshDepthMaterial)
+    // 一种按深度绘制几何体的材质。深度基于相机远近平面。白色最近，黑色最远
     this.materials.push(new THREE.MeshDepthMaterial());
 
     this.materials.push(new THREE.MeshLambertMaterial({ 
       color: 0x666666, 
+      // 材质的放射（光）颜色，基本上是不受其他光照影响的固有颜色。默认为黑色
       emissive: 0xff0000,
     }));
 
@@ -175,18 +196,22 @@ export class Model {
 
   // 创建灯光
   private createLight() {
-    const ambient = new THREE.AmbientLight(0x111111);
-
-    const dlight = new THREE.DirectionalLight(0xffffff, 0.125);
-    dlight.position.x = Math.random() - 0.5;
-    dlight.position.y = Math.random() - 0.5;
-    dlight.position.z = Math.random() - 0.5;
-    dlight.position.normalize();
-
     const geometry = new THREE.SphereGeometry(4, 8, 8);
     const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const mesh = new THREE.Mesh(geometry, material);
+    
+    const ambient = new THREE.AmbientLight(0x111111);
+
+    const dlight = new THREE.DirectionalLight(0xffffff, 0.125);
+    dlight.position.set(
+      Math.random() - 0.5,
+      Math.random() - 0.5,
+      Math.random() - 0.5,
+    );
+    dlight.position.normalize();
+
     this.pointLight = new THREE.PointLight(0xffffff, 1);
+    this.pointLight.scale.set(5, 5, 5);
     this.pointLight.add(mesh);
 
     this.scene.add(ambient, dlight, this.pointLight);
@@ -240,9 +265,9 @@ export class Model {
       this.camera.position.z = Math.sin(timer) * 1000;
       this.camera.lookAt(this.scene.position);
 
-      this.objects.forEach((object) => {
-        object.rotation.x += 0.01;
-        object.rotation.y += 0.005;
+      this.objects.forEach((obj) => {
+        obj.rotation.x += 0.01;
+        obj.rotation.y += 0.005;
       });
 
       // @ts-ignore
