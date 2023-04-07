@@ -13,8 +13,15 @@ import WebglMarchingcubes from "@/pages/model-list/detail05/130-webgl-marchingcu
 import WebglMaterials from "@/pages/model-list/detail05/131-webgl-materials/index.vue";
 import WebglMaterialsBlending from "@/pages/model-list/detail05/132-webgl-materials-blending/index.vue";
 import WebglMaterialsBlendingCustom from "@/pages/model-list/detail05/133-materials-blending-custom/index.vue";
+import MaterialsMaterialsBumpmap from "@/pages/model-list/detail05/134-materials-bumpmap/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-bumpmap',
+    name: 'MaterialsMaterialsBumpmap',
+    meta: {title: "webgl-materials-bumpmap"},
+    component: MaterialsMaterialsBumpmap,
+  },
   {
     path: '/list/webgl-materials-blending-custom',
     name: 'WebglMaterialsBlendingCustom',
