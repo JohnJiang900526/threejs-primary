@@ -12,8 +12,15 @@ import WebglLod from "@/pages/model-list/detail05/129-webgl-lod/index.vue";
 import WebglMarchingcubes from "@/pages/model-list/detail05/130-webgl-marchingcubes/index.vue";
 import WebglMaterials from "@/pages/model-list/detail05/131-webgl-materials/index.vue";
 import WebglMaterialsBlending from "@/pages/model-list/detail05/132-webgl-materials-blending/index.vue";
+import WebglMaterialsBlendingCustom from "@/pages/model-list/detail05/133-materials-blending-custom/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-blending-custom',
+    name: 'WebglMaterialsBlendingCustom',
+    meta: {title: "webgl-materials-blending-custom"},
+    component: WebglMaterialsBlendingCustom,
+  },
   {
     path: '/list/webgl-materials-blending',
     name: 'WebglMaterialsBlending',
