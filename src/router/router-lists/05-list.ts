@@ -10,8 +10,15 @@ import LoaderVtk from "@/pages/model-list/detail05/127-loader-vtk/index.vue";
 import LoaderXyz from "@/pages/model-list/detail05/128-loader-xyz/index.vue";
 import WebglLod from "@/pages/model-list/detail05/129-webgl-lod/index.vue";
 import WebglMarchingcubes from "@/pages/model-list/detail05/130-webgl-marchingcubes/index.vue";
+import WebglMaterials from "@/pages/model-list/detail05/131-webgl-materials/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials',
+    name: 'WebglMaterials',
+    meta: {title: "webgl-materials"},
+    component: WebglMaterials,
+  },
   {
     path: '/list/webgl-marchingcubes',
     name: 'WebglMarchingcubes',
