@@ -71,16 +71,16 @@ export class Model {
 
   private bind() {
     if (this.isMobile()) {
-      this.container.onmousemove = null;
-      this.container.ontouchmove = (event) => {
+      window.onmousemove = null;
+      window.ontouchmove = (event) => {
         const e = event.touches[0];
         const x = (e.clientX - this.halfX);
 				const y = (e.clientY - 45 - this.halfY);
         this.mouse.set(x, y);
       };
     } else {
-      this.container.ontouchmove = null;
-      this.container.onmousemove = (e) => {
+      window.ontouchmove = null;
+      window.onmousemove = (e) => {
         const x = (e.clientX - this.halfX);
 				const y = (e.clientY - 45 - this.halfY);
         this.mouse.set(x, y);
