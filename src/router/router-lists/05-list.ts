@@ -15,9 +15,16 @@ import WebglMaterialsBlending from "@/pages/model-list/detail05/132-webgl-materi
 import WebglMaterialsBlendingCustom from "@/pages/model-list/detail05/133-materials-blending-custom/index.vue";
 import MaterialsMaterialsBumpmap from "@/pages/model-list/detail05/134-materials-bumpmap/index.vue";
 import MaterialsMaterialsCar from "@/pages/model-list/detail05/135-materials-car/index.vue";
+import MaterialsMaterialsChannels from "@/pages/model-list/detail05/136-materials-channels/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-channels',
+    name: 'MaterialsMaterialsChannels',
+    meta: {title: "webgl-materials-channels"},
+    component: MaterialsMaterialsChannels,
+  },
   {
     path: '/list/webgl-materials-car',
     name: 'MaterialsMaterialsCar',

@@ -19,7 +19,6 @@ export class Model {
   private stats: null | Stats;
   
   private controls: null | OrbitControls
-  private loader: GLTFLoader
   private grid: THREE.GridHelper
   private wheels: any[]
   private bodyMaterial: THREE.MeshPhysicalMaterial
@@ -42,7 +41,6 @@ export class Model {
     this.stats = null;
     
     this.controls = null;
-    this.loader = new GLTFLoader();
     this.grid = new THREE.GridHelper();
     this.wheels = [];
     this.bodyMaterial = new THREE.MeshPhysicalMaterial();
