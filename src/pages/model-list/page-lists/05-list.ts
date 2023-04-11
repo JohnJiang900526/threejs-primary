@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "138",
+    title: "138.WEBGL Materials 动态立方体贴图",
+    path: "/list/webgl-materials-cubemap-dynamic"
+  },
+  {
     key: "137",
     title: "137.WEBGL Materials 立方体贴图",
     path: "/list/webgl-materials-cubemap"
