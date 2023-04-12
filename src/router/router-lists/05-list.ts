@@ -13,43 +13,50 @@ import WebglMarchingcubes from "@/pages/model-list/detail05/130-webgl-marchingcu
 import WebglMaterials from "@/pages/model-list/detail05/131-webgl-materials/index.vue";
 import WebglMaterialsBlending from "@/pages/model-list/detail05/132-webgl-materials-blending/index.vue";
 import WebglMaterialsBlendingCustom from "@/pages/model-list/detail05/133-materials-blending-custom/index.vue";
-import MaterialsMaterialsBumpmap from "@/pages/model-list/detail05/134-materials-bumpmap/index.vue";
-import MaterialsMaterialsCar from "@/pages/model-list/detail05/135-materials-car/index.vue";
-import MaterialsMaterialsChannels from "@/pages/model-list/detail05/136-materials-channels/index.vue";
-import MaterialsMaterialsCubeMap from "@/pages/model-list/detail05/137-materials-cubemap/index.vue";
-import MaterialsMaterialsCubeMapDynamic from "@/pages/model-list/detail05/138-materials-cubemap-dynamic/index.vue";
+import MaterialsBumpmap from "@/pages/model-list/detail05/134-materials-bumpmap/index.vue";
+import MaterialsCar from "@/pages/model-list/detail05/135-materials-car/index.vue";
+import MaterialsChannels from "@/pages/model-list/detail05/136-materials-channels/index.vue";
+import MaterialsCubeMap from "@/pages/model-list/detail05/137-materials-cubemap/index.vue";
+import MaterialsCubeMapDynamic from "@/pages/model-list/detail05/138-materials-cubemap-dynamic/index.vue";
+import MaterialsCubeMapRefraction from "@/pages/model-list/detail05/139-materials-cubemap-refraction/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
   {
+    path: '/list/webgl-materials-cubemap-refraction',
+    name: 'MaterialsCubeMapRefraction',
+    meta: {title: "webgl-materials-cubemap-refraction"},
+    component: MaterialsCubeMapRefraction,
+  },
+  {
     path: '/list/webgl-materials-cubemap-dynamic',
-    name: 'MaterialsMaterialsCubeMapDynamic',
+    name: 'MaterialsCubeMapDynamic',
     meta: {title: "webgl-materials-cubemap-dynamic"},
-    component: MaterialsMaterialsCubeMapDynamic,
+    component: MaterialsCubeMapDynamic,
   },
   {
     path: '/list/webgl-materials-cubemap',
-    name: 'MaterialsMaterialsCubeMap',
+    name: 'MaterialsCubeMap',
     meta: {title: "webgl-materials-cubemap"},
-    component: MaterialsMaterialsCubeMap,
+    component: MaterialsCubeMap,
   },
   {
     path: '/list/webgl-materials-channels',
-    name: 'MaterialsMaterialsChannels',
+    name: 'MaterialsChannels',
     meta: {title: "webgl-materials-channels"},
-    component: MaterialsMaterialsChannels,
+    component: MaterialsChannels,
   },
   {
     path: '/list/webgl-materials-car',
-    name: 'MaterialsMaterialsCar',
+    name: 'MaterialsCar',
     meta: {title: "webgl-materials-car"},
-    component: MaterialsMaterialsCar,
+    component: MaterialsCar,
   },
   {
     path: '/list/webgl-materials-bumpmap',
-    name: 'MaterialsMaterialsBumpmap',
+    name: 'MaterialsBumpmap',
     meta: {title: "webgl-materials-bumpmap"},
-    component: MaterialsMaterialsBumpmap,
+    component: MaterialsBumpmap,
   },
   {
     path: '/list/webgl-materials-blending-custom',
