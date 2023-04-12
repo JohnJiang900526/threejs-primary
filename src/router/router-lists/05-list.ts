@@ -19,9 +19,16 @@ import MaterialsChannels from "@/pages/model-list/detail05/136-materials-channel
 import MaterialsCubeMap from "@/pages/model-list/detail05/137-materials-cubemap/index.vue";
 import MaterialsCubeMapDynamic from "@/pages/model-list/detail05/138-materials-cubemap-dynamic/index.vue";
 import MaterialsCubeMapRefraction from "@/pages/model-list/detail05/139-materials-cubemap-refraction/index.vue";
+import MaterialsCubeMapMipmaps from "@/pages/model-list/detail05/140-materials-cubemap-mipmaps/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-cubemap-mipmaps',
+    name: 'MaterialsCubeMapMipmaps',
+    meta: {title: "webgl-materials-cubemap-mipmaps"},
+    component: MaterialsCubeMapMipmaps,
+  },
   {
     path: '/list/webgl-materials-cubemap-refraction',
     name: 'MaterialsCubeMapRefraction',
