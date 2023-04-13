@@ -256,8 +256,6 @@ export class Model {
       new THREE.BufferAttribute(this.curvatureAttribute, 1)
     );
 
-    console.log(this.bufferGeo);
-
     const curvatureFiltered = new Float32Array(this.curvatureAttribute);
     this.filterBoth(curvatureFiltered);
     const materialRaw = new THREE.ShaderMaterial({
