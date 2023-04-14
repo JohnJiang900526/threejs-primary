@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "144",
+    title: "144.WEBGL Materials 环境贴图EXR",
+    path: "/list/webgl-materials-envmaps-exr"
+  },
+  {
     key: "143",
     title: "143.WEBGL Materials 环境贴图",
     path: "/list/webgl-materials-envmaps"
