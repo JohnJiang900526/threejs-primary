@@ -22,9 +22,16 @@ import MaterialsCubeMapRefraction from "@/pages/model-list/detail05/139-material
 import MaterialsCubeMapMipmaps from "@/pages/model-list/detail05/140-materials-cubemap-mipmaps/index.vue";
 import MaterialsCurvature from "@/pages/model-list/detail05/141-materials-curvature/index.vue";
 import MaterialsDisplacementMap from "@/pages/model-list/detail05/142-materials-displacement-map/index.vue";
+import MaterialsEnvmaps from "@/pages/model-list/detail05/143-materials-envmaps/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-envmaps',
+    name: 'MaterialsEnvmaps',
+    meta: {title: "webgl-materials-envmaps"},
+    component: MaterialsEnvmaps,
+  },
   {
     path: '/list/webgl-materials-displacement-map',
     name: 'MaterialsDisplacementMap',
