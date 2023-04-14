@@ -72,7 +72,11 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.OrthographicCamera(-this.h*this.aspect, this.h*this.aspect, this.h, -this.h, 1, 10000);
+    const left = -this.h*this.aspect;
+    const right = this.h*this.aspect;
+    const top = this.h;
+    const bottom = -this.h;
+    this.camera = new THREE.OrthographicCamera(left, right, top, bottom, 1, 10000);
     this.camera.position.z = 1500;
     this.scene.add(this.camera);
 
@@ -87,7 +91,10 @@ export class Model {
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.enableZoom = false;
+    // 将其设置为true以启用阻尼（惯性），这将给控制器带来重量感。默认值为false。
+    // 请注意，如果该值被启用，你将必须在你的动画循环里调用.update()
     this.controls.enableDamping = true;
+    this.controls.update();
 
     this.setUpGUI();
     this.initStats();
@@ -223,6 +230,11 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
+
+    // 点光动画
+    this.pointLight.position.x = 2500 * Math.cos(this.r);
+    this.pointLight.position.z = 2500 * Math.sin(this.r);
+    this.r += 0.01;
 
     this.stats?.update();
     this.controls?.update();
