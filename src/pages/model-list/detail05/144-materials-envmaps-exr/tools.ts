@@ -25,8 +25,8 @@ export class Model {
   }
   private torusMesh: THREE.Mesh
   private planeMesh: THREE.Mesh
-  private pngCubeRenderTarget: any
-  private exrCubeRenderTarget: any
+  private pngCubeRenderTarget: null | THREE.WebGLRenderTarget
+  private exrCubeRenderTarget: null | THREE.WebGLRenderTarget
   private pngBackground: THREE.Texture
   private exrBackground: THREE.Texture
   constructor(container: HTMLDivElement) {
