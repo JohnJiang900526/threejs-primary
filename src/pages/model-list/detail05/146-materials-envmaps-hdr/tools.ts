@@ -170,11 +170,11 @@ export class Model {
       pmremGenerator.dispose();
     };
 
+    // hdr
     {
       const urls = ['px.hdr', 'nx.hdr', 'py.hdr', 'ny.hdr', 'pz.hdr', 'nz.hdr'];
       const path = "/examples/textures/cube/pisaHDR/";
-      const loader = new HDRCubeTextureLoader();
-      loader.setPath(path);
+      const loader = (new HDRCubeTextureLoader()).setPath(path);
 
       this.hdrCubeMap = loader.load(urls, () => {
         this.hdrCubeRenderTarget = pmremGenerator.fromCubemap(this.hdrCubeMap);
@@ -183,29 +183,29 @@ export class Model {
       });
     }
 
+    // ldr
     {
       const urls = ['px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png'];
-      const loader = new THREE.CubeTextureLoader();
       const path = "/examples/textures/cube/pisa/";
-      loader.setPath(path);
+      const loader = (new THREE.CubeTextureLoader()).setPath(path);
       this.ldrCubeMap = loader.load(urls, () => {
         this.ldrCubeMap.encoding = THREE.sRGBEncoding;
         this.ldrCubeRenderTarget = pmremGenerator.fromCubemap(this.ldrCubeMap);
       });
     }
 
+    // rgb16
     {
       const urls = ['px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png'];
       const path = "/examples/textures/cube/pisaRGBM16/";
-      const loader = new RGBMLoader();
-      loader.setPath(path);
-      loader.setMaxRange(16);
+      const loader = (new RGBMLoader()).setPath(path).setMaxRange(16);
 
       this.rgbmCubeMap = loader.loadCubemap(urls, () => {
         this.rgbmCubeRenderTarget = pmremGenerator.fromCubemap(this.rgbmCubeMap);
       });
     }
 
+    // generated
     const envScene = new DebugEnvironment();
     this.generatedCubeRenderTarget = pmremGenerator.fromScene(envScene);
   }
