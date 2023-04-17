@@ -70,7 +70,7 @@ export default defineComponent({
 
   .webgl-materials-envmaps-groundprojected-page {
     .absolute-page();
-    background-color: #000;
+    background-color: #ddd;
     .selection {
       position: absolute;
       display: flex;
