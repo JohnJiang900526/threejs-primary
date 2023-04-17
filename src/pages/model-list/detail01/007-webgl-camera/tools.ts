@@ -145,10 +145,12 @@ export class Model {
     this.renderer.autoClear = false;
 
     // 性能统计信息
+    // @ts-ignore
     this.stats = Stats();
-    const dom = this.stats.domElement;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
 
     this.animate();
     this.resize();

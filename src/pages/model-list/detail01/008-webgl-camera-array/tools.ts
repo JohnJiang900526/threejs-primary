@@ -97,10 +97,12 @@ export class Model {
     this.scene.add(this.mesh);
 
     // 性能统计信息
+    // @ts-ignore
     this.stats = Stats();
-    const dom = this.stats.domElement;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
 
     // 渲染器
     this.renderer = new THREE.WebGLRenderer();

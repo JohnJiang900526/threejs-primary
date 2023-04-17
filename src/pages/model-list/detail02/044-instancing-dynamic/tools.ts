@@ -117,8 +117,11 @@ export class Model {
 
   // 性能统计
   private initStats() {
+    // @ts-ignore
     this.stats = Stats();
+    // @ts-ignore
     this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
     this.container.appendChild(this.stats.domElement);
   }
 

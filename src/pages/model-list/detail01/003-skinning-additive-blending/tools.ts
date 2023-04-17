@@ -135,10 +135,12 @@ export class Model {
     this.orbitControls.update();
 
     // 创建统计信息
-    this.stats = Stats() as Stats;
-    const dom = this.stats.dom;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats = Stats();
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
 
     this.animate();
     this.resize();

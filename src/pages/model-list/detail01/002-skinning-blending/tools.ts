@@ -145,11 +145,12 @@ export class Model {
     this.container.appendChild(this.renderer.domElement);
 
     // 创建性能监控
+    // @ts-ignore
     this.stats = Stats();
-    const dom = this.stats.domElement;
-    // fixed定位改成absolute
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
 
     // 创建一个控制器
     const controls = new OrbitControls(this.camera, this.renderer?.domElement);

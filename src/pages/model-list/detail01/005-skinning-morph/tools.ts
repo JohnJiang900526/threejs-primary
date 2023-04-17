@@ -143,10 +143,12 @@ export class Model {
     this.control.enableDamping = true;
 
     // 创建一个性能统计器
+    // @ts-ignore
     this.stats = Stats();
-    const dom = this.stats.dom;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
 
     this.animate();
     this.resize();

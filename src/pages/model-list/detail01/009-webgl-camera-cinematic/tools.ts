@@ -104,11 +104,13 @@ export class Model {
   }
 
   // 性能统计
-  initStats() {
+  private initStats() {
+    // @ts-ignore
     this.stats = Stats();
-    const dom = this.stats.domElement;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
   }
 
   // 相机参数处理

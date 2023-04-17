@@ -135,10 +135,12 @@ export class Model {
     this.container.appendChild(this.renderer.domElement);
 
     // 创建统计信息
+    // @ts-ignore
     this.stats = Stats();
-    const dom = this.stats.dom;
-    dom.style.position = "absolute";
-    this.container.appendChild(dom);
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
 
     // 创建一个控制器 允许鼠标控制场景
     this.control = new OrbitControls(this.camera, this.renderer.domElement);
