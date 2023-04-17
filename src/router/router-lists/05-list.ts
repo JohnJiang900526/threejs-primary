@@ -25,9 +25,15 @@ import MaterialsDisplacementMap from "@/pages/model-list/detail05/142-materials-
 import MaterialsEnvmaps from "@/pages/model-list/detail05/143-materials-envmaps/index.vue";
 import MaterialsEnvmapsExr from "@/pages/model-list/detail05/144-materials-envmaps-exr/index.vue";
 import MaterialsEnvmapsGroundProjected from "@/pages/model-list/detail05/145-materials-envmaps-groundprojected/index.vue";
-
+import MaterialsEnvmapsHdr from "@/pages/model-list/detail05/146-materials-envmaps-hdr/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-envmaps-hdr',
+    name: 'MaterialsEnvmapsHdr',
+    meta: {title: "webgl-materials-envmaps-hdr"},
+    component: MaterialsEnvmapsHdr,
+  },
   {
     path: '/list/webgl-materials-envmaps-groundprojected',
     name: 'MaterialsEnvmapsGroundProjected',
