@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "150",
+    title: "150.WEBGL Materials 物体空间",
+    path: "/list/webgl-materials-normalmap-object-space"
+  },
+  {
     key: "149",
     title: "149.WEBGL Materials 法向量映射",
     path: "/list/webgl-materials-normalmap"
