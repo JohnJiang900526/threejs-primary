@@ -28,9 +28,16 @@ import MaterialsEnvmapsGroundProjected from "@/pages/model-list/detail05/145-mat
 import MaterialsEnvmapsHdr from "@/pages/model-list/detail05/146-materials-envmaps-hdr/index.vue";
 import MaterialsLightmap from "@/pages/model-list/detail05/147-materials-lightmap/index.vue";
 import MaterialsMatcap from "@/pages/model-list/detail05/148-materials-matcap/index.vue";
+import MaterialsNormalmap from "@/pages/model-list/detail05/149-materials-normalmap/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-normalmap',
+    name: 'MaterialsNormalmap',
+    meta: {title: "webgl-materials-normalmap"},
+    component: MaterialsNormalmap,
+  },
   {
     path: '/list/webgl-materials-matcap',
     name: 'MaterialsMatcap',
