@@ -70,7 +70,7 @@ export default defineComponent({
 
   .webgl-materials-physical-clearcoat-page {
     .absolute-page();
-    background-color: #000000;
+    background-color: #71462a;
     .selection {
       position: absolute;
       display: flex;
