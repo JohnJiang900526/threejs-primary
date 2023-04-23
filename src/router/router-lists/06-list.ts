@@ -4,8 +4,15 @@ import MaterialsPhysicalClearcoat from "@/pages/model-list/detail06/151-material
 import MaterialsPhysicalReflectivity from "@/pages/model-list/detail06/152-materials-physical-reflectivity/index.vue";
 import MaterialsPhysicalTransmission from "@/pages/model-list/detail06/153-materials-physical-transmission/index.vue";
 import MaterialsStandard from "@/pages/model-list/detail06/154-materials-standard/index.vue";
+import MaterialsSubsurfaceScattering from "@/pages/model-list/detail06/155-materials-subsurface-scattering/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-subsurface-scattering',
+    name: 'MaterialsSubsurfaceScattering',
+    meta: {title: "webgl-materials-subsurface-scattering"},
+    component: MaterialsSubsurfaceScattering,
+  },
   {
     path: '/list/webgl-materials-standard',
     name: 'MaterialsStandard',
