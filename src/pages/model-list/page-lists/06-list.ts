@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "154",
+    title: "154.WEBGL Materials 标准",
+    path: "/list/webgl-materials-standard"
+  },
+  {
     key: "153",
     title: "153.WEBGL Materials 物体变速器",
     path: "/list/webgl-materials-physical-transmission"

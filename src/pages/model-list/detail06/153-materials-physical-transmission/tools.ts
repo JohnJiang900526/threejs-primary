@@ -291,6 +291,7 @@ export class Model {
       if (this.renderer) {
         this.renderer.setSize(this.width, this.height);
       }
+      this.render();
     };
   }
 }
