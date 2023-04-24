@@ -82,7 +82,6 @@ export class Model {
     uniforms['map'].value = imgTexture;
     uniforms['diffuse'].value = new THREE.Vector3(1.0, 0.2, 0.2);
     uniforms['shininess'].value = 500;
-
     uniforms['thicknessMap'].value = thicknessTexture;
     uniforms['thicknessColor'].value = new THREE.Vector3(0.5, 0.3, 0.0);
     uniforms['thicknessDistortion'].value = 0.1;
@@ -91,12 +90,18 @@ export class Model {
     uniforms['thicknessPower'].value = 2.0;
     uniforms['thicknessScale'].value = 16.0;
 
-    const material = new THREE.ShaderMaterial( {
-      uniforms: uniforms,
-      vertexShader: shader.vertexShader,
-      fragmentShader: shader.fragmentShader,
-      lights: true
+    const { vertexShader, fragmentShader } = shader;
+    const material = new THREE.ShaderMaterial({
+      uniforms,
+      // 顶点着色器的GLSL代码。这是shader程序的实际代码
+      vertexShader,
+      // 片元着色器的GLSL代码。这是shader程序的实际代码
+      fragmentShader,
+      // 材质是否受到光照的影响。默认值为 false。
+      // 如果传递与光照相关的uniform数据到这个材质，则为true。默认是false
+      lights: true,
     });
+    // 衍生品
     material.extensions.derivatives = true;
     return { material,  uniforms};
   }
@@ -159,9 +164,6 @@ export class Model {
     this.gui.add(params, "scale", 0.01, 50.0, 0.01).onChange(() => {
       uniforms["thicknessScale"].value = params.scale;
     });
-
-
-
   }
 
   private loadModel() {
@@ -209,6 +211,9 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
+
+    // 控制旋转
+    this.model.rotation.y = performance.now() / 5000;
     
     this.stats?.update();
     this.controls?.update();
