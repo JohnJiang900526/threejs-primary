@@ -6,8 +6,16 @@ import MaterialsPhysicalTransmission from "@/pages/model-list/detail06/153-mater
 import MaterialsStandard from "@/pages/model-list/detail06/154-materials-standard/index.vue";
 import MaterialsSubsurfaceScattering from "@/pages/model-list/detail06/155-materials-subsurface-scattering/index.vue";
 import MaterialsTextureAnisotropy from "@/pages/model-list/detail06/156-materials-texture-anisotropy/index.vue";
+import MaterialsTextureCanvas from "@/pages/model-list/detail06/157-materials-texture-canvas/index.vue";
+
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-texture-canvas',
+    name: 'MaterialsTextureCanvas',
+    meta: {title: "webgl-materials-texture-canvas"},
+    component: MaterialsTextureCanvas,
+  },
   {
     path: '/list/webgl-materials-texture-anisotropy',
     name: 'MaterialsTextureAnisotropy',

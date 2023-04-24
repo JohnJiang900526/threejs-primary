@@ -1,0 +1,95 @@
+<script setup lang="ts">
+  import Page from "@/base/page/index.vue";
+</script>
+
+<template>
+  <div class="webgl-materials-texture-canvas-page">
+    <Page title="webgl-materials-texture-canvas">
+      <div ref="container" class="key-frame-page-inner">
+        <canvas ref="canvas" class="drawing-canvas" height="128" width="128"></canvas>
+      </div>
+    </Page>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import { Model } from "./tools";
+
+let objModel: Model | null;
+export default defineComponent({
+  data() {
+    return {
+      show: false,
+    };
+  },
+  mounted() {
+    this.render();
+  },
+  methods: {
+    // 渲染入口
+    render() {
+      objModel = new Model(
+        this.$refs.container as HTMLDivElement, 
+        this.$refs.canvas as HTMLCanvasElement,
+      );
+      objModel.init();
+    },
+    
+    // 打开设置面板
+    openHandle(e: MouseEvent) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.show = true;
+    },
+    // 关闭
+    closeHandle() {
+      this.show = false;
+    },
+  },
+  // 卸载前函数
+  beforeUnmount() {
+    objModel = null;
+  }
+});
+</script>
+<style lang='less'>
+  @import "@/common/style/color.less";
+  @import "@/common/style/mixins.less";
+
+  .webgl-materials-texture-canvas-page {
+    .absolute-page();
+    background-color: #000000;
+    .key-frame-page-inner {
+      position: relative;
+      .width-and-height();
+      .actions {
+        padding: 10px;
+        box-sizing: border-box;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        z-index: 1000;
+      }
+      .lil-gui.root {
+        max-height: 50%;
+        max-width: 80%;
+        position: absolute;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: auto;
+      }
+      .drawing-canvas {
+        position: absolute;
+				background-color: #000000;
+				top: 0px;
+				right: 0px;
+				z-index: 3000;
+				cursor: crosshair;
+				touch-action: none;
+      }
+    }
+  }
+</style>
