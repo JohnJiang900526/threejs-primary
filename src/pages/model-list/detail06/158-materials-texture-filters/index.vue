@@ -10,9 +10,6 @@
         <div v-show="false" class="actions">
           <Icon @click="openHandle" name="wap-nav" color="#fff"/>
         </div>
-
-        <div class="left-label">anisotropy: {{ anisotropy1 }}</div>
-        <div class="right-label">anisotropy: {{ anisotropy2 }}</div>
       </div>
     </Page>
 
@@ -39,10 +36,7 @@ export default defineComponent({
     // 渲染入口
     render() {
       objModel = new Model(this.$refs.container as HTMLDivElement);
-      objModel.init((anisotropy1, anisotropy2) => {
-        this.anisotropy1 = anisotropy1;
-        this.anisotropy2 = anisotropy2;
-      });
+      objModel.init();
     },
     
     // 打开设置面板
@@ -106,24 +100,6 @@ export default defineComponent({
         bottom: 0;
         left: 0;
         right: auto;
-      }
-
-      .left-label {
-        position: absolute;
-        left: 20px;
-        bottom: 50px;
-        z-index: 100;
-        color: #333;
-        font-size: 25px;
-      }
-
-      .right-label {
-        position: absolute;
-        right:20px;
-        bottom: 50px;
-        z-index: 100;
-        color: #333;
-        font-size: 25px;
       }
     }
   }
