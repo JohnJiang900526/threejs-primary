@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { showLoadingToast } from 'vant';
 
 export class Model {
   private width: number;
