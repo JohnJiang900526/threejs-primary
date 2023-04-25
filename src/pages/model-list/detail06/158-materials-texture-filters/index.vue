@@ -25,8 +25,6 @@ export default defineComponent({
   data() {
     return {
       show: false,
-      anisotropy1: 0,
-      anisotropy2: 0,
     };
   },
   mounted() {
