@@ -83,28 +83,44 @@ export class Model {
     }
   }
 
-  private generateMaterial() {
+  private mipmap(size: number, color: string) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    canvas.width = 128;
-    canvas.height = 128;
+    canvas.width = size;
+    canvas.height = size;
 
     context.fillStyle = '#444';
-    context.fillRect(0, 0, 128, 128);
+    context.fillRect(0, 0, size, size);
 
-    context.fillStyle = '#fff';
-    context.fillRect(0, 0, 64, 64);
-    context.fillRect(64, 64, 64, 64);
+    context.fillStyle = color;
+    context.fillRect(0, 0, size/2, size/2);
+    context.fillRect(size/2, size/2, size/2, size/2);
+    return canvas;
+  }
 
+  // 本次案例核心
+  private generateMaterial() {
+    const canvas = this.mipmap(128, '#f00');
     const texture1 = new THREE.CanvasTexture(canvas);
+    texture1.mipmaps = [
+      canvas,
+      this.mipmap(64, '#0f0'),
+      this.mipmap(32, '#00f'),
+      this.mipmap(16, '#400'),
+      this.mipmap(8, '#040'),
+      this.mipmap(4, '#004'),
+      this.mipmap(2, '#044'),
+      this.mipmap(1, '#404'),
+    ];
+    
     texture1.repeat.set(1000, 1000);
     texture1.wrapS = THREE.RepeatWrapping;
     texture1.wrapT = THREE.RepeatWrapping;
 
     const texture2 = texture1.clone();
     texture2.magFilter = THREE.NearestFilter;
-    texture2.minFilter = THREE.NearestFilter;
+    texture2.minFilter = THREE.NearestMipmapNearestFilter;
 
     const	material1 = new THREE.MeshBasicMaterial({ map: texture1 });
     const material2 = new THREE.MeshBasicMaterial({ color: 0xffccaa, map: texture2 });
