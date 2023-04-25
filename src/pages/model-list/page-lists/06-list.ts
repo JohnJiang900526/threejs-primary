@@ -10,6 +10,21 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "160",
+    title: "160.WEBGL Materials 纹理局部更新",
+    path: "/list/webgl-materials-texture-partialupdate"
+  },
+  {
+    key: "159",
+    title: "159.WEBGL Materials 纹理手动mipmap",
+    path: "/list/webgl-materials-texture-manualmipmap"
+  },
+  {
+    key: "158",
+    title: "158.WEBGL Materials 纹理过滤器",
+    path: "/list/webgl-materials-texture-filters"
+  },
+  {
     key: "157",
     title: "157.WEBGL Materials 纹理绘图",
     path: "/list/webgl-materials-texture-canvas"

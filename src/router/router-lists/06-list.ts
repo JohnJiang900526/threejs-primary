@@ -7,9 +7,30 @@ import MaterialsStandard from "@/pages/model-list/detail06/154-materials-standar
 import MaterialsSubsurfaceScattering from "@/pages/model-list/detail06/155-materials-subsurface-scattering/index.vue";
 import MaterialsTextureAnisotropy from "@/pages/model-list/detail06/156-materials-texture-anisotropy/index.vue";
 import MaterialsTextureCanvas from "@/pages/model-list/detail06/157-materials-texture-canvas/index.vue";
+import MaterialsTextureFilters from "@/pages/model-list/detail06/158-materials-texture-filters/index.vue";
+import MaterialsTextureManualmipmap from "@/pages/model-list/detail06/159-materials-texture-manualmipmap/index.vue";
+import MaterialsTexturePartialupdate from "@/pages/model-list/detail06/160-materials-texture-partialupdate/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-texture-partialupdate',
+    name: 'MaterialsTexturePartialupdate',
+    meta: {title: "webgl-materials-texture-partialupdate"},
+    component: MaterialsTexturePartialupdate,
+  },
+  {
+    path: '/list/webgl-materials-texture-manualmipmap',
+    name: 'MaterialsTextureManualmipmap',
+    meta: {title: "webgl-materials-texture-manualmipmap"},
+    component: MaterialsTextureManualmipmap,
+  },
+  {
+    path: '/list/webgl-materials-texture-filters',
+    name: 'MaterialsTextureFilters',
+    meta: {title: "webgl-materials-texture-filters"},
+    component: MaterialsTextureFilters,
+  },
   {
     path: '/list/webgl-materials-texture-canvas',
     name: 'MaterialsTextureCanvas',
