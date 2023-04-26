@@ -10,6 +10,31 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "167",
+    title: "167.WEBGL Materials 图恩变化",
+    path: "/list/webgl-materials-variations-toon"
+  },
+  {
+    key: "166",
+    title: "166.WEBGL Materials 物理变化",
+    path: "/list/webgl-materials-variations-physical"
+  },
+  {
+    key: "165",
+    title: "165.WEBGL Materials 标准变化",
+    path: "/list/webgl-materials-variations-standard"
+  },
+  {
+    key: "164",
+    title: "164.WEBGL Materials 冯氏变化",
+    path: "/list/webgl-materials-variations-phong"
+  },
+  {
+    key: "163",
+    title: "163.WEBGL Materials 兰伯特变化",
+    path: "/list/webgl-materials-variations-lambert"
+  },
+  {
     key: "162",
     title: "162.WEBGL Materials 基本变量",
     path: "/list/webgl-materials-variations-basic"

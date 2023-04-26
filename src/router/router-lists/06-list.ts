@@ -12,9 +12,44 @@ import MaterialsTextureManualmipmap from "@/pages/model-list/detail06/159-materi
 import MaterialsTexturePartialupdate from "@/pages/model-list/detail06/160-materials-texture-partialupdate/index.vue";
 import MaterialsTextureRotation from "@/pages/model-list/detail06/161-materials-texture-rotation/index.vue";
 import MaterialsVariationsBasic from "@/pages/model-list/detail06/162-materials-variations-basic/index.vue";
+import MaterialsVariationsLambert from "@/pages/model-list/detail06/163-materials-variations-lambert/index.vue";
+import MaterialsVariationsPhong from "@/pages/model-list/detail06/164-materials-variations-phong/index.vue";
+import MaterialsVariationsStandard from "@/pages/model-list/detail06/165-materials-variations-standard/index.vue";
+import MaterialsVariationsPhysical from "@/pages/model-list/detail06/166-materials-variations-physical/index.vue";
+import MaterialsVariationsToon from "@/pages/model-list/detail06/167-materials-variations-toon/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-variations-toon',
+    name: 'MaterialsVariationsToon',
+    meta: {title: "webgl-materials-variations-toon"},
+    component: MaterialsVariationsToon,
+  },
+  {
+    path: '/list/webgl-materials-variations-physical',
+    name: 'MaterialsVariationsPhysical',
+    meta: {title: "webgl-materials-variations-physical"},
+    component: MaterialsVariationsPhysical,
+  },
+  {
+    path: '/list/webgl-materials-variations-standard',
+    name: 'MaterialsVariationsStandard',
+    meta: {title: "webgl-materials-variations-standard"},
+    component: MaterialsVariationsStandard,
+  },
+  {
+    path: '/list/webgl-materials-variations-phong',
+    name: 'MaterialsVariationsPhong',
+    meta: {title: "webgl-materials-variations-phong"},
+    component: MaterialsVariationsPhong,
+  },
+  {
+    path: '/list/webgl-materials-variations-lambert',
+    name: 'MaterialsVariationsLambert',
+    meta: {title: "webgl-materials-variations-lambert"},
+    component: MaterialsVariationsLambert,
+  },
   {
     path: '/list/webgl-materials-variations-basic',
     name: 'MaterialsVariationsBasic',
