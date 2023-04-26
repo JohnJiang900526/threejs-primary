@@ -46,16 +46,21 @@ export class Model {
     this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 2500);
     this.camera.position.set(0.0, 400, 400 * 3.5);
 
+    // 创建灯光
     this.generateLight();
+
+    // 加载字体
     this.getFont(() => {
+      // 创建模型
       this.createModel();
     });
+
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.minDistance = 200;
+    this.controls.minDistance = 50;
     this.controls.maxDistance = 2000;
 
     this.initStats();
@@ -71,19 +76,28 @@ export class Model {
 
   private getFont(fn?: () => void) {
     const url = "/examples/fonts/gentilis_regular.typeface.json";
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
 
     this.loader.load(url, (font) => {
+      toast.close();
       this.font = font;
-
       fn && fn();
-    });
+    }, undefined, () => { toast.close(); });
   }
   // 核心
   private addLabel(name: string, location: THREE.Vector3) {
     const geometry = new TextGeometry(name, {
+      // font — THREE.Font的实例
       font: this.font,
+      // size — Float。字体大小，默认值为100
       size: 20,
+      // height — Float。挤出文本的厚度。默认值为50
       height: 1,
+      // curveSegments — Integer。（表示文本的）曲线上点的数量。默认值为12
       curveSegments: 1,
     });
 
@@ -97,10 +111,10 @@ export class Model {
   private createModel() {
     const width = 400;
     const side = 5;
-    const radius = (width / side) * 0.8 * 0.5;
-    const step = 1.0 / side;
+    const radius = (width/side) * 0.8 * 0.5;
+    const step = 1.0/side;
 
-    // 模型
+    // 创建球形模型
     const geometry = new THREE.SphereGeometry(radius, 32, 16);
     for (let x = 0; x <= 1.0; x += step) {
       for (let y = 0; y <= 1.0; y += step) {
@@ -109,15 +123,14 @@ export class Model {
           const envMap = x < 0.5 ? this.reflectionCube : null;
           const material = new THREE.MeshBasicMaterial({
             color,
+            // 环境贴图。默认值为null
             envMap,
+            // 环境贴图对表面的影响程度; 见.combine。
+            // 默认值为1，有效范围介于0（无反射）和1（完全反射）之间
             reflectivity: y,
           });
           const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(
-            x * 400 - 200,
-            y * 400 - 200,
-            z * 400 - 200,
-          );
+          mesh.position.set(x * 400 - 200, y * 400 - 200, z * 400 - 200);
           this.scene.add(mesh);
         }
       }
@@ -156,7 +169,11 @@ export class Model {
   private generateBackground() {
     const loader = new THREE.CubeTextureLoader();
     const path = "/examples/textures/cube/SwedishRoyalCastle/";
-    const urls = ['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'];
+    const urls = [
+      'px.jpg', 'nx.jpg', 
+      'py.jpg', 'ny.jpg', 
+      'pz.jpg', 'nz.jpg',
+    ];
 
     this.reflectionCube = loader.setPath(path).load(urls);
     this.reflectionCube.encoding = THREE.sRGBEncoding;
