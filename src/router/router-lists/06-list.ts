@@ -10,9 +10,16 @@ import MaterialsTextureCanvas from "@/pages/model-list/detail06/157-materials-te
 import MaterialsTextureFilters from "@/pages/model-list/detail06/158-materials-texture-filters/index.vue";
 import MaterialsTextureManualmipmap from "@/pages/model-list/detail06/159-materials-texture-manualmipmap/index.vue";
 import MaterialsTexturePartialupdate from "@/pages/model-list/detail06/160-materials-texture-partialupdate/index.vue";
+import MaterialsTextureRotation from "@/pages/model-list/detail06/161-materials-texture-rotation/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-texture-rotation',
+    name: 'MaterialsTextureRotation',
+    meta: {title: "webgl-materials-texture-rotation"},
+    component: MaterialsTextureRotation,
+  },
   {
     path: '/list/webgl-materials-texture-partialupdate',
     name: 'MaterialsTexturePartialupdate',
