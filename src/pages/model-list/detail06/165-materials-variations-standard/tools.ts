@@ -122,7 +122,6 @@ export class Model {
     for (let x = 0; x <= 1.0; x += step) {
       for (let y = 0; y <= 1.0; y += step) {
         for (let z = 0; z <= 1.0; z += step) {
-          index++;
           const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1);
           const envMap = index % 2 === 0 ? null : this.texture
           const material = new THREE.MeshStandardMaterial({
@@ -135,6 +134,7 @@ export class Model {
             // 环境贴图。默认值为null
             envMap,
           });
+          index++;
           const mesh = new THREE.Mesh(geometry, material);
           mesh.position.set(x * 400 - 200, y * 400 - 200, z * 400 - 200);
           this.scene.add(mesh);
