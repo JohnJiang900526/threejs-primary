@@ -121,7 +121,7 @@ export class Model {
         for (let z = 0; z <= 1.0; z += step) {
           const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1);
           const envMap = x < 0.5 ? this.reflectionCube : null;
-          const material = new THREE.MeshBasicMaterial({
+          const material = new THREE.MeshLambertMaterial({
             color,
             // 环境贴图。默认值为null
             envMap,
