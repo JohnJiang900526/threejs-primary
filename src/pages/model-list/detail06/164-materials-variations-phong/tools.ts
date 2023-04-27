@@ -116,14 +116,20 @@ export class Model {
 
     // 创建球形模型
     const geometry = new THREE.SphereGeometry(radius, 32, 16);
-    for (let x = 0; x <= 1.0; x += step) {
+    for (let x = 0, i = 0; x <= 1.0; x += step, i++) {
+      const shininess = Math.pow(2, x * 10);
       for (let y = 0; y <= 1.0; y += step) {
+        const specular = new THREE.Color(y * 0.2, y * 0.2, y * 0.2);
         for (let z = 0; z <= 1.0; z += step) {
           const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1);
-          const envMap = x < 0.5 ? this.reflectionCube : null;
-          const material = new THREE.MeshBasicMaterial({
+          const envMap = i % 2 === 0 ? null : this.reflectionCube
+          const material = new THREE.MeshPhongMaterial({
             color,
-            // 环境贴图。默认值为null
+            map: null,
+            bumpMap: null,
+            bumpScale: 1,
+            specular,
+            shininess,
             envMap,
             // 环境贴图对表面的影响程度; 见.combine。
             // 默认值为1，有效范围介于0（无反射）和1（完全反射）之间
@@ -137,17 +143,14 @@ export class Model {
     }
 
     // label
-    this.addLabel('+hue', new THREE.Vector3(-350, 0, 0));
-    this.addLabel('-hue', new THREE.Vector3(350, 0, 0));
+    this.addLabel('-shininess', new THREE.Vector3(-350, 0, 0));
+    this.addLabel('+shininess', new THREE.Vector3(350, 0, 0));
 
-    this.addLabel('-reflectivity', new THREE.Vector3(0, -300, 0));
-    this.addLabel('+reflectivity', new THREE.Vector3(0, 300, 0));
+    this.addLabel('-specular, -reflectivity', new THREE.Vector3(0, -300, 0));
+    this.addLabel('+specular, +reflectivity', new THREE.Vector3(0, 300, 0));
 
     this.addLabel('-diffuse', new THREE.Vector3(0, 0, -300));
     this.addLabel('+diffuse', new THREE.Vector3(0, 0, 300));
-
-    this.addLabel('envMap', new THREE.Vector3(-350, 300, 0));
-    this.addLabel('no envMap', new THREE.Vector3(350, 300, 0));
   }
 
   private generateLight() {
