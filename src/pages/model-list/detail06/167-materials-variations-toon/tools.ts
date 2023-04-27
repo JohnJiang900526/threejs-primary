@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
 import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { showLoadingToast } from 'vant';
@@ -16,9 +17,9 @@ export class Model {
   private stats: null | Stats;
 
   private controls: null | OrbitControls;
+  private effect: null | OutlineEffect;
   private particleLight: THREE.Mesh
   private loader: FontLoader
-  private reflectionCube: THREE.CubeTexture
   private font: Font
   constructor(container: HTMLDivElement) {
     this.container = container;
@@ -31,16 +32,16 @@ export class Model {
     this.stats = null;
 
     this.controls = null;
+    this.effect = null;
     this.particleLight = new THREE.Mesh();
     this.loader = new FontLoader();
-    this.reflectionCube = new THREE.CubeTexture();
     this.font = new Font({});
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = this.generateBackground();
+    this.scene.background = new THREE.Color(0x444488);
 
     // 相机
     this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 2500);
@@ -113,21 +114,26 @@ export class Model {
     const side = 5;
     const radius = (width/side) * 0.8 * 0.5;
     const step = 1.0/side;
+    const format = ((this.renderer as THREE.WebGLRenderer).capabilities.isWebGL2 ) ? THREE.RedFormat : THREE.LuminanceFormat;
 
     // 创建球形模型
     const geometry = new THREE.SphereGeometry(radius, 32, 16);
-    for (let x = 0; x <= 1.0; x += step) {
+    for (let x = 0, index = 0; x <= 1.0; x += step, index++) {
+      const colors = new Uint8Array(index + 2);
+      for (let c = 0; c <= colors.length; c ++) {
+        colors[c] = (c / colors.length) * 256;
+      }
+
+      const gradientMap = new THREE.DataTexture(colors, colors.length, 1, format);
+      gradientMap.needsUpdate = true;
+
       for (let y = 0; y <= 1.0; y += step) {
         for (let z = 0; z <= 1.0; z += step) {
-          const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1);
-          const envMap = x < 0.5 ? this.reflectionCube : null;
-          const material = new THREE.MeshBasicMaterial({
+          const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1 ).multiplyScalar(1 - y * 0.2);
+          const material = new THREE.MeshToonMaterial({
             color,
-            // 环境贴图。默认值为null
-            envMap,
-            // 环境贴图对表面的影响程度; 见.combine。
-            // 默认值为1，有效范围介于0（无反射）和1（完全反射）之间
-            reflectivity: y,
+            // 渐变映射
+            gradientMap
           });
           const mesh = new THREE.Mesh(geometry, material);
           mesh.position.set(x * 400 - 200, y * 400 - 200, z * 400 - 200);
@@ -137,17 +143,11 @@ export class Model {
     }
 
     // label
-    this.addLabel('+hue', new THREE.Vector3(-350, 0, 0));
-    this.addLabel('-hue', new THREE.Vector3(350, 0, 0));
-
-    this.addLabel('-reflectivity', new THREE.Vector3(0, -300, 0));
-    this.addLabel('+reflectivity', new THREE.Vector3(0, 300, 0));
+    this.addLabel('-gradientMap', new THREE.Vector3(-350, 0, 0));
+    this.addLabel('+gradientMap', new THREE.Vector3(350, 0, 0));
 
     this.addLabel('-diffuse', new THREE.Vector3(0, 0, -300));
     this.addLabel('+diffuse', new THREE.Vector3(0, 0, 300));
-
-    this.addLabel('envMap', new THREE.Vector3(-350, 300, 0));
-    this.addLabel('no envMap', new THREE.Vector3(350, 300, 0));
   }
 
   private generateLight() {
@@ -155,29 +155,12 @@ export class Model {
     const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     this.particleLight = new THREE.Mesh(geometry, material);
 
-    const ambient = new THREE.AmbientLight(0x222222);
-
-    const light1 = new THREE.DirectionalLight(0xffffff, 1);
-    light1.position.set(1, 1, 1).normalize();
+    const ambient = new THREE.AmbientLight(0x888888);
 
     const light2 = new THREE.PointLight(0xffffff, 2, 800);
     this.particleLight.add(light2);
 
-    this.scene.add(ambient, light1, this.particleLight);
-  }
-
-  private generateBackground() {
-    const loader = new THREE.CubeTextureLoader();
-    const path = "/examples/textures/cube/SwedishRoyalCastle/";
-    const urls = [
-      'px.jpg', 'nx.jpg', 
-      'py.jpg', 'ny.jpg', 
-      'pz.jpg', 'nz.jpg',
-    ];
-
-    this.reflectionCube = loader.setPath(path).load(urls);
-    this.reflectionCube.encoding = THREE.sRGBEncoding;
-    return this.reflectionCube;
+    this.scene.add(ambient, this.particleLight);
   }
 
   // 创建渲染器
@@ -187,6 +170,7 @@ export class Model {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
+    this.effect = new OutlineEffect(this.renderer);
   }
 
   // 性能统计
@@ -214,9 +198,9 @@ export class Model {
     this.controls?.update();
     
     // 执行渲染
-    if (this.renderer && this.scene && this.camera) {
+    if (this.effect && this.camera) {
       this.camera.lookAt(this.scene.position);
-      this.renderer.render(this.scene, this.camera);
+      this.effect.render(this.scene, this.camera);
     }
   }
 
@@ -233,8 +217,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
+      if (this.effect) {
+        this.effect.setSize(this.width, this.height);
       }
     };
   }

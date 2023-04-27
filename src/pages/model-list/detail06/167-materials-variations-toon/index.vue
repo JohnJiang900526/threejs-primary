@@ -44,7 +44,7 @@ export default defineComponent({
 
   .webgl-materials-variations-toon-page {
     .absolute-page();
-    background-color: #000000;
+    background-color: #444488;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
