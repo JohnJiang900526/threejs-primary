@@ -10,6 +10,21 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "170",
+    title: "170.WEBGL Materials 线框",
+    path: "/list/webgl-materials-wireframe"
+  },
+  {
+    key: "169",
+    title: "169.WEBGL Materials 视频网络摄像头",
+    path: "/list/webgl-materials-video-webcam"
+  },
+  {
+    key: "168",
+    title: "168.WEBGL Materials 视频",
+    path: "/list/webgl-materials-video"
+  },
+  {
     key: "167",
     title: "167.WEBGL Materials 图恩变化",
     path: "/list/webgl-materials-variations-toon"

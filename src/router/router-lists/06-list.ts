@@ -17,9 +17,31 @@ import MaterialsVariationsPhong from "@/pages/model-list/detail06/164-materials-
 import MaterialsVariationsStandard from "@/pages/model-list/detail06/165-materials-variations-standard/index.vue";
 import MaterialsVariationsPhysical from "@/pages/model-list/detail06/166-materials-variations-physical/index.vue";
 import MaterialsVariationsToon from "@/pages/model-list/detail06/167-materials-variations-toon/index.vue";
+import MaterialsVideo from "@/pages/model-list/detail06/168-materials-video/index.vue";
+import MaterialsVideoWebcam from "@/pages/model-list/detail06/169-materials-video-webcam/index.vue";
+import MaterialsWireframe from "@/pages/model-list/detail06/170-materials-wireframe/index.vue";
+
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-materials-wireframe',
+    name: 'MaterialsWireframe',
+    meta: {title: "webgl-materials-wireframe"},
+    component: MaterialsWireframe,
+  },
+  {
+    path: '/list/webgl-materials-video-webcam',
+    name: 'MaterialsVideoWebcam',
+    meta: {title: "webgl-materials-video-webcam"},
+    component: MaterialsVideoWebcam,
+  },
+  {
+    path: '/list/webgl-materials-video',
+    name: 'MaterialsVideo',
+    meta: {title: "webgl-materials-video"},
+    component: MaterialsVideo,
+  },
   {
     path: '/list/webgl-materials-variations-toon',
     name: 'MaterialsVariationsToon',
