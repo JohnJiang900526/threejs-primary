@@ -7,6 +7,11 @@
     <Page title="webgl-materials-video">
       <div ref="container" class="key-frame-page-inner">
       </div>
+
+      <video ref="video" loop crossOrigin="anonymous" playsinline style="display:none">
+        <source src="/examples/textures/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>
+        <source src="/examples/textures/sintel.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+      </video>
     </Page>
   </div>
 </template>
@@ -28,7 +33,7 @@ export default defineComponent({
   methods: {
     // 渲染入口
     render() {
-      objModel = new Model(this.$refs.container as HTMLDivElement);
+      objModel = new Model(this.$refs.container as HTMLDivElement, this.$refs.video as HTMLVideoElement);
       objModel.init();
     },
   },
@@ -44,7 +49,7 @@ export default defineComponent({
 
   .webgl-materials-video-page {
     .absolute-page();
-    background-color: #444488;
+    background-color: #000000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();

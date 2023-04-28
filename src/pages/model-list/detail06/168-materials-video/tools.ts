@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
-import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-import { showLoadingToast } from 'vant';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass';
+import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
+import GUI from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -16,12 +17,22 @@ export class Model {
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
 
-  private controls: null | OrbitControls;
-  private effect: null | OutlineEffect;
-  private particleLight: THREE.Mesh
-  private loader: FontLoader
-  private font: Font
-  constructor(container: HTMLDivElement) {
+  private gui: GUI
+  private video: HTMLVideoElement
+  private texture: THREE.VideoTexture | null
+  private material: THREE.MeshLambertMaterial
+  private mesh: THREE.Mesh
+  private composer: EffectComposer | null
+  private mouse: THREE.Vector2
+  private half: THREE.Vector2
+  private cube_count: number
+  private meshes: THREE.Mesh[]
+  private materials: THREE.MeshLambertMaterial[]
+  private grid: THREE.Vector2
+  private isPlay: boolean
+  private h: number
+  private counter: number
+  constructor(container: HTMLDivElement, video: HTMLVideoElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
@@ -31,40 +42,52 @@ export class Model {
     this.camera = null;
     this.stats = null;
 
-    this.controls = null;
-    this.effect = null;
-    this.particleLight = new THREE.Mesh();
-    this.loader = new FontLoader();
-    this.font = new Font({});
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: true,
+      title: "控制面板"
+    });
+    this.video = video;
+    this.texture = new THREE.VideoTexture(this.video);
+    this.material = new THREE.MeshLambertMaterial();
+    this.mesh = new THREE.Mesh();
+    this.composer = null;
+    this.cube_count = 0;
+    this.mouse = new THREE.Vector2(0, 0);
+    this.half = new THREE.Vector2(this.width/2, this.height/2);
+    this.meshes = [];
+    this.materials = [];
+    this.grid = new THREE.Vector2(20, 10);
+    this.isPlay = false;
+    this.h = 0;
+    this.counter = 1;
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x444488);
+    this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 2500);
-    this.camera.position.set(0.0, 400, 400 * 3.5);
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 10000);
+    this.camera.position.z = 700;
 
-    // 创建灯光
     this.generateLight();
-
-    // 加载字体
-    this.getFont(() => {
-      // 创建模型
-      this.createModel();
-    });
-
     // 渲染器
     this.createRenderer();
 
-    // 控制器
-    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.minDistance = 50;
-    this.controls.maxDistance = 2000;
+    const renderModel = new RenderPass(this.scene, this.camera);
+    const effectBloom = new BloomPass(1.3);
+    const effectCopy = new ShaderPass(CopyShader);
 
+    this.composer = new EffectComposer(this.renderer as THREE.WebGLRenderer);
+    this.composer.addPass(renderModel);
+    this.composer.addPass(effectBloom);
+    this.composer.addPass(effectCopy);
+
+    this.bind();
     this.initStats();
+    this.setUpGUI();
     this.animate();
     this.resize();
   }
@@ -75,102 +98,120 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private getFont(fn?: () => void) {
-    const url = "/examples/fonts/gentilis_regular.typeface.json";
-    const toast = showLoadingToast({
-      message: '加载中...',
-      forbidClick: true,
-      loadingType: 'spinner',
-    });
-
-    this.loader.load(url, (font) => {
-      toast.close();
-      this.font = font;
-      fn && fn();
-    }, undefined, () => { toast.close(); });
+  private bind() {
+    if (this.isMobile()) {
+      window.onpointermove = null;
+      window.ontouchmove = (event) => {
+        const e = event.touches[0];
+        const x = e.clientX - this.half.x;
+        const y = e.clientY - 45 - this.half.y;
+        this.mouse.set(x, y);
+      };
+    } else {
+      window.ontouchmove = null;
+      window.onpointermove = (e) => {
+        const x = e.clientX - this.half.x;
+        const y = e.clientY - 45 - this.half.y;
+        this.mouse.set(x, y);
+      };
+    }
   }
-  // 核心
-  private addLabel(name: string, location: THREE.Vector3) {
-    const geometry = new TextGeometry(name, {
-      // font — THREE.Font的实例
-      font: this.font,
-      // size — Float。字体大小，默认值为100
-      size: 20,
-      // height — Float。挤出文本的厚度。默认值为50
-      height: 1,
-      // curveSegments — Integer。（表示文本的）曲线上点的数量。默认值为12
-      curveSegments: 1,
-    });
 
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const mesh = new THREE.Mesh(geometry, material);
-
-    mesh.position.copy(location);
-    this.scene.add(mesh);
-  }
-  // 核心
-  private createModel() {
-    const width = 400;
-    const side = 5;
-    const radius = (width/side) * 0.8 * 0.5;
-    const step = 1.0/side;
-    const format = ((this.renderer as THREE.WebGLRenderer).capabilities.isWebGL2 ) ? THREE.RedFormat : THREE.LuminanceFormat;
-
-    // 创建球形模型
-    const geometry = new THREE.SphereGeometry(radius, 32, 16);
-    for (let x = 0, index = 0; x <= 1.0; x += step, index++) {
-      const colors = new Uint8Array(index + 2);
-      for (let c = 0; c <= colors.length; c ++) {
-        colors[c] = (c / colors.length) * 256;
-      }
-
-      const gradientMap = new THREE.DataTexture(colors, colors.length, 1, format);
-      gradientMap.needsUpdate = true;
-
-      for (let y = 0; y <= 1.0; y += step) {
-        for (let z = 0; z <= 1.0; z += step) {
-          const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1 ).multiplyScalar(1 - y * 0.2);
-          const material = new THREE.MeshToonMaterial({
-            color,
-            // 渐变映射
-            gradientMap
-          });
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(x * 400 - 200, y * 400 - 200, z * 400 - 200);
-          this.scene.add(mesh);
+  private setUpGUI() {
+    const option = {
+      play: () => {
+        this.gui.close();
+        if (this.isPlay) {
+          return false;
         }
+
+        this.generateVideo();
+        this.createHandle();
+      }
+    };
+    this.gui.add(option, "play").name("播放");
+  }
+
+  // 核心1
+  private createHandle() {
+    let i: number, j: number, ox: number, oy: number, geometry: THREE.BoxGeometry;
+
+    const ux = 1 / this.grid.x;
+    const uy = 1 / this.grid.y;
+
+    const xsize = 480 / this.grid.x;
+    const ysize = 204 / this.grid.y;
+
+    const parameters = {color: 0xffffff, map: this.texture};
+    this.cube_count = 0;
+
+    for(i = 0; i < this.grid.x; i++) {
+      for (j = 0; j < this.grid.y; j++) {
+        ox = i;
+        oy = j;
+
+        geometry = new THREE.BoxGeometry(xsize, ysize, xsize);
+        this.change_uvs(geometry, ux, uy, ox, oy);
+
+        this.materials[this.cube_count] = new THREE.MeshLambertMaterial(parameters);
+        this.material = this.materials[this.cube_count];
+        // @ts-ignore
+        this.material.hue = i / this.grid.x;
+        // @ts-ignore
+        this.material.saturation = 1 - j/this.grid.y;
+        // @ts-ignore
+        this.material.color.setHSL(this.material.hue, this.material.saturation, 0.5);
+
+        this.mesh = new THREE.Mesh(geometry, this.material);
+        this.mesh.position.set(
+          (i - this.grid.x / 2) * xsize,
+          (j - this.grid.y / 2) * ysize,
+          0,
+        );
+        this.mesh.scale.set(1, 1, 1);
+
+        // @ts-ignore
+        this.mesh.dx = 0.001 * (0.5 - Math.random());
+        // @ts-ignore
+        this.mesh.dy = 0.001 * (0.5 - Math.random());
+        this.scene.add(this.mesh);
+        this.meshes[this.cube_count] = this.mesh;
+        this.cube_count += 1;
       }
     }
+  }
 
-    // label
-    this.addLabel('-gradientMap', new THREE.Vector3(-350, 0, 0));
-    this.addLabel('+gradientMap', new THREE.Vector3(350, 0, 0));
+  // 核心2
+  private change_uvs(geometry: THREE.BoxGeometry, unitx: number, unity: number, offsetx: number, offsety: number) {
+    // @ts-ignore
+    const array = geometry.attributes.uv.array || [];
+    for (let i = 0; i < array.length; i += 2) {
+      array[i] = (array[i] + offsetx) * unitx;
+      array[i + 1] = (array[i + 1] + offsety) * unity;
+    }
+  }
 
-    this.addLabel('-diffuse', new THREE.Vector3(0, 0, -300));
-    this.addLabel('+diffuse', new THREE.Vector3(0, 0, 300));
+  private generateVideo() {
+    this.video.play();
+    this.video.onplay = () => {
+      this.video.currentTime = 3;
+    };
+    this.texture = new THREE.VideoTexture(this.video);
   }
 
   private generateLight() {
-    const geometry = new THREE.SphereGeometry(4, 8, 8);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    this.particleLight = new THREE.Mesh(geometry, material);
-
-    const ambient = new THREE.AmbientLight(0x888888);
-
-    const light2 = new THREE.PointLight(0xffffff, 2, 800);
-    this.particleLight.add(light2);
-
-    this.scene.add(ambient, this.particleLight);
+    const light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(0.5, 1, 1).normalize();
+    this.scene.add(light);
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.autoClear = false;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
-    this.effect = new OutlineEffect(this.renderer);
   }
 
   // 性能统计
@@ -183,24 +224,64 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
+  // 核心3
+  private render() {
+    const time = Date.now() * 0.00005;
+    if (this.camera) {
+      this.camera.position.x += (this.mouse.x - this.camera.position.x) * 0.05;
+			this.camera.position.y += (-this.mouse.y - this.camera.position.y) * 0.05;
+      this.camera.lookAt(this.scene.position);
+
+      this.materials.forEach((material) => {
+        this.material = material;
+        // @ts-ignore
+        this.h = (360 * (this.material.hue + time) % 360) / 360;
+        // @ts-ignore
+        this.material.color.setHSL(this.h, this.material.saturation, 0.5);
+      });
+
+      if (this.counter % 1000 > 200) {
+        this.meshes.forEach((mesh) => {
+          // @ts-ignore
+          const { dx, dy } = mesh;
+          this.mesh = mesh;
+
+          this.mesh.rotation.x += 10 * dx;
+          this.mesh.rotation.y += 10 * dy;
+  
+          // @ts-ignore
+          this.mesh.position.x -= 150 * dx;
+          // @ts-ignore
+          this.mesh.position.y += 150 * dy;
+          // @ts-ignore
+          this.mesh.position.z += 300 * dx;
+        });
+      }
+
+      if (this.counter % 1000 === 0) {
+        this.meshes.forEach((mesh) => {
+          this.mesh = mesh;
+          // @ts-ignore
+          this.mesh.dx *= -1;
+          // @ts-ignore
+          this.mesh.dy *= -1;
+        });
+      }
+      this.counter++;
+    }
+  }
+
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
-
-    const timer = Date.now() * 0.00025;
-    this.particleLight.position.set(
-      Math.sin(timer * 7) * 300,
-      Math.cos(timer * 5) * 400,
-      Math.cos(timer * 3) * 300,
-    );
     
+    this.render();
     this.stats?.update();
-    this.controls?.update();
-    
+
     // 执行渲染
-    if (this.effect && this.camera) {
-      this.camera.lookAt(this.scene.position);
-      this.effect.render(this.scene, this.camera);
+    if (this.renderer && this.camera && this.composer) {
+      this.renderer.clear();
+      this.composer.render();
     }
   }
 
@@ -211,14 +292,16 @@ export class Model {
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
 
+      this.bind();
       if (this.camera) {
         this.camera.aspect = this.aspect;
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.effect) {
-        this.effect.setSize(this.width, this.height);
+      if (this.renderer && this.composer) {
+        this.renderer.setSize(this.width, this.height);
+        this.composer.setSize(this.width, this.height);
       }
     };
   }
