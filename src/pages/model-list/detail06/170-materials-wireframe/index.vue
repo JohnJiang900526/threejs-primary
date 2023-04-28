@@ -44,7 +44,7 @@ export default defineComponent({
 
   .webgl-materials-wireframe-page {
     .absolute-page();
-    background-color: #444488;
+    background-color: #000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();

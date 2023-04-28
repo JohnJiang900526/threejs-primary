@@ -1,10 +1,8 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
-import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { showLoadingToast } from 'vant';
+import GUI from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -17,10 +15,12 @@ export class Model {
   private stats: null | Stats;
 
   private controls: null | OrbitControls;
-  private effect: null | OutlineEffect;
-  private particleLight: THREE.Mesh
-  private loader: FontLoader
-  private font: Font
+  private gui: GUI
+  private vertexShader: string
+  private fragmentShader: string
+  private params: { thickness: number }
+  private mesh1: THREE.Mesh
+  private mesh2: THREE.Mesh
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -32,38 +32,58 @@ export class Model {
     this.stats = null;
 
     this.controls = null;
-    this.effect = null;
-    this.particleLight = new THREE.Mesh();
-    this.loader = new FontLoader();
-    this.font = new Font({});
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: true,
+      title: "控制面板"
+    });
+    this.vertexShader = `
+      attribute vec3 center;
+			varying vec3 vCenter;
+			void main() {
+				vCenter = center;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}
+    `;
+    this.fragmentShader = `
+      uniform float thickness;
+			varying vec3 vCenter;
+			void main() {
+				vec3 afwidth = fwidth( vCenter.xyz );
+				vec3 edge3 = smoothstep( ( thickness - 1.0 ) * afwidth, thickness * afwidth, vCenter.xyz );
+				float edge = 1.0 - min( min( edge3.x, edge3.y ), edge3.z );
+				gl_FragColor.rgb = gl_FrontFacing ? vec3( 0.9, 0.9, 1.0 ) : vec3( 0.4, 0.4, 0.5 );
+        // 设置颜色
+        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+				gl_FragColor.a = edge;
+			}
+    `;
+    this.params = {
+      thickness: 1
+    };
+    this.mesh1 = new THREE.Mesh();
+    this.mesh2 = new THREE.Mesh();
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x444488);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 2500);
-    this.camera.position.set(0.0, 400, 400 * 3.5);
+    this.camera = new THREE.PerspectiveCamera(40, this.aspect, 1, 500);
+    this.camera.position.z = 200;
 
-    // 创建灯光
-    this.generateLight();
-
-    // 加载字体
-    this.getFont(() => {
-      // 创建模型
-      this.createModel();
-    });
-
+    this.loadModel();
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.minDistance = 50;
-    this.controls.maxDistance = 2000;
+    this.controls.enablePan = false;
+    this.controls.enableZoom = true;
+    this.controls.update();
 
+    this.setUpGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -75,102 +95,87 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private getFont(fn?: () => void) {
-    const url = "/examples/fonts/gentilis_regular.typeface.json";
+  private setUpGUI() {
+    this.gui.add(this.params, "thickness", 0.5, 10).name("粗细").onChange(() => {
+      const material = this.mesh1.material as THREE.ShaderMaterial;
+      
+      material.uniforms.thickness.value = this.params.thickness;
+      this.mesh1.material = material;
+    });
+  }
+
+  private loadModel() {
+    const loader = new THREE.BufferGeometryLoader();
+    const url = "/examples/models/json/WaltHeadLo_buffergeometry.json";
     const toast = showLoadingToast({
       message: '加载中...',
       forbidClick: true,
       loadingType: 'spinner',
     });
 
-    this.loader.load(url, (font) => {
+    loader.load(url, (geometry) => {
       toast.close();
-      this.font = font;
-      fn && fn();
+
+      geometry.deleteAttribute("normal");
+      geometry.deleteAttribute("uv");
+      this.setupAttributes(geometry);
+
+      {
+        const material = new THREE.ShaderMaterial({
+          uniforms: { 'thickness': { value: this.params.thickness } },
+          vertexShader: this.vertexShader,
+          fragmentShader: this.fragmentShader,
+          side: THREE.DoubleSide,
+          // 启用alpha to coverage. 只能在开启了MSAA的渲染环境中使用 
+          // (当渲染器创建的时候antialias 属性要true才能使用). 默认为 false
+          alphaToCoverage: true,
+        });
+        material.extensions.derivatives = true;
+        this.mesh1 = new THREE.Mesh(geometry, material);
+        this.mesh1.position.set(0, 25, 0);
+        this.mesh1.scale.set(0.5, 0.5, 0.5);
+        this.scene.add(this.mesh1);
+      }
+
+      {
+        const material = new THREE.MeshBasicMaterial({
+          color: 0xe0e0ff,
+          wireframe: true,
+          side: THREE.DoubleSide,
+        });
+
+        this.mesh2 = new THREE.Mesh(geometry, material);
+        this.mesh2.position.set(0, -25, 0);
+        this.mesh2.scale.set(0.5, 0.5, 0.5);
+        this.scene.add(this.mesh2);
+      }
+
     }, undefined, () => { toast.close(); });
   }
-  // 核心
-  private addLabel(name: string, location: THREE.Vector3) {
-    const geometry = new TextGeometry(name, {
-      // font — THREE.Font的实例
-      font: this.font,
-      // size — Float。字体大小，默认值为100
-      size: 20,
-      // height — Float。挤出文本的厚度。默认值为50
-      height: 1,
-      // curveSegments — Integer。（表示文本的）曲线上点的数量。默认值为12
-      curveSegments: 1,
-    });
 
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const mesh = new THREE.Mesh(geometry, material);
+  private setupAttributes(geometry: THREE.BufferGeometry) {
+    const vectors = [
+      new THREE.Vector3(1, 0, 0),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 0, 1)
+    ];
+    const position = geometry.attributes.position;
+    const count = position.count;
+    const centers = new Float32Array(count * 3);
 
-    mesh.position.copy(location);
-    this.scene.add(mesh);
-  }
-  // 核心
-  private createModel() {
-    const width = 400;
-    const side = 5;
-    const radius = (width/side) * 0.8 * 0.5;
-    const step = 1.0/side;
-    const format = ((this.renderer as THREE.WebGLRenderer).capabilities.isWebGL2 ) ? THREE.RedFormat : THREE.LuminanceFormat;
-
-    // 创建球形模型
-    const geometry = new THREE.SphereGeometry(radius, 32, 16);
-    for (let x = 0, index = 0; x <= 1.0; x += step, index++) {
-      const colors = new Uint8Array(index + 2);
-      for (let c = 0; c <= colors.length; c ++) {
-        colors[c] = (c / colors.length) * 256;
-      }
-
-      const gradientMap = new THREE.DataTexture(colors, colors.length, 1, format);
-      gradientMap.needsUpdate = true;
-
-      for (let y = 0; y <= 1.0; y += step) {
-        for (let z = 0; z <= 1.0; z += step) {
-          const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1 ).multiplyScalar(1 - y * 0.2);
-          const material = new THREE.MeshToonMaterial({
-            color,
-            // 渐变映射
-            gradientMap
-          });
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(x * 400 - 200, y * 400 - 200, z * 400 - 200);
-          this.scene.add(mesh);
-        }
-      }
+    for (let i = 0; i < count; i++) {
+      vectors[i % 3].toArray(centers, i * 3);
     }
 
-    // label
-    this.addLabel('-gradientMap', new THREE.Vector3(-350, 0, 0));
-    this.addLabel('+gradientMap', new THREE.Vector3(350, 0, 0));
-
-    this.addLabel('-diffuse', new THREE.Vector3(0, 0, -300));
-    this.addLabel('+diffuse', new THREE.Vector3(0, 0, 300));
-  }
-
-  private generateLight() {
-    const geometry = new THREE.SphereGeometry(4, 8, 8);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    this.particleLight = new THREE.Mesh(geometry, material);
-
-    const ambient = new THREE.AmbientLight(0x888888);
-
-    const light2 = new THREE.PointLight(0xffffff, 2, 800);
-    this.particleLight.add(light2);
-
-    this.scene.add(ambient, this.particleLight);
+    geometry.setAttribute('center', new THREE.BufferAttribute(centers, 3));
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
-    this.effect = new OutlineEffect(this.renderer);
   }
 
   // 性能统计
@@ -187,20 +192,14 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
 
-    const timer = Date.now() * 0.00025;
-    this.particleLight.position.set(
-      Math.sin(timer * 7) * 300,
-      Math.cos(timer * 5) * 400,
-      Math.cos(timer * 3) * 300,
-    );
-    
+    this.mesh1.rotation.y += 0.005;
+    this.mesh2.rotation.y -= 0.005;
     this.stats?.update();
     this.controls?.update();
     
     // 执行渲染
-    if (this.effect && this.camera) {
-      this.camera.lookAt(this.scene.position);
-      this.effect.render(this.scene, this.camera);
+    if (this.renderer && this.camera) {
+      this.renderer.render(this.scene, this.camera);
     }
   }
 
@@ -217,8 +216,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.effect) {
-        this.effect.setSize(this.width, this.height);
+      if (this.renderer) {
+        this.renderer.setSize(this.width, this.height);
       }
     };
   }
