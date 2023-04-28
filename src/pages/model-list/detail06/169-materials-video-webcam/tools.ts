@@ -1,15 +1,13 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
-import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { showLoadingToast } from 'vant';
 
 export class Model {
   private width: number;
   private height: number;
   private aspect: number;
+  private video: HTMLVideoElement
   private container: HTMLDivElement;
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
@@ -17,12 +15,9 @@ export class Model {
   private stats: null | Stats;
 
   private controls: null | OrbitControls;
-  private effect: null | OutlineEffect;
-  private particleLight: THREE.Mesh
-  private loader: FontLoader
-  private font: Font
-  constructor(container: HTMLDivElement) {
+  constructor(container: HTMLDivElement, video: HTMLVideoElement) {
     this.container = container;
+    this.video = video;
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
     this.aspect = this.width/this.height;
@@ -32,37 +27,25 @@ export class Model {
     this.stats = null;
 
     this.controls = null;
-    this.effect = null;
-    this.particleLight = new THREE.Mesh();
-    this.loader = new FontLoader();
-    this.font = new Font({});
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x444488);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 2500);
-    this.camera.position.set(0.0, 400, 400 * 3.5);
+    this.camera = new THREE.PerspectiveCamera(80, this.aspect,  0.1, 100);
+    this.camera.position.z = 0.01;
 
-    // 创建灯光
-    this.generateLight();
-
-    // 加载字体
-    this.getFont(() => {
-      // 创建模型
-      this.createModel();
-    });
-
+    this.initVideo();
+    this.createMesh();
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.minDistance = 50;
-    this.controls.maxDistance = 2000;
+    this.controls.enablePan = true;
+    this.controls.update();
 
     this.initStats();
     this.animate();
@@ -75,102 +58,56 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private getFont(fn?: () => void) {
-    const url = "/examples/fonts/gentilis_regular.typeface.json";
+  private initVideo() {
+    const constraints = {
+      video: { 
+        width: 1280, 
+        height: 720, 
+        facingMode: 'user' 
+      }
+    };
+
     const toast = showLoadingToast({
       message: '加载中...',
       forbidClick: true,
       loadingType: 'spinner',
     });
-
-    this.loader.load(url, (font) => {
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       toast.close();
-      this.font = font;
-      fn && fn();
-    }, undefined, () => { toast.close(); });
-  }
-  // 核心
-  private addLabel(name: string, location: THREE.Vector3) {
-    const geometry = new TextGeometry(name, {
-      // font — THREE.Font的实例
-      font: this.font,
-      // size — Float。字体大小，默认值为100
-      size: 20,
-      // height — Float。挤出文本的厚度。默认值为50
-      height: 1,
-      // curveSegments — Integer。（表示文本的）曲线上点的数量。默认值为12
-      curveSegments: 1,
+      this.video.srcObject = stream;
+      this.video.play();
+    }).catch((e) => {
+      toast.close();
+      console.log(e);
     });
-
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const mesh = new THREE.Mesh(geometry, material);
-
-    mesh.position.copy(location);
-    this.scene.add(mesh);
   }
-  // 核心
-  private createModel() {
-    const width = 400;
-    const side = 5;
-    const radius = (width/side) * 0.8 * 0.5;
-    const step = 1.0/side;
-    const format = ((this.renderer as THREE.WebGLRenderer).capabilities.isWebGL2 ) ? THREE.RedFormat : THREE.LuminanceFormat;
 
-    // 创建球形模型
-    const geometry = new THREE.SphereGeometry(radius, 32, 16);
-    for (let x = 0, index = 0; x <= 1.0; x += step, index++) {
-      const colors = new Uint8Array(index + 2);
-      for (let c = 0; c <= colors.length; c ++) {
-        colors[c] = (c / colors.length) * 256;
-      }
+  private createMesh() {
+    const texture = new THREE.VideoTexture(this.video);
+    const geometry = (new THREE.PlaneGeometry(16, 9)).scale(0.5, 0.5, 0.5);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
 
-      const gradientMap = new THREE.DataTexture(colors, colors.length, 1, format);
-      gradientMap.needsUpdate = true;
+    const count = 128;
+    const radius = 32;
 
-      for (let y = 0; y <= 1.0; y += step) {
-        for (let z = 0; z <= 1.0; z += step) {
-          const color = new THREE.Color().setHSL(x, 0.5, z * 0.5 + 0.1 ).multiplyScalar(1 - y * 0.2);
-          const material = new THREE.MeshToonMaterial({
-            color,
-            // 渐变映射
-            gradientMap
-          });
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(x * 400 - 200, y * 400 - 200, z * 400 - 200);
-          this.scene.add(mesh);
-        }
-      }
+    for (let i = 1; i <= count; i++) {
+      const phi = Math.acos(-1 + (2 * i) / count);
+      const theta = Math.sqrt(count * Math.PI) * phi;
+
+      const mesh = new THREE.Mesh(geometry, material);
+      // 从球坐标中的radius、phi和theta设置该向量
+      mesh.position.setFromSphericalCoords(radius, phi, theta);
+      mesh.lookAt((this.camera as THREE.PerspectiveCamera).position);
+      this.scene.add(mesh);
     }
-
-    // label
-    this.addLabel('-gradientMap', new THREE.Vector3(-350, 0, 0));
-    this.addLabel('+gradientMap', new THREE.Vector3(350, 0, 0));
-
-    this.addLabel('-diffuse', new THREE.Vector3(0, 0, -300));
-    this.addLabel('+diffuse', new THREE.Vector3(0, 0, 300));
-  }
-
-  private generateLight() {
-    const geometry = new THREE.SphereGeometry(4, 8, 8);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    this.particleLight = new THREE.Mesh(geometry, material);
-
-    const ambient = new THREE.AmbientLight(0x888888);
-
-    const light2 = new THREE.PointLight(0xffffff, 2, 800);
-    this.particleLight.add(light2);
-
-    this.scene.add(ambient, this.particleLight);
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
-    this.effect = new OutlineEffect(this.renderer);
   }
 
   // 性能统计
@@ -186,21 +123,13 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
-
-    const timer = Date.now() * 0.00025;
-    this.particleLight.position.set(
-      Math.sin(timer * 7) * 300,
-      Math.cos(timer * 5) * 400,
-      Math.cos(timer * 3) * 300,
-    );
     
     this.stats?.update();
     this.controls?.update();
     
     // 执行渲染
-    if (this.effect && this.camera) {
-      this.camera.lookAt(this.scene.position);
-      this.effect.render(this.scene, this.camera);
+    if (this.renderer && this.camera) {
+      this.renderer.render(this.scene, this.camera);
     }
   }
 
@@ -217,8 +146,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.effect) {
-        this.effect.setSize(this.width, this.height);
+      if (this.renderer) {
+        this.renderer.setSize(this.width, this.height);
       }
     };
   }

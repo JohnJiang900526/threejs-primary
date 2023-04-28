@@ -7,6 +7,7 @@
     <Page title="webgl-materials-video-webcam">
       <div ref="container" class="key-frame-page-inner">
       </div>
+      <video ref="video" style="display:none" autoplay playsinline></video>
     </Page>
   </div>
 </template>
@@ -28,13 +29,24 @@ export default defineComponent({
   methods: {
     // 渲染入口
     render() {
-      objModel = new Model(this.$refs.container as HTMLDivElement);
+      objModel = new Model(this.$refs.container as HTMLDivElement, this.$refs.video as HTMLVideoElement);
       objModel.init();
     },
+    closeVideo() {
+      const video = this.$refs.video as HTMLVideoElement;
+      const stream = video.srcObject as MediaStream;
+
+      video.pause();
+      // 关闭网络摄像头
+      stream.getTracks().forEach((item) => {
+        item.stop();
+      });
+    }
   },
   // 卸载前函数
   beforeUnmount() {
     objModel = null;
+    this.closeVideo();
   }
 });
 </script>
@@ -44,7 +56,7 @@ export default defineComponent({
 
   .webgl-materials-video-webcam-page {
     .absolute-page();
-    background-color: #444488;
+    background-color: #000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
