@@ -21,9 +21,16 @@ import MaterialsVideo from "@/pages/model-list/detail06/168-materials-video/inde
 import MaterialsVideoWebcam from "@/pages/model-list/detail06/169-materials-video-webcam/index.vue";
 import MaterialsWireframe from "@/pages/model-list/detail06/170-materials-wireframe/index.vue";
 import MathObb from "@/pages/model-list/detail06/171-math-obb/index.vue";
+import MathObbOrientationTransform from "@/pages/model-list/detail06/172-math-orientation-transform/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-math-orientation-transform',
+    name: 'MathObbOrientationTransform',
+    meta: {title: "webgl-math-orientation-transform"},
+    component: MathObbOrientationTransform,
+  },
   {
     path: '/list/webgl-math-obb',
     name: 'MathObb',
