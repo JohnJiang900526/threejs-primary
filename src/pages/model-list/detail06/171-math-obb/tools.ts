@@ -71,6 +71,7 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 核心逻辑
   private generateBox() {
     const material = new THREE.MeshBasicMaterial({
       color: 0x000000, 
@@ -78,8 +79,10 @@ export class Model {
     });
     this.hitbox = new THREE.Mesh(this.geometry, material);
 
-    this.geometry.userData.obb = new OBB();
-    this.geometry.userData.obb.halfSize.copy(this.size).multiplyScalar(0.5);
+    const obb = new OBB();
+    obb.halfSize.copy(this.size).multiplyScalar(0.5);
+    this.geometry.userData.obb = obb;
+
     for (let i = 0; i < 100; i++) {
       const lambertMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
       const object = new THREE.Mesh(this.geometry,  lambertMaterial);
@@ -124,6 +127,7 @@ export class Model {
     };
   }
 
+  // 核心逻辑
   private clickHandle(e: MouseEvent) {
     const point = new THREE.Vector3();
     const intersections: { distance: number, object: THREE.Mesh }[] = [];
@@ -134,11 +138,11 @@ export class Model {
     this.mouse.set(x, y);
     this.raycaster.setFromCamera(this.mouse, this.camera as THREE.PerspectiveCamera);
 
+    const ray = this.raycaster.ray;
     this.objects.forEach((object) => {
-      const obb = object.userData.obb;
-      const ray = this.raycaster.ray;
+      const obb: OBB = object.userData.obb;
 
-      if (obb.intersectRay(ray, point) !== null) {
+      if (obb.intersectRay(ray, point)) {
         intersections.push({ 
           object: object,
           distance: ray.origin.distanceTo(point), 
@@ -150,8 +154,13 @@ export class Model {
       intersections.sort((a, b) => {
         return a.distance - b.distance;
       });
+      // 先清除
+      const parent = this.hitbox.parent;
+      parent && parent.remove(this.hitbox);
+      // 后加入
       intersections[0].object.add(this.hitbox);
     } else {
+      // 执行清除
       const parent = this.hitbox.parent;
       parent && parent.remove(this.hitbox);
     }
@@ -167,6 +176,7 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
+  // 核心逻辑
   private render() {
     const delta = this.clock.getDelta();
 
@@ -190,7 +200,7 @@ export class Model {
         const objectToTest = this.objects[j];
         const obbToTest = objectToTest.userData.obb;
 
-        if ( obb.intersectsOBB( obbToTest ) === true ) {
+        if (obb.intersectsOBB(obbToTest)) {
           (object.material as THREE.MeshLambertMaterial).color.setHex(0xff0000);
           (objectToTest.material as THREE.MeshLambertMaterial).color.setHex(0xff0000);
         }
