@@ -10,6 +10,46 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "180",
+    title: "180.WEBGL 变形目标",
+    path: "/list/webgl-morph-targets",
+  },
+  {
+    key: "179",
+    title: "179.WEBGL 修改器曲面细分",
+    path: "/list/webgl-modifier-tessellation",
+  },
+  {
+    key: "178",
+    title: "178.WEBGL 修改器细节",
+    path: "/list/webgl-modifier-subdivision",
+  },
+  {
+    key: "177",
+    title: "177.WEBGL 修改器简化",
+    path: "/list/webgl-modifier-simplifier",
+  },
+  {
+    key: "176",
+    title: "176.WEBGL 修改器边缘分割",
+    path: "/list/webgl-modifier-edge-split",
+  },
+  {
+    key: "175",
+    title: "175.WEBGL 修改器曲线实例化",
+    path: "/list/webgl-modifier-curve-instanced",
+  },
+  {
+    key: "174",
+    title: "174.WEBGL 修改曲线",
+    path: "/list/webgl-modifier-curve",
+  },
+  {
+    key: "173",
+    title: "173.WEBGL 镜子",
+    path: "/list/webgl-mirror",
+  },
+  {
     key: "172",
     title: "172.WEBGL 方向变换",
     path: "/list/webgl-math-orientation-transform",

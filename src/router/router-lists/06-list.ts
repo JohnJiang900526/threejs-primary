@@ -22,9 +22,65 @@ import MaterialsVideoWebcam from "@/pages/model-list/detail06/169-materials-vide
 import MaterialsWireframe from "@/pages/model-list/detail06/170-materials-wireframe/index.vue";
 import MathObb from "@/pages/model-list/detail06/171-math-obb/index.vue";
 import MathObbOrientationTransform from "@/pages/model-list/detail06/172-math-orientation-transform/index.vue";
+import Mirror from "@/pages/model-list/detail06/173-webgl-mirror/index.vue";
+import ModifierCurve from "@/pages/model-list/detail06/174-modifier-curve/index.vue";
+import ModifierCurveInstanced from "@/pages/model-list/detail06/175-modifier-curve-instanced/index.vue";
+import ModifierEdgeSplit from "@/pages/model-list/detail06/176-modifier-edge-split/index.vue";
+import ModifierSimplifier from "@/pages/model-list/detail06/177-modifier-simplifier/index.vue";
+import ModifierSubdivision from "@/pages/model-list/detail06/178-modifier-subdivision/index.vue";
+import ModifierTessellation from "@/pages/model-list/detail06/179-modifier-tessellation/index.vue";
+import ModifierMorphTargets from "@/pages/model-list/detail06/180-morph-targets/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-morph-targets',
+    name: 'ModifierMorphTargets',
+    meta: {title: "webgl-morph-targets"},
+    component: ModifierMorphTargets,
+  },
+  {
+    path: '/list/webgl-modifier-tessellation',
+    name: 'ModifierTessellation',
+    meta: {title: "webgl-modifier-tessellation"},
+    component: ModifierTessellation,
+  },
+  {
+    path: '/list/webgl-modifier-subdivision',
+    name: 'ModifierSubdivision',
+    meta: {title: "webgl-modifier-subdivision"},
+    component: ModifierSubdivision,
+  },
+  {
+    path: '/list/webgl-modifier-simplifier',
+    name: 'ModifierSimplifier',
+    meta: {title: "webgl-modifier-simplifier"},
+    component: ModifierSimplifier,
+  },
+  {
+    path: '/list/webgl-modifier-edge-split',
+    name: 'ModifierEdgeSplit',
+    meta: {title: "webgl-modifier-edge-split"},
+    component: ModifierEdgeSplit,
+  },
+  {
+    path: '/list/webgl-modifier-curve-instanced',
+    name: 'ModifierCurveInstanced',
+    meta: {title: "webgl-modifier-curve-instanced"},
+    component: ModifierCurveInstanced,
+  },
+  {
+    path: '/list/webgl-modifier-curve',
+    name: 'ModifierCurve',
+    meta: {title: "webgl-modifier-curve"},
+    component: ModifierCurve,
+  },
+  {
+    path: '/list/webgl-mirror',
+    name: 'Mirror',
+    meta: {title: "webgl-mirror"},
+    component: Mirror,
+  },
   {
     path: '/list/webgl-math-orientation-transform',
     name: 'MathObbOrientationTransform',
