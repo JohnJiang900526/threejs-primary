@@ -20,10 +20,16 @@ import MaterialsVariationsToon from "@/pages/model-list/detail06/167-materials-v
 import MaterialsVideo from "@/pages/model-list/detail06/168-materials-video/index.vue";
 import MaterialsVideoWebcam from "@/pages/model-list/detail06/169-materials-video-webcam/index.vue";
 import MaterialsWireframe from "@/pages/model-list/detail06/170-materials-wireframe/index.vue";
-
+import MathObb from "@/pages/model-list/detail06/171-math-obb/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-math-obb',
+    name: 'MathObb',
+    meta: {title: "webgl-math-obb"},
+    component: MathObb,
+  },
   {
     path: '/list/webgl-materials-wireframe',
     name: 'MaterialsWireframe',
