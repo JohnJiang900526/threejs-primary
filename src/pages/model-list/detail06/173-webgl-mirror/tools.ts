@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Reflector } from 'three/examples/jsm/objects/Reflector';
 
 export class Model {
   private width: number;
@@ -13,14 +14,10 @@ export class Model {
   private stats: null | Stats;
 
   private controls: null | OrbitControls;
-  private mesh: THREE.Mesh
-  private target: THREE.Mesh
-  private spherical: THREE.Spherical
-  private rotationMatrix: THREE.Matrix4
-  private targetQuaternion: THREE.Quaternion
-  private clock: THREE.Clock
-  private speed: number
-  private timer: any
+  private sphereGroup: THREE.Object3D
+  private smallSphere: THREE.Mesh
+  private groundMirror: Reflector
+  private verticalMirror: Reflector
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -32,14 +29,10 @@ export class Model {
     this.stats = null;
 
     this.controls = null;
-    this.mesh = new THREE.Mesh();
-    this.target = new THREE.Mesh();
-    this.spherical = new THREE.Spherical();
-    this.rotationMatrix = new THREE.Matrix4();
-    this.targetQuaternion = new THREE.Quaternion();
-    this.clock = new THREE.Clock();
-    this.speed = 2;
-    this.timer = -1;
+    this.sphereGroup = new THREE.Object3D();
+    this.smallSphere = new THREE.Mesh();
+    this.groundMirror = new Reflector()
+    this.verticalMirror = new Reflector();
   }
 
   init() {
@@ -47,18 +40,22 @@ export class Model {
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 0.01, 10);
-    this.camera.position.set(0, 0, 6.5);
+    this.camera = new THREE.PerspectiveCamera(45, this.aspect, 1, 500);
+    this.camera.position.set(0, 75, 160);
 
-    this.generateMesh();
+    this.generateLight();
+    this.generateMirrors();
+    this.generateWalls();
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.enableDamping = true;
+    this.controls.target.set(0, 40, 0);
+    this.controls.maxDistance = 400;
+    this.controls.minDistance = 10;
+    this.controls.update();
 
-    this.generateTarget();
     this.initStats();
     this.animate();
     this.resize();
@@ -70,65 +67,130 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private generateMesh() {
+  private generateLight() {
+    const mainLight = new THREE.PointLight(0xcccccc, 1.5, 250);
+    mainLight.position.y = 60;
+
+    const greenLight = new THREE.PointLight(0x00ff00, 0.25, 1000);
+    greenLight.position.set(550, 50, 0);
+
+    const redLight = new THREE.PointLight(0xff0000, 0.25, 1000);
+    redLight.position.set(-550, 50, 0);
+
+    const blueLight = new THREE.PointLight(0x7f7fff, 0.25, 1000);
+    blueLight.position.set(0, 50, 550);
+
+    this.scene.add(mainLight, greenLight, redLight, blueLight);
+  }
+  // 核心
+  private generateMirrors() {
     {
-      // 圆锥缓冲几何体（ConeGeometry）
-      // 一个用于生成圆锥几何体的类
-      const geometry = (new THREE.ConeGeometry(0.1, 0.5, 8)).rotateX(Math.PI * 0.5);
-      const material = new THREE.MeshNormalMaterial();
-
-      this.mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(this.mesh);
-    }
-
-    {
-      // 小的圆球
-      const geometry = new THREE.SphereGeometry(0.05);
-      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
-      this.target = new THREE.Mesh(geometry, material);
-      this.scene.add(this.target);
-    }
-
-    {
-      // 大的请求网格
-      const geometry = new THREE.SphereGeometry(2, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ 
-        opacity: 0.3,
-        color: 0xcccccc, 
-        wireframe: true, 
-        transparent: true, 
+      const geometry = new THREE.CircleGeometry(40, 64);
+      this.groundMirror = new Reflector(geometry, {
+        clipBias: 0.003,
+        color: 0x777777,
+        textureWidth: this.width * window.devicePixelRatio,
+        textureHeight: this.height * window.devicePixelRatio,
       });
-      const sphere = new THREE.Mesh( geometry, material );
-      this.scene.add(sphere);
+      this.groundMirror.position.y = 0.5;
+      this.groundMirror.rotateX(-Math.PI / 2);
+      this.scene.add(this.groundMirror);
+    }
+
+    {
+      const geometry = new THREE.PlaneGeometry(100, 100);
+      this.verticalMirror = new Reflector(geometry, {
+        clipBias: 0.003,
+        color: 0x889999,
+        textureWidth: this.width * window.devicePixelRatio,
+        textureHeight: this.height * window.devicePixelRatio,
+      });
+      this.verticalMirror.position.y = 50;
+      this.verticalMirror.position.z = -50;
+      this.scene.add(this.verticalMirror);
+    }
+
+    {
+      this.sphereGroup = new THREE.Object3D();
+			this.scene.add(this.sphereGroup);
+    }
+
+    {
+      const geometry1 = new THREE.CylinderGeometry(0.1, 15 * Math.cos( Math.PI / 180 * 30 ), 0.1, 24, 1);
+      const material1 = new THREE.MeshPhongMaterial({ 
+        color: 0xffffff, 
+        emissive: 0x444444 
+      });
+      const sphereCap = new THREE.Mesh(geometry1, material1);
+      sphereCap.position.y = -15 * Math.sin(Math.PI / 180 * 30) - 0.05;
+      sphereCap.rotateX(-Math.PI);
+
+      const geometry2 = new THREE.SphereGeometry(15, 24, 24, Math.PI / 2, Math.PI * 2, 0, Math.PI / 180 * 120 );
+      const halfSphere = new THREE.Mesh(geometry2, material1);
+      halfSphere.add(sphereCap);
+      halfSphere.rotateX(-Math.PI / 180 * 135);
+      halfSphere.rotateZ(-Math.PI / 180 * 20);
+      halfSphere.position.y = 7.5 + 15 * Math.sin(Math.PI / 180 * 30);
+      this.sphereGroup.add(halfSphere);
+
+      // 二十面缓冲几何体（IcosahedronGeometry）
+      const geometry3 = new THREE.IcosahedronGeometry(5, 0);
+      const material3 = new THREE.MeshPhongMaterial({ 
+        color: 0xffffff, 
+        // 材质的放射（光）颜色，基本上是不受其他光照影响的固有颜色。默认为黑色
+        emissive: 0x333333, 
+        // 定义材质是否使用平面着色进行渲染。默认值为false
+        flatShading: true,
+      });
+      this.smallSphere = new THREE.Mesh(geometry3, material3);
+      this.scene.add(this.smallSphere);
     }
   }
-
   // 核心
-  private generateTarget() {
-    // 球坐标（Spherical）
-    // Spherical( radius : Float, phi : Float, theta : Float )
-    // radius - 半径值，或者说从该点到原点的 Euclidean distance（欧几里得距离，即直线距离）。默认值为1.0
-    // phi - 与 y (up) 轴的极角（以弧度为单位）。 默认值为 0
-    // theta - 绕 y (up) 轴的赤道角(方位角)（以弧度为单位）。 默认值为 0
-    // 极角（phi）位于正 y 轴和负 y 轴上。赤道角(方位角)（theta）从正 z 开始
-    this.spherical.theta = Math.random() * Math.PI * 2;
-    this.spherical.phi = Math.acos((2 * Math.random()) - 1);
-    this.spherical.radius = 2;
-    // .setFromSpherical ( s : Spherical ) : this
-    // 从球坐标s中设置该向量
-    this.target.position.setFromSpherical(this.spherical);
-    // .lookAt ( eye : Vector3, target : Vector3, up : Vector3 ) : this
-    // 构造一个旋转矩阵，从eye 指向 target，由向量 up 定向
-    this.rotationMatrix.lookAt(this.target.position, this.mesh.position, this.mesh.up);
-    // 四元数（Quaternion）
-    // .setFromRotationMatrix ( m : Matrix4 ) : this
-    // 从m的旋转分量中来设置该四元数
-    // 改编自 here 所概述的方法
-    this.targetQuaternion.setFromRotationMatrix(this.rotationMatrix);
+  private generateWalls() {
+    const geometry = new THREE.PlaneGeometry(100.1, 100.1);
 
-    this.timer && clearTimeout(this.timer);
-    this.timer = setTimeout(() => { this.generateTarget(); }, 2000);
+    {
+      const material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+      const planeTop = new THREE.Mesh(geometry, material);
+      planeTop.position.y = 100;
+      planeTop.rotateX(Math.PI / 2);
+      this.scene.add(planeTop);
+    }
+
+    {
+      const material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+      const planeBottom = new THREE.Mesh(geometry, material);
+      planeBottom.rotateX(-Math.PI / 2);
+      this.scene.add(planeBottom);
+    }
+
+    {
+      const material = new THREE.MeshPhongMaterial({ color: 0x7f7fff });
+      const planeFront = new THREE.Mesh(geometry, material);
+      planeFront.position.z = 50;
+      planeFront.position.y = 50;
+      planeFront.rotateY(Math.PI);
+      this.scene.add(planeFront);
+    }
+
+    {
+      const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+      const planeRight = new THREE.Mesh(geometry, material);
+      planeRight.position.x = 50;
+      planeRight.position.y = 50;
+      planeRight.rotateY(-Math.PI / 2);
+      this.scene.add(planeRight);
+    }
+
+    {
+      const material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+      const planeLeft = new THREE.Mesh(geometry, material);
+      planeLeft.position.x = -50;
+      planeLeft.position.y = 50;
+      planeLeft.rotateY(Math.PI / 2);
+      this.scene.add(planeLeft);
+    }
   }
 
   // 创建渲染器
@@ -149,20 +211,26 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
+  private render() {
+     // 执行渲染
+    if (this.renderer && this.camera) {
+      this.renderer.render(this.scene, this.camera);
+    }
+  }
+
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
 
-    const delta = this.clock.getDelta();
-    // 核心逻辑
-    if (!this.mesh.quaternion.equals(this.targetQuaternion)) {
-      const step = this.speed * delta;
-      // .rotateTowards ( q : Quaternion, step : Float ) : this
-      // q - 目标四元数
-      // step - 以弧度为单位的角度步长
-      // 将该四元数按照步长 step 向目标 q 进行旋转。该方法确保最终的四元数不会超过 q
-      this.mesh.quaternion.rotateTowards(this.targetQuaternion, step);
-    }
+    const timer = Date.now() * 0.01;
+    this.sphereGroup.rotation.y -= 0.002;
+    this.smallSphere.position.set(
+      Math.cos(timer * 0.1) * 30,
+      Math.abs(Math.cos(timer * 0.2)) * 20 + 5,
+      Math.sin(timer * 0.1) * 30
+    );
+    this.smallSphere.rotation.y = (Math.PI / 2) - timer * 0.1;
+    this.smallSphere.rotation.z = timer * 0.8;
 
     this.stats?.update();
     this.controls?.update();
@@ -188,6 +256,15 @@ export class Model {
 
       if (this.renderer) {
         this.renderer.setSize(this.width, this.height);
+
+        this.groundMirror.getRenderTarget().setSize(
+					this.width * window.devicePixelRatio,
+					this.height * window.devicePixelRatio,
+				);
+				this.verticalMirror.getRenderTarget().setSize(
+					this.width * window.devicePixelRatio,
+					this.height * window.devicePixelRatio,
+				);
       }
     };
   }
