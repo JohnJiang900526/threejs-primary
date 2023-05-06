@@ -211,13 +211,6 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
-  private render() {
-     // 执行渲染
-    if (this.renderer && this.camera) {
-      this.renderer.render(this.scene, this.camera);
-    }
-  }
-
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
