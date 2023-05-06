@@ -16,8 +16,8 @@ export class Model {
   private controls: null | OrbitControls;
   private sphereGroup: THREE.Object3D
   private smallSphere: THREE.Mesh
-  private groundMirror: Reflector
-  private verticalMirror: Reflector
+  private groundMirror: Reflector | null
+  private verticalMirror: Reflector | null
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -31,8 +31,8 @@ export class Model {
     this.controls = null;
     this.sphereGroup = new THREE.Object3D();
     this.smallSphere = new THREE.Mesh();
-    this.groundMirror = new Reflector()
-    this.verticalMirror = new Reflector();
+    this.groundMirror = null;
+    this.verticalMirror = null;
   }
 
   init() {
@@ -250,11 +250,11 @@ export class Model {
       if (this.renderer) {
         this.renderer.setSize(this.width, this.height);
 
-        this.groundMirror.getRenderTarget().setSize(
+        this.groundMirror?.getRenderTarget().setSize(
 					this.width * window.devicePixelRatio,
 					this.height * window.devicePixelRatio,
 				);
-				this.verticalMirror.getRenderTarget().setSize(
+				this.verticalMirror?.getRenderTarget().setSize(
 					this.width * window.devicePixelRatio,
 					this.height * window.devicePixelRatio,
 				);
