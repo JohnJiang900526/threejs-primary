@@ -140,20 +140,21 @@ export class Model {
       const cerberus = group.children[0] as THREE.Mesh;
       const modelGeometry = cerberus.geometry;
 
-      this.modifier = new EdgeSplitModifier();
       this.baseGeometry = BufferGeometryUtils.mergeVertices(modelGeometry);
-
       this.mesh = new THREE.Mesh(this.getGeometry(), new THREE.MeshStandardMaterial());
-      (this.mesh.material as THREE.MeshStandardMaterial).flatShading = !this.params.smoothShading;
+      const material = this.mesh.material as THREE.MeshStandardMaterial;
+
+      material.flatShading = !this.params.smoothShading;
       this.mesh.rotateY(-Math.PI / 2);
       this.mesh.scale.set(3.5, 3.5, 3.5);
       this.mesh.translateZ(1.5);
       this.scene.add(this.mesh);
 
       if (this.params.showMap) {
-        (this.mesh.material as THREE.MeshStandardMaterial).map = this.map;
-        (this.mesh.material as THREE.MeshStandardMaterial).needsUpdate = true;
+        material.map = this.map;
+        material.needsUpdate = true;
       }
+      this.mesh.material = material;
     }, undefined, () => { toast.close(); });
   }
 
@@ -168,27 +169,26 @@ export class Model {
 
     loader.load(url, (texture) => {
       toast.close();
-
+      const material = this.mesh.material as THREE.MeshStandardMaterial;
       this.map = texture;
       if (this.params.showMap) {
-        (this.mesh.material as THREE.MeshStandardMaterial).map = this.map;
-        (this.mesh.material as THREE.MeshStandardMaterial).needsUpdate = true;
+        material.map = this.map;
+        material.needsUpdate = true;
       }
+      this.mesh.material = material;
     }, undefined, () => {toast.close();});
   }
 
   private getGeometry() {
-    let geometry;
-    if ( this.params.edgeSplit ) {
-      geometry = this.modifier.modify(
+    if (this.params.edgeSplit) {
+      return this.modifier.modify(
         this.baseGeometry,
         this.params.cutOffAngle * Math.PI / 180,
         this.params.tryKeepNormals
       );
     } else {
-      geometry = this.baseGeometry;
+      return this.baseGeometry;
     }
-    return geometry;
   }
 
   // 创建渲染器
