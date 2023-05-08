@@ -202,6 +202,8 @@ export class Model {
         const target = intersects[0].object;
         this.controls?.attach(target);
         this.scene.add(this.controls as TransformControls);
+      } else {
+        this.scene.remove(this.controls as TransformControls);
       }
     }
 
