@@ -44,7 +44,7 @@ export default defineComponent({
 
   .webgl-morph-targets-page {
     .absolute-page();
-    background-color: #000;
+    background-color: #8FBCD4;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();

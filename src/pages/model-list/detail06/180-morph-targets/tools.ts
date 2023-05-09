@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -13,14 +14,12 @@ export class Model {
   private stats: null | Stats;
 
   private controls: null | OrbitControls;
+  private gui: GUI;
   private mesh: THREE.Mesh
-  private target: THREE.Mesh
-  private spherical: THREE.Spherical
-  private rotationMatrix: THREE.Matrix4
-  private targetQuaternion: THREE.Quaternion
-  private clock: THREE.Clock
-  private speed: number
-  private timer: any
+  private params: {
+    Spherify: number,
+    Twist: number,
+  };
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -32,33 +31,37 @@ export class Model {
     this.stats = null;
 
     this.controls = null;
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: true,
+      title: "控制面板",
+    });
     this.mesh = new THREE.Mesh();
-    this.target = new THREE.Mesh();
-    this.spherical = new THREE.Spherical();
-    this.rotationMatrix = new THREE.Matrix4();
-    this.targetQuaternion = new THREE.Quaternion();
-    this.clock = new THREE.Clock();
-    this.speed = 2;
-    this.timer = -1;
+    this.params = {
+      Spherify: 0,
+      Twist: 0,
+    };
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x8FBCD4);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 0.01, 10);
-    this.camera.position.set(0, 0, 6.5);
+    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 1000);
+    this.camera.position.set(0, 0, 10);
 
+    this.generateLight();
     this.generateMesh();
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.enableDamping = true;
+    this.controls.enableZoom = false;
 
-    this.generateTarget();
+    this.setUpGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -70,65 +73,81 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private generateMesh() {
-    {
-      // 圆锥缓冲几何体（ConeGeometry）
-      // 一个用于生成圆锥几何体的类
-      const geometry = (new THREE.ConeGeometry(0.1, 0.5, 8)).rotateX(Math.PI * 0.5);
-      const material = new THREE.MeshNormalMaterial();
-
-      this.mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(this.mesh);
-    }
-
-    {
-      // 小的圆球
-      const geometry = new THREE.SphereGeometry(0.05);
-      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
-      this.target = new THREE.Mesh(geometry, material);
-      this.scene.add(this.target);
-    }
-
-    {
-      // 大的请求网格
-      const geometry = new THREE.SphereGeometry(2, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ 
-        opacity: 0.3,
-        color: 0xcccccc, 
-        wireframe: true, 
-        transparent: true, 
-      });
-      const sphere = new THREE.Mesh( geometry, material );
-      this.scene.add(sphere);
-    }
+  private setUpGUI() {
+    this.gui.add(this.params, 'Spherify', 0, 1).name("球形扭曲").step(0.01).onChange(() => {
+      if (this.mesh.morphTargetInfluences) {
+        this.mesh.morphTargetInfluences[0] = this.params.Spherify;
+      }
+    });
+    this.gui.add(this.params, 'Twist', 0, 1).name("变形程度").step(0.01).onChange(() => {
+      if (this.mesh.morphTargetInfluences) {
+        this.mesh.morphTargetInfluences[1] = this.params.Twist;
+      }
+    });
   }
 
-  // 核心
-  private generateTarget() {
-    // 球坐标（Spherical）
-    // Spherical( radius : Float, phi : Float, theta : Float )
-    // radius - 半径值，或者说从该点到原点的 Euclidean distance（欧几里得距离，即直线距离）。默认值为1.0
-    // phi - 与 y (up) 轴的极角（以弧度为单位）。 默认值为 0
-    // theta - 绕 y (up) 轴的赤道角(方位角)（以弧度为单位）。 默认值为 0
-    // 极角（phi）位于正 y 轴和负 y 轴上。赤道角(方位角)（theta）从正 z 开始
-    this.spherical.theta = Math.random() * Math.PI * 2;
-    this.spherical.phi = Math.acos((2 * Math.random()) - 1);
-    this.spherical.radius = 2;
-    // .setFromSpherical ( s : Spherical ) : this
-    // 从球坐标s中设置该向量
-    this.target.position.setFromSpherical(this.spherical);
-    // .lookAt ( eye : Vector3, target : Vector3, up : Vector3 ) : this
-    // 构造一个旋转矩阵，从eye 指向 target，由向量 up 定向
-    this.rotationMatrix.lookAt(this.target.position, this.mesh.position, this.mesh.up);
-    // 四元数（Quaternion）
-    // .setFromRotationMatrix ( m : Matrix4 ) : this
-    // 从m的旋转分量中来设置该四元数
-    // 改编自 here 所概述的方法
-    this.targetQuaternion.setFromRotationMatrix(this.rotationMatrix);
+  private generateMesh() {
+    const geometry = this.createGeometry();
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xff0000,
+      // 平面着色
+      flatShading: true,
+    });
 
-    this.timer && clearTimeout(this.timer);
-    this.timer = setTimeout(() => { this.generateTarget(); }, 2000);
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(this.mesh);
+  }
+
+  private generateLight() {
+    const light1 = new THREE.AmbientLight(0x8FBCD4, 0.4);
+
+    const light2 = new THREE.PointLight(0xffffff, 1);
+    this.camera?.add(light2);
+
+    this.scene.add(light1, this.camera as THREE.PerspectiveCamera);
+  }
+
+  // 核心逻辑
+  private createGeometry() {
+    const geometry = new THREE.BoxGeometry(2, 2, 2, 32, 32, 32);
+    geometry.morphAttributes.position = [];
+
+    const pAttr = geometry.attributes.position as THREE.BufferAttribute;
+    const count = pAttr.count;
+    const spherePositions: number[] = [];
+    const twistPositions: number[] = [];
+    const direction = new THREE.Vector3(1, 0, 0);
+    const vertex = new THREE.Vector3();
+
+    for (let i = 0; i < count; i++) {
+      const x = pAttr.getX(i);
+      const y = pAttr.getY(i);
+      const z = pAttr.getZ(i);
+
+      // 这部分逻辑看不懂
+      spherePositions.push(
+        x * Math.sqrt(1 - (y * y / 2) - (z * z / 2) + (y * y * z * z / 3)),
+        y * Math.sqrt(1 - (z * z / 2) - (x * x / 2) + (z * z * x * x / 3)),
+        z * Math.sqrt(1 - (x * x / 2) - (y * y / 2) + (x * x * y * y / 3)),
+      );
+
+      vertex.set(x * 2, y, z);
+      // .applyAxisAngle ( axis : Vector3, angle : Float ) : this
+      // axis - 一个被归一化的Vector3
+      // angle - 以弧度表示的角度
+      // 将轴和角度所指定的旋转应用到该向量上
+
+      // .toArray ( array : Array, offset : Integer ) : Array
+      // array - （可选）被用于存储向量的数组。如果这个值没有传入，则将创建一个新的数组
+      // offset - （可选） 数组中元素的偏移量
+      // 返回一个数组[x, y ,z]，或者将x、y和z复制到所传入的array中
+      vertex.applyAxisAngle(direction, Math.PI * x / 2).toArray(twistPositions, twistPositions.length);
+    }
+
+    // 这部分也看不明白 只知道这里存着位置信息
+    geometry.morphAttributes.position[0] = new THREE.Float32BufferAttribute(spherePositions, 3);
+    geometry.morphAttributes.position[1] = new THREE.Float32BufferAttribute(twistPositions, 3);
+    return geometry;
   }
 
   // 创建渲染器
@@ -152,17 +171,6 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
-
-    const delta = this.clock.getDelta();
-    // 核心逻辑
-    if (!this.mesh.quaternion.equals(this.targetQuaternion)) {
-      const step = this.speed * delta;
-      // .rotateTowards ( q : Quaternion, step : Float ) : this
-      // q - 目标四元数
-      // step - 以弧度为单位的角度步长
-      // 将该四元数按照步长 step 向目标 q 进行旋转。该方法确保最终的四元数不会超过 q
-      this.mesh.quaternion.rotateTowards(this.targetQuaternion, step);
-    }
 
     this.stats?.update();
     this.controls?.update();
