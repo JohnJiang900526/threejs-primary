@@ -44,7 +44,7 @@ export default defineComponent({
 
   .webgl-modifier-tessellation-page {
     .absolute-page();
-    background-color: #000;
+    background-color: #050505;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();

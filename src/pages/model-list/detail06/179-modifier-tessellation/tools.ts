@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+import { TessellateModifier } from 'three/examples/jsm/modifiers/TessellateModifier';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+import { showLoadingToast } from 'vant';
 
 export class Model {
   private width: number;
@@ -12,15 +16,14 @@ export class Model {
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
 
-  private controls: null | OrbitControls;
-  private mesh: THREE.Mesh
-  private target: THREE.Mesh
-  private spherical: THREE.Spherical
-  private rotationMatrix: THREE.Matrix4
-  private targetQuaternion: THREE.Quaternion
-  private clock: THREE.Clock
-  private speed: number
-  private timer: any
+  private controls: null | TrackballControls;
+  private mesh: THREE.Mesh;
+  private uniforms: {
+    amplitude: { value: number }
+  };
+  private vertexShader: string
+  private fragmentShader: string
+  private geometry: TextGeometry | null;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -33,32 +36,55 @@ export class Model {
 
     this.controls = null;
     this.mesh = new THREE.Mesh();
-    this.target = new THREE.Mesh();
-    this.spherical = new THREE.Spherical();
-    this.rotationMatrix = new THREE.Matrix4();
-    this.targetQuaternion = new THREE.Quaternion();
-    this.clock = new THREE.Clock();
-    this.speed = 2;
-    this.timer = -1;
+    this.uniforms = {
+      amplitude: { value: 0.0 }
+    };
+    this.vertexShader = `
+      uniform float amplitude;
+      attribute vec3 customColor;
+      attribute vec3 displacement;
+      varying vec3 vNormal;
+      varying vec3 vColor;
+      void main() {
+        vNormal = normal;
+        vColor = customColor;
+        vec3 newPosition = position + normal * amplitude * displacement;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+      }
+    `;
+    this.fragmentShader = `
+      varying vec3 vNormal;
+      varying vec3 vColor;
+      void main() {
+        const float ambient = 0.4;
+        vec3 light = vec3( 1.0 );
+        light = normalize( light );
+        float directional = max( dot( vNormal, light ), 0.0 );
+        gl_FragColor = vec4( ( directional + ambient ) * vColor, 1.0 );
+      }
+    `;
+    this.geometry = null;
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x050505);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 0.01, 10);
-    this.camera.position.set(0, 0, 6.5);
+    this.camera = new THREE.PerspectiveCamera(80, this.aspect, 1, 10000);
+    this.camera.position.set(0, 0, 400);
 
-    this.generateMesh();
+    this.loadFont(() => {
+      this.generateMesh();
+    });
+
     // 渲染器
     this.createRenderer();
 
     // 控制器
-    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.enableDamping = true;
+    this.controls = new TrackballControls(this.camera, this.renderer?.domElement);
 
-    this.generateTarget();
     this.initStats();
     this.animate();
     this.resize();
@@ -71,64 +97,84 @@ export class Model {
   }
 
   private generateMesh() {
-    {
-      // 圆锥缓冲几何体（ConeGeometry）
-      // 一个用于生成圆锥几何体的类
-      const geometry = (new THREE.ConeGeometry(0.1, 0.5, 8)).rotateX(Math.PI * 0.5);
-      const material = new THREE.MeshNormalMaterial();
+    const {vertexShader, fragmentShader} = this;
+    const material = new THREE.ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader,
+      fragmentShader,
+    });
 
-      this.mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(this.mesh);
-    }
-
-    {
-      // 小的圆球
-      const geometry = new THREE.SphereGeometry(0.05);
-      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
-      this.target = new THREE.Mesh(geometry, material);
-      this.scene.add(this.target);
-    }
-
-    {
-      // 大的请求网格
-      const geometry = new THREE.SphereGeometry(2, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ 
-        opacity: 0.3,
-        color: 0xcccccc, 
-        wireframe: true, 
-        transparent: true, 
-      });
-      const sphere = new THREE.Mesh( geometry, material );
-      this.scene.add(sphere);
-    }
+    this.mesh = new THREE.Mesh(this.geometry as TextGeometry , material);
+    this.scene.add(this.mesh);
   }
 
-  // 核心
-  private generateTarget() {
-    // 球坐标（Spherical）
-    // Spherical( radius : Float, phi : Float, theta : Float )
-    // radius - 半径值，或者说从该点到原点的 Euclidean distance（欧几里得距离，即直线距离）。默认值为1.0
-    // phi - 与 y (up) 轴的极角（以弧度为单位）。 默认值为 0
-    // theta - 绕 y (up) 轴的赤道角(方位角)（以弧度为单位）。 默认值为 0
-    // 极角（phi）位于正 y 轴和负 y 轴上。赤道角(方位角)（theta）从正 z 开始
-    this.spherical.theta = Math.random() * Math.PI * 2;
-    this.spherical.phi = Math.acos((2 * Math.random()) - 1);
-    this.spherical.radius = 2;
-    // .setFromSpherical ( s : Spherical ) : this
-    // 从球坐标s中设置该向量
-    this.target.position.setFromSpherical(this.spherical);
-    // .lookAt ( eye : Vector3, target : Vector3, up : Vector3 ) : this
-    // 构造一个旋转矩阵，从eye 指向 target，由向量 up 定向
-    this.rotationMatrix.lookAt(this.target.position, this.mesh.position, this.mesh.up);
-    // 四元数（Quaternion）
-    // .setFromRotationMatrix ( m : Matrix4 ) : this
-    // 从m的旋转分量中来设置该四元数
-    // 改编自 here 所概述的方法
-    this.targetQuaternion.setFromRotationMatrix(this.rotationMatrix);
+  private loadFont(fn?: () => void) {
+    const loader = new FontLoader();
+    const url = "/examples/fonts/helvetiker_bold.typeface.json";
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
 
-    this.timer && clearTimeout(this.timer);
-    this.timer = setTimeout(() => { this.generateTarget(); }, 2000);
+    loader.load(url, (font) => {
+      toast.close();
+      this.generateGeometry(font);
+      fn && fn();
+    }, undefined, () => { toast.close(); })
+  }
+
+  private generateGeometry(font: Font) {
+    this.geometry = new TextGeometry('THREE.JS', {
+      // font — THREE.Font的实例
+      font: font,
+      // size — Float。字体大小，默认值为100
+      size: 40,
+      // height — Float。挤出文本的厚度。默认值为50
+      height: 5,
+      // curveSegments — Integer。（表示文本的）曲线上点的数量。默认值为12
+      curveSegments: 3,
+      // bevelThickness — Float。文本上斜角的深度，默认值为20
+      bevelThickness: 2,
+      // bevelSize — Float。斜角与原始文本轮廓之间的延伸距离。默认值为8
+      bevelSize: 1,
+      // bevelEnabled — Boolean。是否开启斜角，默认为false
+      bevelEnabled: true,
+    });
+
+    this.geometry.center();
+
+    const tessellateModifier = new TessellateModifier(8, 6);
+    this.geometry = tessellateModifier.modify(this.geometry);
+
+    const num = this.geometry.attributes.position.count / 3;
+    const colors = new Float32Array(num * 3 * 3);
+    const displacement = new Float32Array(num * 3 * 3);
+    const color = new THREE.Color();
+
+    for (let f = 0; f < num; f++) {
+      const index = 9 * f;
+      color.setHSL(
+        0.2 * Math.random(), 
+        0.5 + 0.5 * Math.random(), 
+        0.5 + 0.5 * Math.random(),
+      );
+
+      const d = 10 * (0.5 - Math.random());
+      for (let i = 0; i < 3; i++) {
+        colors[index + (3 * i)] = color.r;
+        colors[index + (3 * i) + 1] = color.g;
+        colors[index + (3 * i) + 2] = color.b;
+
+        displacement[index + (3 * i)] = d;
+        displacement[index + (3 * i) + 1] = d;
+        displacement[index + (3 * i) + 2] = d;
+      }
+    }
+
+    this.geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+    this.geometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
+    return this.geometry;
   }
 
   // 创建渲染器
@@ -153,16 +199,9 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
 
-    const delta = this.clock.getDelta();
-    // 核心逻辑
-    if (!this.mesh.quaternion.equals(this.targetQuaternion)) {
-      const step = this.speed * delta;
-      // .rotateTowards ( q : Quaternion, step : Float ) : this
-      // q - 目标四元数
-      // step - 以弧度为单位的角度步长
-      // 将该四元数按照步长 step 向目标 q 进行旋转。该方法确保最终的四元数不会超过 q
-      this.mesh.quaternion.rotateTowards(this.targetQuaternion, step);
-    }
+    const time = Date.now() * 0.001;
+    this.uniforms.amplitude.value = 1.0 + Math.sin(time * 0.5);
+    this.mesh.rotation.y += 0.005;
 
     this.stats?.update();
     this.controls?.update();
