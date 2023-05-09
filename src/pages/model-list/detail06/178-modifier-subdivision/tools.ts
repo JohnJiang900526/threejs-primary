@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
+import GUI from 'lil-gui';
+// @ts-ignore
+import { LoopSubdivision } from 'three-subdivide';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { showLoadingToast } from 'vant';
 
 export class Model {
   private width: number;
@@ -13,14 +17,25 @@ export class Model {
   private stats: null | Stats;
 
   private controls: null | OrbitControls;
-  private mesh: THREE.Mesh
-  private target: THREE.Mesh
-  private spherical: THREE.Spherical
-  private rotationMatrix: THREE.Matrix4
-  private targetQuaternion: THREE.Quaternion
-  private clock: THREE.Clock
-  private speed: number
-  private timer: any
+  private gui: GUI;
+  private texture: THREE.Texture
+  private meshNormal: THREE.Mesh
+  private meshSmooth: THREE.Mesh
+  private wireNormal: THREE.Mesh
+  private wireSmooth: THREE.Mesh
+  private wireMaterial: THREE.MeshBasicMaterial
+  private params: {
+    geometry: string,
+    iterations: number,
+    split: boolean,
+    uvSmooth: boolean,
+    preserveEdges: boolean,
+    flatOnly: boolean,
+    maxTriangles: number,
+    flatShading: boolean,
+    textured: boolean,
+    wireframe: boolean,
+  }
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -32,14 +47,29 @@ export class Model {
     this.stats = null;
 
     this.controls = null;
-    this.mesh = new THREE.Mesh();
-    this.target = new THREE.Mesh();
-    this.spherical = new THREE.Spherical();
-    this.rotationMatrix = new THREE.Matrix4();
-    this.targetQuaternion = new THREE.Quaternion();
-    this.clock = new THREE.Clock();
-    this.speed = 2;
-    this.timer = -1;
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: true,
+      title: "控制面板",
+    });
+    this.texture = new THREE.Texture();
+    this.meshNormal = new THREE.Mesh();
+    this.meshSmooth = new THREE.Mesh();
+    this.wireNormal = new THREE.Mesh();
+    this.wireSmooth = new THREE.Mesh();
+    this.wireMaterial = new THREE.MeshBasicMaterial();
+    this.params = {
+      geometry: 'Box',
+      iterations: 3,
+      split: true,
+      uvSmooth: false,
+      preserveEdges: false,
+      flatOnly: false,
+      maxTriangles: 25000,
+      flatShading: false,
+      textured: true,
+      wireframe: false,
+    };
   }
 
   init() {
@@ -47,18 +77,23 @@ export class Model {
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 0.01, 10);
-    this.camera.position.set(0, 0, 6.5);
+    this.camera = new THREE.PerspectiveCamera(75, this.aspect, 0.1, 2000);
+    this.camera.position.set(0, 0.7, 5.1);
 
+    this.generateTexture();
+    this.generateLight();
     this.generateMesh();
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.enableDamping = true;
+    this.controls.rotateSpeed = 0.5;
+    this.controls.minZoom = 1;
+    this.controls.target.set(0, 0, 0);
+    this.controls.update();
 
-    this.generateTarget();
+    this.setUpGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -70,65 +105,258 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private setUpGUI() {
+    const types = [
+      'Box', 'Capsule', 'Circle', 'Cone', 'Cylinder', 'Dodecahedron', 
+      'Icosahedron', 'Lathe', 'Octahedron', 'Plane', 'Ring', 'Sphere', 
+      'Tetrahedron', 'Torus', 'TorusKnot'
+    ];
+
+    const paramsFolder = this.gui.addFolder('细分参数');
+    const geomController = paramsFolder.add(this.params, 'geometry', types).name("形状").onFinishChange(() => {
+      const geom = this.params.geometry.toLowerCase();
+      this.params.split = (geom === 'box' || geom === 'ring' || geom === 'plane');
+      this.params.uvSmooth = (geom === 'circle' || geom === 'plane' || geom === 'ring');
+
+      refreshDisplay();
+    });
+
+    paramsFolder.add( this.params, 'iterations', 0, 5).onFinishChange(() => {
+      this.updateMeshes();
+    });
+
+    const splitController = paramsFolder.add(this.params, 'split').onFinishChange(() => {
+      this.updateMeshes();
+    });
+
+    const uvSmoothController = paramsFolder.add(this.params, 'uvSmooth').onFinishChange(() => {
+      this.updateMeshes();
+    });
+
+    const preserveController = paramsFolder.add(this.params, 'preserveEdges').onFinishChange(() => {
+      this.updateMeshes();
+    });
+
+    paramsFolder.add(this.params, 'flatOnly').onFinishChange(() => {
+      this.updateMeshes();
+    });
+    paramsFolder.add(this.params, 'maxTriangles', 500, 50000).onFinishChange(() => {
+      this.updateMeshes();
+    });
+
+    const aterialFolder = this.gui.addFolder("材质");
+    aterialFolder.add(this.params, 'flatShading').name("平面着色").onFinishChange(() => {
+      this.updateMaterial();
+    });
+    aterialFolder.add(this.params, 'textured').name("纹理").onFinishChange(() => {
+      this.updateMaterial();
+    });
+    aterialFolder.add(this.params, 'wireframe').name("网格").onFinishChange(() => {
+      this.updateWireframe();
+    });
+
+    const refreshDisplay = () => {
+      geomController.updateDisplay();
+      splitController.updateDisplay();
+      uvSmoothController.updateDisplay();
+      preserveController.updateDisplay();
+      this.updateMeshes();
+    };
+  }
+
   private generateMesh() {
     {
-      // 圆锥缓冲几何体（ConeGeometry）
-      // 一个用于生成圆锥几何体的类
-      const geometry = (new THREE.ConeGeometry(0.1, 0.5, 8)).rotateX(Math.PI * 0.5);
-      const material = new THREE.MeshNormalMaterial();
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.MeshBasicMaterial();
 
-      this.mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(this.mesh);
+      this.meshNormal = new THREE.Mesh(geometry, material);
+      this.meshNormal.position.set(-0.7, 0.5, 0);
+      this.scene.add(this.meshNormal);
     }
 
     {
-      // 小的圆球
-      const geometry = new THREE.SphereGeometry(0.05);
-      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.MeshBasicMaterial();
 
-      this.target = new THREE.Mesh(geometry, material);
-      this.scene.add(this.target);
+      this.meshSmooth = new THREE.Mesh(geometry, material);
+      this.meshSmooth.position.set(0.7, 0.5, 0);
+      this.scene.add(this.meshSmooth);
+    }
+
+    this.wireMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0xffffff, 
+      depthTest: true,
+      wireframe: true,
+    });
+
+    {
+      this.wireNormal = new THREE.Mesh(new THREE.BufferGeometry(), this.wireMaterial);
+      this.wireNormal.visible = false;
+      this.wireNormal.position.copy(this.meshNormal.position);
+      this.scene.add(this.wireNormal);
     }
 
     {
-      // 大的请求网格
-      const geometry = new THREE.SphereGeometry(2, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ 
-        opacity: 0.3,
-        color: 0xcccccc, 
-        wireframe: true, 
-        transparent: true, 
-      });
-      const sphere = new THREE.Mesh( geometry, material );
-      this.scene.add(sphere);
+      this.wireSmooth = new THREE.Mesh(new THREE.BufferGeometry(), this.wireMaterial);
+      this.wireSmooth.visible = false;
+      this.wireSmooth.position.copy(this.meshSmooth.position);
+      this.scene.add(this.wireSmooth);
+    }
+
+    this.updateMeshes();
+  }
+
+  private updateMeshes() {
+    const { iterations } = this.params;
+    const normalGeometry = this.getGeometry();
+
+    // 核心
+    const smoothGeometry = LoopSubdivision.modify(normalGeometry, iterations, this.params);
+
+    this.meshNormal.geometry.dispose();
+    this.meshSmooth.geometry.dispose();
+    this.meshNormal.geometry = normalGeometry;
+    this.meshSmooth.geometry = smoothGeometry;
+
+    this.wireNormal.geometry.dispose();
+    this.wireSmooth.geometry.dispose();
+    this.wireNormal.geometry = normalGeometry.clone();
+    this.wireSmooth.geometry = smoothGeometry.clone();
+
+    this.updateMaterial();
+  }
+
+  private getGeometry() {
+    const { geometry } = this.params;
+    const type = geometry.toLowerCase();
+
+    switch (type) {
+      case 'box':
+        return new THREE.BoxGeometry();
+      case 'capsule':
+        return new THREE.CapsuleGeometry(0.5, 0.5, 3, 5);
+      case 'circle':
+        return new THREE.CircleGeometry(0.6, 10);
+      case 'cone':
+        return new THREE.ConeGeometry(0.6, 1.5, 5, 3);
+      case 'cylinder':
+        return new THREE.CylinderGeometry(0.5, 0.5, 1, 5, 4);
+      case 'dodecahedron':
+        return new THREE.DodecahedronGeometry(0.6);
+      case 'icosahedron':
+        return new THREE.IcosahedronGeometry(0.6);
+      case 'lathe':
+        {
+          const points = [];
+          for ( let i = 0; i < 65; i += 5 ) {
+            const x = ( Math.sin( i * 0.2 ) * Math.sin( i * 0.1 ) * 15 + 50 ) * 1.2;
+            const y = ( i - 5 ) * 3;
+            points.push( new THREE.Vector2( x * 0.0075, y * 0.005 ) );
+          }
+
+          const latheGeometry = new THREE.LatheGeometry(points, 4);
+          latheGeometry.center();
+          return latheGeometry;
+        }
+      case 'octahedron':
+        return new THREE.OctahedronGeometry(0.7);
+      case 'plane':
+        return new THREE.PlaneGeometry();
+      case 'ring':
+        return new THREE.RingGeometry(0.3, 0.6, 10);
+      case 'sphere':
+        return new THREE.SphereGeometry(0.6, 8, 4);
+      case 'tetrahedron':
+        return new THREE.TetrahedronGeometry(0.8);
+      case 'torus':
+        return new THREE.TorusGeometry(0.48, 0.24, 4, 6);
+      case 'torusknot':
+        return new THREE.TorusKnotGeometry(0.38, 0.18, 20, 4);
+      default:
+        return new THREE.BoxGeometry();
     }
   }
 
-  // 核心
-  private generateTarget() {
-    // 球坐标（Spherical）
-    // Spherical( radius : Float, phi : Float, theta : Float )
-    // radius - 半径值，或者说从该点到原点的 Euclidean distance（欧几里得距离，即直线距离）。默认值为1.0
-    // phi - 与 y (up) 轴的极角（以弧度为单位）。 默认值为 0
-    // theta - 绕 y (up) 轴的赤道角(方位角)（以弧度为单位）。 默认值为 0
-    // 极角（phi）位于正 y 轴和负 y 轴上。赤道角(方位角)（theta）从正 z 开始
-    this.spherical.theta = Math.random() * Math.PI * 2;
-    this.spherical.phi = Math.acos((2 * Math.random()) - 1);
-    this.spherical.radius = 2;
-    // .setFromSpherical ( s : Spherical ) : this
-    // 从球坐标s中设置该向量
-    this.target.position.setFromSpherical(this.spherical);
-    // .lookAt ( eye : Vector3, target : Vector3, up : Vector3 ) : this
-    // 构造一个旋转矩阵，从eye 指向 target，由向量 up 定向
-    this.rotationMatrix.lookAt(this.target.position, this.mesh.position, this.mesh.up);
-    // 四元数（Quaternion）
-    // .setFromRotationMatrix ( m : Matrix4 ) : this
-    // 从m的旋转分量中来设置该四元数
-    // 改编自 here 所概述的方法
-    this.targetQuaternion.setFromRotationMatrix(this.rotationMatrix);
+  private disposeMaterial(material: (THREE.MeshBasicMaterial | THREE.MeshBasicMaterial[])) {
+    const materials = Array.isArray(material) ? material : [material];
+    materials.forEach((item) => { item.dispose(); });
+  }
 
-    this.timer && clearTimeout(this.timer);
-    this.timer = setTimeout(() => { this.generateTarget(); }, 2000);
+  private updateWireframe() {
+    this.wireNormal.visible = this.params.wireframe;
+    this.wireSmooth.visible = this.params.wireframe;
+  }
+
+  private updateMaterial() {
+    const { geometry } = this.params;
+    const type = geometry.toLowerCase();
+    
+    const params: THREE.MeshStandardMaterialParameters = {
+      color: (this.params.textured) ? 0xffffff : 0x808080,
+      flatShading: this.params.flatShading,
+      map: (this.params.textured) ? this.texture : null,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    };
+
+    this.disposeMaterial(this.meshNormal.material as THREE.MeshBasicMaterial);
+    this.disposeMaterial(this.meshSmooth.material as THREE.MeshBasicMaterial);
+
+    switch (type) {
+      case 'circle':
+      case 'lathe':
+      case 'plane':
+      case 'ring':
+        params.side = THREE.DoubleSide;
+        break;
+      case 'box':
+      case 'capsule':
+      case 'cone':
+      case 'cylinder':
+      case 'dodecahedron':
+      case 'icosahedron':
+      case 'octahedron':
+      case 'sphere':
+      case 'tetrahedron':
+      case 'torus':
+      case 'torusknot':
+        params.side = THREE.FrontSide;
+        break;
+    }
+
+    const material = new THREE.MeshStandardMaterial(params);
+    this.meshNormal.material = material;
+    this.meshSmooth.material = material;
+  }
+
+  private generateTexture() {
+    const loader = new THREE.TextureLoader();
+    const url = "/examples/textures/uv_grid_opengl.jpg";
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
+
+    this.texture = loader.load(url, () => {
+      toast.close();
+      this.texture.wrapS = THREE.RepeatWrapping;
+      this.texture.wrapT = THREE.RepeatWrapping;
+    }, undefined, () => { toast.close(); });
+  }
+
+  private generateLight() {
+    const light1 = new THREE.HemisphereLight(0xffffff, 0x737373, 1);
+
+    const light2 = new THREE.DirectionalLight(0xffffff, 0.5);
+    light2.position.set(0, 1, 1);
+
+
+    const light3 = new THREE.DirectionalLight(0xffffff, 0.5);
+    light3.position.set(0, 1, -1);
+
+    this.scene.add(light1, light2, light3);
   }
 
   // 创建渲染器
@@ -152,17 +380,6 @@ export class Model {
   // 持续动画
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
-
-    const delta = this.clock.getDelta();
-    // 核心逻辑
-    if (!this.mesh.quaternion.equals(this.targetQuaternion)) {
-      const step = this.speed * delta;
-      // .rotateTowards ( q : Quaternion, step : Float ) : this
-      // q - 目标四元数
-      // step - 以弧度为单位的角度步长
-      // 将该四元数按照步长 step 向目标 q 进行旋转。该方法确保最终的四元数不会超过 q
-      this.mesh.quaternion.rotateTowards(this.targetQuaternion, step);
-    }
 
     this.stats?.update();
     this.controls?.update();
