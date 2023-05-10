@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { showLoadingToast } from 'vant';
 
 export class Model {
   private width: number;
@@ -13,13 +13,11 @@ export class Model {
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
 
-  private controls: null | OrbitControls;
-  private gui: GUI;
-  private mesh: THREE.Mesh
-  private params: {
-    Spherify: number,
-    Twist: number,
-  };
+  private mesh: THREE.Mesh;
+  private mixer: THREE.AnimationMixer | null;
+  private radius: number;
+  private theta: number;
+  private prevTime: number;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -30,38 +28,27 @@ export class Model {
     this.camera = null;
     this.stats = null;
 
-    this.controls = null;
-    this.gui = new GUI({
-      container: this.container,
-      autoPlace: true,
-      title: "控制面板",
-    });
     this.mesh = new THREE.Mesh();
-    this.params = {
-      Spherify: 0,
-      Twist: 0,
-    };
+    this.mixer = null;
+    this.radius = 600;
+    this.theta = 0;
+    this.prevTime = Date.now();
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x8FBCD4);
+    this.scene.background = new THREE.Color(0xf0f0f0);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 1000);
-    this.camera.position.set(0, 0, 10);
+    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 10000);
+    this.camera.position.y = 300;
 
     this.generateLight();
-    this.generateMesh();
+    this.loadModel();
     // 渲染器
     this.createRenderer();
 
-    // 控制器
-    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.enableZoom = false;
-
-    this.setUpGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -73,86 +60,40 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private setUpGUI() {
-    this.gui.add(this.params, 'Spherify', 0, 1).name("球形扭曲").step(0.01).onChange(() => {
-      if (this.mesh.morphTargetInfluences) {
-        this.mesh.morphTargetInfluences[0] = this.params.Spherify;
-      }
+  private loadModel() {
+    const loader = new GLTFLoader();
+    const url = "/examples/models/gltf/Horse.glb";
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
     });
-    this.gui.add(this.params, 'Twist', 0, 1).name("变形程度").step(0.01).onChange(() => {
-      if (this.mesh.morphTargetInfluences) {
-        this.mesh.morphTargetInfluences[1] = this.params.Twist;
-      }
-    });
-  }
+    loader.load(url, (gltf) => {
+      toast.close();
 
-  private generateMesh() {
-    const geometry = this.createGeometry();
-    const material = new THREE.MeshPhongMaterial({
-      color: 0xff0000,
-      // 平面着色
-      flatShading: true,
-    });
-
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.scene.add(this.mesh);
+      // 核心
+      this.mesh = gltf.scene.children[0] as THREE.Mesh;
+      this.mesh.scale.set(1.5, 1.5, 1.5);
+      this.scene.add(this.mesh);
+      this.mixer = new THREE.AnimationMixer(this.mesh);
+      this.mixer.clipAction(gltf.animations[0]).setDuration(1).play();
+    }, undefined, () => { toast.close(); })
   }
 
   private generateLight() {
-    const light1 = new THREE.AmbientLight(0x8FBCD4, 0.4);
+    const light1 = new THREE.DirectionalLight(0xefefff, 1.5);
+    light1.position.set(1, 1, 1).normalize();
 
-    const light2 = new THREE.PointLight(0xffffff, 1);
-    this.camera?.add(light2);
-
-    this.scene.add(light1, this.camera as THREE.PerspectiveCamera);
-  }
-
-  // 核心逻辑
-  private createGeometry() {
-    const geometry = new THREE.BoxGeometry(2, 2, 2, 32, 32, 32);
-    geometry.morphAttributes.position = [];
-
-    const pAttr = geometry.attributes.position as THREE.BufferAttribute;
-    const count = pAttr.count;
-    const spherePositions: number[] = [];
-    const twistPositions: number[] = [];
-    const direction = new THREE.Vector3(1, 0, 0);
-    const vertex = new THREE.Vector3();
-
-    for (let i = 0; i < count; i++) {
-      const x = pAttr.getX(i);
-      const y = pAttr.getY(i);
-      const z = pAttr.getZ(i);
-
-      // 这部分逻辑看不懂
-      spherePositions.push(
-        x * Math.sqrt(1 - (y * y / 2) - (z * z / 2) + (y * y * z * z / 3)),
-        y * Math.sqrt(1 - (z * z / 2) - (x * x / 2) + (z * z * x * x / 3)),
-        z * Math.sqrt(1 - (x * x / 2) - (y * y / 2) + (x * x * y * y / 3)),
-      );
-
-      vertex.set(x * 2, y, z);
-      // .applyAxisAngle ( axis : Vector3, angle : Float ) : this
-      // axis - 一个被归一化的Vector3
-      // angle - 以弧度表示的角度
-      // 将轴和角度所指定的旋转应用到该向量上
-
-      // .toArray ( array : Array, offset : Integer ) : Array
-      // array - （可选）被用于存储向量的数组。如果这个值没有传入，则将创建一个新的数组
-      // offset - （可选） 数组中元素的偏移量
-      // 返回一个数组[x, y ,z]，或者将x、y和z复制到所传入的array中
-      vertex.applyAxisAngle(direction, Math.PI * x / 2).toArray(twistPositions, twistPositions.length);
-    }
-
-    // 这部分也看不明白 只知道这里存着位置信息
-    geometry.morphAttributes.position[0] = new THREE.Float32BufferAttribute(spherePositions, 3);
-    geometry.morphAttributes.position[1] = new THREE.Float32BufferAttribute(twistPositions, 3);
-    return geometry;
+    const light2 = new THREE.DirectionalLight(0xffefef, 1.5);
+    light2.position.set(-1, -1, -1).normalize();
+    
+    this.scene.add(light1, light2);
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
@@ -172,8 +113,19 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
 
+    // 核心
+    if (this.camera) {
+      this.theta += 0.1;
+      this.camera.position.x = this.radius * Math.sin(THREE.MathUtils.degToRad(this.theta));
+      this.camera.position.z = this.radius * Math.cos(THREE.MathUtils.degToRad(this.theta));
+      this.camera.lookAt(0, 150, 0);
+
+      const time = Date.now();
+      this.mixer?.update((time - this.prevTime) * 0.001);
+      this.prevTime = time;
+    }
+
     this.stats?.update();
-    this.controls?.update();
     
     // 执行渲染
     if (this.renderer && this.camera) {
