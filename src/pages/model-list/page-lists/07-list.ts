@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "183",
+    title: "183.WEBGL 变形目标球形",
+    path: "/list/webgl-morph-targets-sphere",
+  },
+  {
     key: "182",
     title: "182.WEBGL 变形目标马",
     path: "/list/webgl-morph-targets-horse",
