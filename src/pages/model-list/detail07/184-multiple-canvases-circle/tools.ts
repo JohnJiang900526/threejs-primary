@@ -9,7 +9,7 @@ interface Iparams {
   renderer: THREE.WebGLRenderer,
 }
 
-// 视图
+// 视图class 用于构建每一个小的视图
 class View {
   private canvas: HTMLCanvasElement;
   private rotateY: number;
@@ -35,6 +35,7 @@ class View {
     this.init();
   }
 
+  // 核心逻辑
   private init () {
     this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
     this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
@@ -46,10 +47,13 @@ class View {
     this.virtualCamera.add(this.camera);
   }
 
+  // 核心逻辑
   render() {
-    this.virtualCamera.position.x = -this.mouse.x * 4;
-    this.virtualCamera.position.y = -this.mouse.y * 4;
-    this.virtualCamera.position.z = 1800;
+    this.virtualCamera.position.set(
+      -this.mouse.x * 4,
+      -this.mouse.y * 4,
+      1800,
+    );
 
     this.virtualCamera.lookAt(this.scene.position);
     this.virtualCamera.updateMatrixWorld(true);
@@ -58,6 +62,7 @@ class View {
     this.context?.drawImage(this.renderer?.domElement, 0, 0);
   }
 }
+
 
 export class Model {
   private width: number;
@@ -73,8 +78,9 @@ export class Model {
   private views: View[];
   private mouse: THREE.Vector2;
   private half: THREE.Vector2;
-  private readonly noof_balls: number;
+  private readonly balls: number;
   private baseNumber: number;
+  private meshes: THREE.Mesh[]
   constructor(container: HTMLDivElement, canvas: {code: String, canvas: HTMLCanvasElement}[]) {
     this.container = container;
     this.canvas = canvas;
@@ -89,8 +95,9 @@ export class Model {
     this.views = [];
     this.mouse = new THREE.Vector2(0, 0);
     this.half = new THREE.Vector2(this.width/2, this.height/2);
-    this.noof_balls = 51;
-    this.baseNumber = 0.45 * 30 * THREE.MathUtils.DEG2RAD
+    this.balls = 51;
+    this.baseNumber = 0.45 * 30 * THREE.MathUtils.DEG2RAD;
+    this.meshes = [];
   }
 
   init() {
@@ -107,12 +114,13 @@ export class Model {
 
     this.canvas.forEach(({ canvas }, i) => {
       const rotateY = (i - 2) * this.baseNumber;
+      const renderer = this.renderer as THREE.WebGLRenderer;
       const view = new View({ 
         canvas, 
         rotateY, 
+        renderer,
         mouse: this.mouse, 
         scene: this.scene,
-        renderer: this.renderer as THREE.WebGLRenderer
       });
       this.views.push(view);
     });
@@ -147,9 +155,14 @@ export class Model {
     }
   }
 
-  // 创建几何体
+  // 创建几何体 核心逻辑
   private createGeometry() {
     const radius = 200;
+    // 二十面缓冲几何体（IcosahedronGeometry）一个用于生成二十面体的类
+    // IcosahedronGeometry(radius : Float, detail : Integer)
+    // radius — 二十面体的半径，默认为1。
+    // detail — 默认值为0。将这个值设为一个大于0的数将会为它增加一些顶点，
+    // 使其不再是一个二十面体。当这个值大于1的时候，实际上它将变成一个球体。
     const geometry = new THREE.IcosahedronGeometry(radius, 1);
 
     const count = geometry.attributes.position.count;
@@ -160,57 +173,76 @@ export class Model {
     const colors = geometry.attributes.color as THREE.BufferAttribute;
 
     for (let i = 0; i < count; i++) {
-      color.setHSL((positions.getY(i) / radius + 1) / 2, 1.0, 0.5);
+      const h = (positions.getY(i) / radius + 1) / 2;
+      // .setHSL ( h : Float, s : Float, l : Float, colorSpace : string = LinearSRGBColorSpace ) : this
+      // h — 色相值处于0到1之间
+      // s — 饱和度值处于0到1之间
+      // l — 亮度值处于0到1之间
+      // 采用HLS值设置此颜色
+      color.setHSL(h, 1.0, 0.5);
       colors.setXYZ(i, color.r, color.g, color.b);
     }
 
     const material = new THREE.MeshPhongMaterial({
+      // 发亮程度
       shininess: 0,
+      // 材质颜色
       color: 0xffffff,
+      // 平面着色
       flatShading: true,
+      // 顶点颜色
       vertexColors: true,
     });
 
-    const wireframeMaterial = new THREE.MeshBasicMaterial({ 
+    // 网格材质
+    const wireMaterial = new THREE.MeshBasicMaterial({ 
       color: 0x000000, 
       wireframe: true, 
       transparent: true,
     });
 
-    for (let i = 0; i < this.noof_balls; i++) {
+    for (let i = 0; i < this.balls; i++) {
       const mesh = new THREE.Mesh(geometry, material);
-      const wireframe = new THREE.Mesh(geometry, wireframeMaterial);
-      mesh.add(wireframe);
+      const wireMesh = new THREE.Mesh(geometry, wireMaterial);
 
-      mesh.position.x = -(this.noof_balls - 1) / 2 * 400 + i * 400;
+      mesh.add(wireMesh);
+      mesh.position.x = -(this.balls - 1) / 2 * 400 + i * 400;
       mesh.rotation.x = i * 0.5;
+      this.meshes.push(mesh);
       this.scene.add(mesh);
     }
   }
 
-  // 创建阴影
+  // 创建阴影 核心逻辑
   private generateShadow() {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
+
     const context = canvas.getContext('2d') as  CanvasRenderingContext2D;
-    const gradient = context.createRadialGradient(
-      canvas.width / 2, canvas.height / 2, 
-      0, canvas.width / 2, 
-      canvas.height / 2, canvas.width / 2
-    );
+    // 线性渐变 参数
+    const x0 = canvas.width / 2;
+    const y0 = canvas.height / 2;
+    const r0 = 0;
+
+    const x1 = canvas.width / 2;
+    const y1 = canvas.height / 2;
+    const r1 = canvas.width / 2;
+
+    // 线性渐变
+    const gradient = context.createRadialGradient(x0, y0, r0, x1, y1, r1);
     gradient.addColorStop(0.1, 'rgba(210,210,210,1)');
     gradient.addColorStop(1, 'rgba(255,255,255,1)');
     context.fillStyle = gradient;
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    const shadowTexture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({ map: shadowTexture });
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({map: texture});
     const geomentry = new THREE.PlaneGeometry(300, 300, 1, 1);
 
-    for (let i = 0; i < this.noof_balls; i++) {
+    for (let i = 0; i < this.balls; i++) {
       const mesh = new THREE.Mesh(geomentry, material);
-      mesh.position.x = -(this.noof_balls - 1) / 2 * 400 + i * 400;
+      mesh.position.x = -(this.balls - 1) / 2 * 400 + i * 400;
       mesh.position.y = -250;
       mesh.rotation.x = -Math.PI / 2;
       this.scene.add(mesh);
@@ -245,6 +277,12 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
     this.stats?.update();
+
+    // 控制模型旋转
+    this.meshes.forEach((mesh) => {
+      mesh.rotation.y += 0.005;
+    });
+    // 控制场景渲染
     this.views.forEach((view) => { view.render(); });
   }
 
