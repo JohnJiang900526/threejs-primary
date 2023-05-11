@@ -3,63 +3,83 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 
 interface Iparams {
   canvas: HTMLCanvasElement, 
-  rotateY: number,
   mouse: THREE.Vector2,
   scene: THREE.Scene,
   renderer: THREE.WebGLRenderer,
+  fullWidth: number,
+  fullHeight: number,
+  viewX: number,
+  viewY: number,
+}
+
+interface ICanvasParams {
+  code: String, 
+  canvas: HTMLCanvasElement,
+  viewX: number, 
+  viewY: number,
 }
 
 // 视图class 用于构建每一个小的视图
 class View {
   private canvas: HTMLCanvasElement;
-  private rotateY: number;
   private mouse: THREE.Vector2;
   private scene: THREE.Scene;
   private renderer: THREE.WebGLRenderer;
   private context: CanvasRenderingContext2D | null;
-  private camera: THREE.PerspectiveCamera | null;
-  private virtualCamera: THREE.Camera
+  private camera: THREE.PerspectiveCamera;
+  private fullWidth: number;
+  private fullHeight: number;
+  private viewWidth: number;
+  private viewHeight: number;
+  private viewX: number;
+  private viewY: number;
   constructor (params: Iparams) {
-    const { canvas, rotateY, mouse, scene, renderer } = params;
+    const { canvas, mouse, scene, renderer, fullWidth, fullHeight, viewX, viewY, } = params;
 
     this.canvas = canvas;
-    this.rotateY = rotateY;
     this.mouse = mouse;
     this.scene = scene;
     this.renderer = renderer;
+    this.fullWidth = fullWidth;
+    this.fullHeight = fullHeight;
+    this.viewWidth = 0;
+    this.viewHeight = 0;
+    this.viewX = viewX;
+    this.viewY = viewY;
     this.context = null;
-    this.camera = null;
-    // @ts-ignore
-    this.virtualCamera = new THREE.Camera();
+    this.camera = new THREE.PerspectiveCamera();
 
     this.init();
   }
 
   // 核心逻辑
   private init () {
+    this.viewWidth = this.canvas.clientWidth;
+    this.viewHeight = this.canvas.clientHeight;
+
     this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
     this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
     this.context = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
-    const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(20, aspect, 1, 20000);
-    this.camera.rotation.y = this.rotateY;
-    this.virtualCamera.add(this.camera);
+    const aspect = this.fullWidth / this.fullHeight;
+    this.camera = new THREE.PerspectiveCamera(30, aspect, 1, 10000);
+    this.camera.setViewOffset(
+      this.fullWidth, this.fullHeight, 
+      this.viewX, this.viewY, 
+      this.viewWidth, this.viewHeight,
+    );
+    this.camera.position.z = 1800;
   }
 
   // 核心逻辑
   render() {
-    this.virtualCamera.position.set(
-      -this.mouse.x * 4,
-      -this.mouse.y * 4,
-      1800,
-    );
+    this.camera.position.x += (this.mouse.x - this.camera.position.x) * 0.05;
+    this.camera.position.y += (-this.mouse.y - this.camera.position.y) * 0.05;
+    this.camera.lookAt(this.scene.position);
 
-    this.virtualCamera.lookAt(this.scene.position);
-    this.virtualCamera.updateMatrixWorld(true);
-
-    this.renderer.render(this.scene, this.camera as THREE.PerspectiveCamera);
-    this.context?.drawImage(this.renderer?.domElement, 0, 0);
+    this.renderer.setViewport(0, this.fullHeight - this.viewHeight, this.viewWidth, this.viewHeight);
+    this.renderer.render(this.scene, this.camera);
+    this.context?.drawImage(this.renderer.domElement, 0, 0);
   }
 }
 
@@ -69,7 +89,7 @@ export class Model {
   private height: number;
   private aspect: number;
   private container: HTMLDivElement;
-  private canvas: {code: String, canvas: HTMLCanvasElement}[];
+  private canvas: ICanvasParams[];
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
   private camera: null | THREE.PerspectiveCamera;
@@ -78,10 +98,10 @@ export class Model {
   private views: View[];
   private mouse: THREE.Vector2;
   private half: THREE.Vector2;
-  private readonly balls: number;
-  private baseNumber: number;
-  private meshes: THREE.Mesh[]
-  constructor(container: HTMLDivElement, canvas: {code: String, canvas: HTMLCanvasElement}[]) {
+  private meshes: THREE.Mesh[];
+  private readonly fullWidth: number;
+  private readonly fullHeight: number;
+  constructor(container: HTMLDivElement, canvas: ICanvasParams[]) {
     this.container = container;
     this.canvas = canvas;
     this.width = this.container.offsetWidth;
@@ -95,9 +115,9 @@ export class Model {
     this.views = [];
     this.mouse = new THREE.Vector2(0, 0);
     this.half = new THREE.Vector2(this.width/2, this.height/2);
-    this.balls = 51;
-    this.baseNumber = 0.45 * 30 * THREE.MathUtils.DEG2RAD;
     this.meshes = [];
+    this.fullWidth = 550;
+    this.fullHeight = 600;
   }
 
   init() {
@@ -112,15 +132,17 @@ export class Model {
     this.generateShadow();
     this.createGeometry();
 
-    this.canvas.forEach(({ canvas }, i) => {
-      const rotateY = (i - 2) * this.baseNumber;
+    this.canvas.forEach(({ canvas, viewX, viewY }) => {
       const renderer = this.renderer as THREE.WebGLRenderer;
       const view = new View({ 
+        viewX, 
+        viewY,
         canvas, 
-        rotateY, 
         renderer,
         mouse: this.mouse, 
         scene: this.scene,
+        fullWidth: this.fullWidth,
+        fullHeight: this.fullHeight,
       });
       this.views.push(view);
     });
@@ -158,58 +180,70 @@ export class Model {
   // 创建几何体 核心逻辑
   private createGeometry() {
     const radius = 200;
-    // 二十面缓冲几何体（IcosahedronGeometry）一个用于生成二十面体的类
-    // IcosahedronGeometry(radius : Float, detail : Integer)
-    // radius — 二十面体的半径，默认为1。
-    // detail — 默认值为0。将这个值设为一个大于0的数将会为它增加一些顶点，
-    // 使其不再是一个二十面体。当这个值大于1的时候，实际上它将变成一个球体。
-    const geometry = new THREE.IcosahedronGeometry(radius, 1);
-
-    const count = geometry.attributes.position.count;
-    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+    const geometry1 = new THREE.IcosahedronGeometry(radius, 1);
+    const count = geometry1.attributes.position.count;
+    geometry1.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+    const geometry2 = geometry1.clone();
+    const geometry3 = geometry1.clone();
 
     const color = new THREE.Color();
-    const positions = geometry.attributes.position as THREE.BufferAttribute;
-    const colors = geometry.attributes.color as THREE.BufferAttribute;
+    const positions1 = geometry1.attributes.position as THREE.BufferAttribute;
+    const positions2 = geometry2.attributes.position as THREE.BufferAttribute;
+    const positions3 = geometry3.attributes.position as THREE.BufferAttribute;
+
+    const colors1 = geometry1.attributes.color as THREE.BufferAttribute;
+    const colors2 = geometry2.attributes.color as THREE.BufferAttribute;
+    const colors3 = geometry3.attributes.color as THREE.BufferAttribute;
 
     for (let i = 0; i < count; i++) {
-      const h = (positions.getY(i) / radius + 1) / 2;
-      // .setHSL ( h : Float, s : Float, l : Float, colorSpace : string = LinearSRGBColorSpace ) : this
-      // h — 色相值处于0到1之间
-      // s — 饱和度值处于0到1之间
-      // l — 亮度值处于0到1之间
-      // 采用HLS值设置此颜色
-      color.setHSL(h, 1.0, 0.5);
-      colors.setXYZ(i, color.r, color.g, color.b);
+      color.setHSL((positions1.getY(i) / radius + 1) / 2, 1.0, 0.5);
+      colors1.setXYZ( i, color.r, color.g, color.b );
+
+      color.setHSL(0, (positions2.getY(i) / radius + 1) / 2, 0.5);
+      colors2.setXYZ(i, color.r, color.g, color.b);
+
+      color.setRGB( 1, 0.8 - (positions3.getY(i) / radius + 1) / 2, 0 );
+      colors3.setXYZ(i, color.r, color.g, color.b);
     }
 
     const material = new THREE.MeshPhongMaterial({
-      // 发亮程度
       shininess: 0,
-      // 材质颜色
       color: 0xffffff,
-      // 平面着色
       flatShading: true,
-      // 顶点颜色
       vertexColors: true,
     });
 
-    // 网格材质
     const wireMaterial = new THREE.MeshBasicMaterial({ 
       color: 0x000000, 
       wireframe: true, 
       transparent: true,
     });
 
-    for (let i = 0; i < this.balls; i++) {
-      const mesh = new THREE.Mesh(geometry, material);
-      const wireMesh = new THREE.Mesh(geometry, wireMaterial);
-
-      mesh.add(wireMesh);
-      mesh.position.x = -(this.balls - 1) / 2 * 400 + i * 400;
-      mesh.rotation.x = i * 0.5;
-      this.meshes.push(mesh);
+    {
+      const mesh = new THREE.Mesh(geometry1, material );
+      const wireframe = new THREE.Mesh(geometry1, wireMaterial);
+      mesh.add(wireframe);
+      mesh.position.x = -400;
+      mesh.rotation.x = -1.87;
       this.scene.add(mesh);
+      this.meshes.push(mesh);
+    }
+
+    {
+      const mesh = new THREE.Mesh(geometry2, material );
+      const wireframe = new THREE.Mesh(geometry2, wireMaterial);
+      mesh.add(wireframe);
+      mesh.position.x = 400;
+      this.scene.add(mesh);
+      this.meshes.push(mesh);
+    }
+
+    {
+      const mesh = new THREE.Mesh(geometry3, material );
+      const wireframe = new THREE.Mesh(geometry3, wireMaterial);
+      mesh.add(wireframe);
+      this.scene.add(mesh);
+      this.meshes.push(mesh);
     }
   }
 
@@ -219,8 +253,7 @@ export class Model {
     canvas.width = 128;
     canvas.height = 128;
 
-    const context = canvas.getContext('2d') as  CanvasRenderingContext2D;
-    // 线性渐变 参数
+    const context = canvas.getContext('2d') as CanvasRenderingContext2D ;
     const x0 = canvas.width / 2;
     const y0 = canvas.height / 2;
     const r0 = 0;
@@ -228,21 +261,34 @@ export class Model {
     const x1 = canvas.width / 2;
     const y1 = canvas.height / 2;
     const r1 = canvas.width / 2;
-
-    // 线性渐变
-    const gradient = context.createRadialGradient(x0, y0, r0, x1, y1, r1);
+    const gradient = context.createRadialGradient(x0, y0, r0, x1, y1,r1);
     gradient.addColorStop(0.1, 'rgba(210,210,210,1)');
     gradient.addColorStop(1, 'rgba(255,255,255,1)');
     context.fillStyle = gradient;
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({map: texture});
-    const geomentry = new THREE.PlaneGeometry(300, 300, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const geometry = new THREE.PlaneGeometry(300, 300, 1, 1);
 
-    for (let i = 0; i < this.balls; i++) {
-      const mesh = new THREE.Mesh(geomentry, material);
-      mesh.position.x = -(this.balls - 1) / 2 * 400 + i * 400;
+    {
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.y = -250;
+      mesh.rotation.x = -Math.PI / 2;
+      this.scene.add(mesh);
+    }
+
+    {
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = -400;
+      mesh.position.y = -250;
+      mesh.rotation.x = -Math.PI / 2;
+      this.scene.add(mesh);
+    }
+
+    {
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = 400;
       mesh.position.y = -250;
       mesh.rotation.x = -Math.PI / 2;
       this.scene.add(mesh);
@@ -260,7 +306,7 @@ export class Model {
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(200, 300);
+    this.renderer.setSize(this.fullWidth, this.fullHeight);
   }
 
   // 性能统计
@@ -302,7 +348,7 @@ export class Model {
       }
 
       if (this.renderer) {
-        this.renderer.setSize(200, 300);
+        this.renderer.setSize(this.fullWidth, this.fullHeight);
       }
     };
   }

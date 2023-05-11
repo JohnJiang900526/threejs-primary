@@ -6,14 +6,10 @@
   <div class="webgl-multiple-canvases-complex-page">
     <Page title="webgl-multiple-canvases-complex">
       <div ref="container" class="key-frame-page-inner">
-        <div class="stage">
-          <div class="shape ring backfaces">
-            <canvas ref="canvas1" class="ring r1"></canvas>
-            <canvas ref="canvas2" class="ring r2"></canvas>
-            <canvas ref="canvas3" class="ring r3"></canvas>
-            <canvas ref="canvas4" class="ring r4"></canvas>
-            <canvas ref="canvas5" class="ring r5"></canvas>
-          </div>
+        <div class="canvas-warp">  
+          <canvas ref="canvas1" class="canvas1 ring r1"></canvas>
+          <canvas ref="canvas2" class="canvas2 ring r2"></canvas>
+          <canvas ref="canvas3" class="canvas3 ring r3"></canvas>
         </div>
       </div>
     </Page>
@@ -24,39 +20,39 @@
 import { defineComponent } from "vue";
 import { Model } from "./tools";
 
+interface ICanvasParams {
+  code: String, 
+  canvas: HTMLCanvasElement,
+  viewX: number, 
+  viewY: number,
+}
+
 let objModel: Model | null;
 export default defineComponent({
-  data() {
-    return {
-      show: false,
-    };
-  },
   mounted() {
     this.render();
   },
   methods: {
     // 渲染入口
     render() {
-      const canvas: {code: String, canvas: HTMLCanvasElement}[] = [
+      const canvas: ICanvasParams[] = [
         {
           code: "canvas1",
           canvas: this.$refs.canvas1 as HTMLCanvasElement,
+          viewX: 0, 
+          viewY: 0,
         },
         {
           code: "canvas2",
           canvas: this.$refs.canvas2 as HTMLCanvasElement,
+          viewX: 150, 
+          viewY: 200,
         },
         {
           code: "canvas3",
           canvas: this.$refs.canvas3 as HTMLCanvasElement,
-        },
-        {
-          code: "canvas4",
-          canvas: this.$refs.canvas4 as HTMLCanvasElement,
-        },
-        {
-          code: "canvas5",
-          canvas: this.$refs.canvas5 as HTMLCanvasElement,
+          viewX: 75, 
+          viewY: 300,
         },
       ];
       objModel = new Model(this.$refs.container as HTMLDivElement, canvas);
@@ -79,50 +75,29 @@ export default defineComponent({
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
-      perspective: 800px;
-			perspective-origin: 50% 225px;
-      .stage {
+      .canvas-warp {
+        position: absolute;
+        .positionCenter();
         width: 100%;
-        height: 100%;
-        transform-style: preserve-3d;
-        .shape {
-          position: relative !important;
-          top: 35%;
-          margin: 0 auto;
-          width: 200px;
-          height: 200px;
-          transform: translate(-50%, -50%, -0px);
-          transform-style: preserve-3d;
-        }
-        .ring {
-          position: absolute;
+        height: auto;
+        canvas {
+          position: relative;
           display: block;
-          width: 200px;
-          height: 300px;
-          text-align: center;
-          font-family: Times, serif;
-          font-size: 124pt;
-          color: black;
-          background-color: #fff;
-          .r1 {
-            transform: rotateY(300deg) translateZ(-380px);
+          outline: 1px solid red;
+          &.canvas1 {
+            width: 300px;
+            height: 200px;
           }
-          .r2 {
-            transform: rotateY(330deg) translateZ(-380px);
+          &.canvas2 {
+            width: 400px;
+            height: 100px;
+            left: 150px;
           }
-          .r3 {
-            transform: rotateY(0deg) translateZ(-380px);
+          &.canvas3 {
+            width: 200px;
+            height: 300px;
+            left: 75px;
           }
-          .r4 {
-            transform: rotateY(30deg) translateZ(-380px);
-          }
-          .r5 {
-            transform: rotateY(60deg) translateZ(-380px);
-          }
-        }
-        .shape {
-          border: 0px;
-          background-color: rgba(255, 255, 255, 0);
         }
       }
       .actions {
