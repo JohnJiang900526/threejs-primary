@@ -3,9 +3,16 @@ import type { RouteRecordRaw } from "vue-router";
 import ModifierMorphTargetsFace from "@/pages/model-list/detail07/181-morph-targets-face/index.vue";
 import ModifierMorphTargetsHorse from "@/pages/model-list/detail07/182-morph-targets-horse/index.vue";
 import ModifierMorphTargetsSphere from "@/pages/model-list/detail07/183-morph-targets-sphere/index.vue";
+import MultipleCanvasesCircle from "@/pages/model-list/detail07/184-multiple-canvases-circle/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-multiple-canvases-circle',
+    name: 'MultipleCanvasesCircle',
+    meta: {title: "webgl-multiple-canvases-circle"},
+    component: MultipleCanvasesCircle,
+  },
   {
     path: '/list/webgl-morph-targets-sphere',
     name: 'ModifierMorphTargetsSphere',
