@@ -5,9 +5,17 @@ import ModifierMorphTargetsHorse from "@/pages/model-list/detail07/182-morph-tar
 import ModifierMorphTargetsSphere from "@/pages/model-list/detail07/183-morph-targets-sphere/index.vue";
 import MultipleCanvasesCircle from "@/pages/model-list/detail07/184-multiple-canvases-circle/index.vue";
 import MultipleCanvasesComplex from "@/pages/model-list/detail07/185-multiple-canvases-complex/index.vue";
+import MultipleCanvasesGrid from "@/pages/model-list/detail07/186-multiple-canvases-grid/index.vue";
+
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-multiple-canvases-grid',
+    name: 'MultipleCanvasesGrid',
+    meta: {title: "webgl-multiple-canvases-grid"},
+    component: MultipleCanvasesGrid,
+  },
   {
     path: '/list/webgl-multiple-canvases-complex',
     name: 'MultipleCanvasesComplex',
