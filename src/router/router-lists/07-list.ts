@@ -8,10 +8,16 @@ import MultipleCanvasesComplex from "@/pages/model-list/detail07/185-multiple-ca
 import MultipleCanvasesGrid from "@/pages/model-list/detail07/186-multiple-canvases-grid/index.vue";
 import MultipleElements from "@/pages/model-list/detail07/187-multiple-elements/index.vue";
 import MultipleRenderers from "@/pages/model-list/detail07/188-multiple-renderers/index.vue";
-
+import MultipleScenesComparison from "@/pages/model-list/detail07/189-multiple-scenes-comparison/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-multiple-scenes-comparison',
+    name: 'MultipleScenesComparison',
+    meta: {title: "webgl-multiple-scenes-comparison"},
+    component: MultipleScenesComparison,
+  },
   {
     path: '/list/webgl-multiple-renderers',
     name: 'MultipleRenderers',
