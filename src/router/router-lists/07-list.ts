@@ -6,10 +6,16 @@ import ModifierMorphTargetsSphere from "@/pages/model-list/detail07/183-morph-ta
 import MultipleCanvasesCircle from "@/pages/model-list/detail07/184-multiple-canvases-circle/index.vue";
 import MultipleCanvasesComplex from "@/pages/model-list/detail07/185-multiple-canvases-complex/index.vue";
 import MultipleCanvasesGrid from "@/pages/model-list/detail07/186-multiple-canvases-grid/index.vue";
-
+import MultipleElements from "@/pages/model-list/detail07/187-multiple-elements/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-multiple-elements',
+    name: 'MultipleElements',
+    meta: {title: "webgl-multiple-elements"},
+    component: MultipleElements,
+  },
   {
     path: '/list/webgl-multiple-canvases-grid',
     name: 'MultipleCanvasesGrid',
