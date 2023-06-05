@@ -7,9 +7,17 @@ import MultipleCanvasesCircle from "@/pages/model-list/detail07/184-multiple-can
 import MultipleCanvasesComplex from "@/pages/model-list/detail07/185-multiple-canvases-complex/index.vue";
 import MultipleCanvasesGrid from "@/pages/model-list/detail07/186-multiple-canvases-grid/index.vue";
 import MultipleElements from "@/pages/model-list/detail07/187-multiple-elements/index.vue";
+import MultipleRenderers from "@/pages/model-list/detail07/188-multiple-renderers/index.vue";
+
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-multiple-renderers',
+    name: 'MultipleRenderers',
+    meta: {title: "webgl-multiple-renderers"},
+    component: MultipleRenderers,
+  },
   {
     path: '/list/webgl-multiple-elements',
     name: 'MultipleElements',
