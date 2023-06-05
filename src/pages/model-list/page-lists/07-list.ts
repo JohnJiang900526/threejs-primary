@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "190",
+    title: "190.WEBGL 多视图",
+    path: "/list/webgl-multiple-views",
+  },
+  {
     key: "189",
     title: "189.WEBGL 多场景对比",
     path: "/list/webgl-multiple-scenes-comparison",

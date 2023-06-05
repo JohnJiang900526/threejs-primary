@@ -9,9 +9,16 @@ import MultipleCanvasesGrid from "@/pages/model-list/detail07/186-multiple-canva
 import MultipleElements from "@/pages/model-list/detail07/187-multiple-elements/index.vue";
 import MultipleRenderers from "@/pages/model-list/detail07/188-multiple-renderers/index.vue";
 import MultipleScenesComparison from "@/pages/model-list/detail07/189-multiple-scenes-comparison/index.vue";
+import MultipleViews from "@/pages/model-list/detail07/190-multiple-views/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-multiple-views',
+    name: 'MultipleViews',
+    meta: {title: "webgl-multiple-views"},
+    component: MultipleViews,
+  },
   {
     path: '/list/webgl-multiple-scenes-comparison',
     name: 'MultipleScenesComparison',
