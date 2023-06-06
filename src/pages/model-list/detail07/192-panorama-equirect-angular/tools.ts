@@ -146,7 +146,6 @@ export class Model {
     geometry.scale(-1, 1, 1);
 
     const texture = new THREE.TextureLoader().load('/examples/textures/2294472375_24a3b8ef46_o.jpg');
-    console.log(texture);
     this.material = new THREE.MeshBasicMaterial({ map: texture });
 
     const mesh = new THREE.Mesh(geometry, this.material);
