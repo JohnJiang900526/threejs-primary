@@ -10,9 +10,16 @@ import MultipleElements from "@/pages/model-list/detail07/187-multiple-elements/
 import MultipleRenderers from "@/pages/model-list/detail07/188-multiple-renderers/index.vue";
 import MultipleScenesComparison from "@/pages/model-list/detail07/189-multiple-scenes-comparison/index.vue";
 import MultipleViews from "@/pages/model-list/detail07/190-multiple-views/index.vue";
+import PanoramaCube from "@/pages/model-list/detail07/191-panorama-cube/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-panorama-cube',
+    name: 'PanoramaCube',
+    meta: {title: "webgl-panorama-cube"},
+    component: PanoramaCube,
+  },
   {
     path: '/list/webgl-multiple-views',
     name: 'MultipleViews',
