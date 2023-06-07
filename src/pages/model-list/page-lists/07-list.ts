@@ -10,13 +10,18 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "195",
+    title: "195.WEBGL 表现材质",
+    path: "/list/webgl-performance-shader",
+  },
+  {
     key: "194",
-    title: "194.WEBGL 性能统计",
+    title: "194.WEBGL 表现统计",
     path: "/list/webgl-performance-static",
   },
   {
     key: "193",
-    title: "193.WEBGL 性能",
+    title: "193.WEBGL 表现",
     path: "/list/webgl-performance",
   },
   {

@@ -14,9 +14,16 @@ import PanoramaCube from "@/pages/model-list/detail07/191-panorama-cube/index.vu
 import PanoramaEquirectAngular from "@/pages/model-list/detail07/192-panorama-equirect-angular/index.vue";
 import WebglPerformance from "@/pages/model-list/detail07/193-performance/index.vue";
 import PerformanceStatic from "@/pages/model-list/detail07/194-performance-static/index.vue";
+import PerformanceShader from "@/pages/model-list/detail07/195-performance-shader/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-performance-shader',
+    name: 'PerformanceShader',
+    meta: {title: "webgl-performance-shader"},
+    component: PerformanceShader,
+  },
   {
     path: '/list/webgl-performance-static',
     name: 'PerformanceStatic',
