@@ -12,9 +12,16 @@ import MultipleScenesComparison from "@/pages/model-list/detail07/189-multiple-s
 import MultipleViews from "@/pages/model-list/detail07/190-multiple-views/index.vue";
 import PanoramaCube from "@/pages/model-list/detail07/191-panorama-cube/index.vue";
 import PanoramaEquirectAngular from "@/pages/model-list/detail07/192-panorama-equirect-angular/index.vue";
+import WebglPerformance from "@/pages/model-list/detail07/193-performance/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-performance',
+    name: 'WebglPerformance',
+    meta: {title: "webgl-performance"},
+    component: WebglPerformance,
+  },
   {
     path: '/list/webgl-panorama-equirect-angular',
     name: 'PanoramaEquirectAngular',
