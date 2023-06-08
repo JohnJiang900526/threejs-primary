@@ -15,9 +15,16 @@ import PanoramaEquirectAngular from "@/pages/model-list/detail07/192-panorama-eq
 import WebglPerformance from "@/pages/model-list/detail07/193-performance/index.vue";
 import PerformanceStatic from "@/pages/model-list/detail07/194-performance-static/index.vue";
 import PerformanceShader from "@/pages/model-list/detail07/195-performance-shader/index.vue";
+import PointsBillboards from "@/pages/model-list/detail07/196-points-billboards/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-points-billboards',
+    name: 'PointsBillboards',
+    meta: {title: "webgl-points-billboards"},
+    component: PointsBillboards,
+  },
   {
     path: '/list/webgl-performance-shader',
     name: 'PerformanceShader',
