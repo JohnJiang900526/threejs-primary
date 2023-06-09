@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import GUI from 'lil-gui';
-=======
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
@@ -15,13 +12,10 @@ export class Model {
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
 
-<<<<<<< HEAD
   private mouse: THREE.Vector2;
   private half: THREE.Vector2;
   private material: THREE.PointsMaterial
   private gui: GUI
-=======
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -32,7 +26,6 @@ export class Model {
     this.camera = null;
     this.stats = null;
 
-<<<<<<< HEAD
     this.mouse = new THREE.Vector2();
     this.half = new THREE.Vector2(this.width/2, this.height/2);
     this.material = new THREE.PointsMaterial();
@@ -41,8 +34,6 @@ export class Model {
       autoPlace: false,
       container: this.container,
     });
-=======
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
   }
 
   init() {
@@ -60,11 +51,8 @@ export class Model {
     // 渲染器
     this.createRenderer();
 
-<<<<<<< HEAD
     this.bind();
     this.setUpGUI();
-=======
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
     this.initStats();
     this.animate();
     this.resize();
@@ -76,7 +64,6 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-<<<<<<< HEAD
   // 核心事件
   private bind() {
     if (this.isMobile()) {
@@ -129,10 +116,6 @@ export class Model {
 
     const particles = new THREE.Points(geometry, this.material);
     this.scene.add(particles);
-=======
-  private loadModel() {
-    
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
   }
 
   // 创建渲染器
@@ -158,7 +141,6 @@ export class Model {
     window.requestAnimationFrame(() => { this.animate(); });
 
     this.stats?.update();
-<<<<<<< HEAD
 
     if (this.camera) {
       const time = Date.now() * 0.00005;
@@ -169,8 +151,6 @@ export class Model {
       const h = (360 * (1.0 + time) % 360) / 360;
       this.material.color.setHSL(h, 0.5, 0.5);
     }
-=======
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
     
     // 执行渲染
     if (this.renderer && this.camera) {
@@ -184,13 +164,9 @@ export class Model {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
-<<<<<<< HEAD
       this.half = new THREE.Vector2(this.width/2, this.height/2);
 
       this.bind();
-=======
-
->>>>>>> 72d66f2cbd49278f1e6fb4539434a6d03b7671b6
       if (this.camera) {
         this.camera.aspect = this.aspect;
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
