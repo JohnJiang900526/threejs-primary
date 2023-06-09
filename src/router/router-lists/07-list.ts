@@ -16,9 +16,16 @@ import WebglPerformance from "@/pages/model-list/detail07/193-performance/index.
 import PerformanceStatic from "@/pages/model-list/detail07/194-performance-static/index.vue";
 import PerformanceShader from "@/pages/model-list/detail07/195-performance-shader/index.vue";
 import PointsBillboards from "@/pages/model-list/detail07/196-points-billboards/index.vue";
+import PointsDynamic from "@/pages/model-list/detail07/197-points-dynamic/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-points-dynamic',
+    name: 'PointsDynamic',
+    meta: {title: "webgl-points-dynamic"},
+    component: PointsDynamic,
+  },
   {
     path: '/list/webgl-points-billboards',
     name: 'PointsBillboards',
