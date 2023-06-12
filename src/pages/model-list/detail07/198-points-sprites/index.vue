@@ -29,7 +29,9 @@ export default defineComponent({
     // 渲染入口
     render() {
       objModel = new Model(this.$refs.container as HTMLDivElement);
-      objModel?.init();
+      setTimeout(() => {
+        objModel?.init();
+      }, 100);
     },
   },
   // 卸载前函数
