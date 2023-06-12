@@ -18,10 +18,17 @@ import PerformanceShader from "@/pages/model-list/detail07/195-performance-shade
 import PointsBillboards from "@/pages/model-list/detail07/196-points-billboards/index.vue";
 import PointsDynamic from "@/pages/model-list/detail07/197-points-dynamic/index.vue";
 import PointsSprites from "@/pages/model-list/detail07/198-points-sprites/index.vue";
+import PointsWaves from "@/pages/model-list/detail07/199-points-waves/index.vue";
 
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-points-waves',
+    name: 'PointsWaves',
+    meta: {title: "webgl-points-waves"},
+    component: PointsWaves,
+  },
   {
     path: '/list/webgl-points-sprites',
     name: 'PointsSprites',
