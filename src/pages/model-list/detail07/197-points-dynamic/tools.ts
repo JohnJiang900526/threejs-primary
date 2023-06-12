@@ -225,7 +225,7 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
-  // 核心
+  // 核心逻辑 还没吃透
   private render() {
     let delta = 10 * this.clock.getDelta();
     delta = delta < 2 ? delta : 2;
@@ -258,9 +258,9 @@ export class Model {
           if (py > 0) {
             positions.setXYZ(
               i,
-              px + 1.5 * ( 0.50 - Math.random() ) * data.speed * delta,
-              py + 3.0 * ( 0.25 - Math.random() ) * data.speed * delta,
-              pz + 1.5 * ( 0.50 - Math.random() ) * data.speed * delta
+              px + 1.5 * (0.50 - Math.random()) * data.speed * delta,
+              py + 3.0 * (0.25 - Math.random()) * data.speed * delta,
+              pz + 1.5 * (0.50 - Math.random()) * data.speed * delta
             );
           } else {
             data.verticesDown += 1;
@@ -269,32 +269,31 @@ export class Model {
 
         // rising up
         if ( data.direction > 0 ) {
-          const ix = initialPositions.getX( i );
-          const iy = initialPositions.getY( i );
-          const iz = initialPositions.getZ( i );
+          const ix = initialPositions.getX(i);
+          const iy = initialPositions.getY(i);
+          const iz = initialPositions.getZ(i);
 
-          const dx = Math.abs( px - ix );
-          const dy = Math.abs( py - iy );
-          const dz = Math.abs( pz - iz );
+          const dx = Math.abs(px - ix);
+          const dy = Math.abs(py - iy);
+          const dz = Math.abs(pz - iz);
 
           const d = dx + dy + dx;
           if ( d > 1 ) {
             positions.setXYZ(
               i,
-              px - ( px - ix ) / dx * data.speed * delta * ( 0.85 - Math.random() ),
-              py - ( py - iy ) / dy * data.speed * delta * ( 1 + Math.random() ),
-              pz - ( pz - iz ) / dz * data.speed * delta * ( 0.85 - Math.random() )
+              px - (px - ix) / dx * data.speed * delta * (0.85 - Math.random()),
+              py - (py - iy) / dy * data.speed * delta * (1 + Math.random()),
+              pz - (pz - iz) / dz * data.speed * delta * (0.85 - Math.random())
             );
           } else {
             data.verticesUp += 1;
           }
         }
-        
       }
 
       // all vertices down
-      if ( data.verticesDown >= count ) {
-        if ( data.delay <= 0 ) {
+      if (data.verticesDown >= count) {
+        if (data.delay <= 0) {
           data.direction = 1;
           data.speed = 5;
           data.verticesDown = 0;
@@ -306,8 +305,8 @@ export class Model {
 
       // all vertices up
       if (data.verticesUp >= count) {
-        if ( data.delay <= 0 ) {
-          data.direction = - 1;
+        if (data.delay <= 0) {
+          data.direction = -1;
           data.speed = 15;
           data.verticesUp = 0;
           data.delay = 120;
