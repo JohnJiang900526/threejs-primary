@@ -17,9 +17,17 @@ import PerformanceStatic from "@/pages/model-list/detail07/194-performance-stati
 import PerformanceShader from "@/pages/model-list/detail07/195-performance-shader/index.vue";
 import PointsBillboards from "@/pages/model-list/detail07/196-points-billboards/index.vue";
 import PointsDynamic from "@/pages/model-list/detail07/197-points-dynamic/index.vue";
+import PointsSprites from "@/pages/model-list/detail07/198-points-sprites/index.vue";
+
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-points-sprites',
+    name: 'PointsSprites',
+    meta: {title: "webgl-points-sprites"},
+    component: PointsSprites,
+  },
   {
     path: '/list/webgl-points-dynamic',
     name: 'PointsDynamic',
