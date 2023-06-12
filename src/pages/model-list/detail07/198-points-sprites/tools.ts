@@ -132,9 +132,7 @@ export class Model {
     ];
 
     this.parameters.forEach((parameter, i) => {
-      const color = parameter[0];
-      const sprite = parameter[1];
-      const size =parameter[2];
+      const [color, sprite, size] = parameter;
 
       this.materials[i] = new THREE.PointsMaterial({ 
         size: size, 
@@ -224,6 +222,7 @@ export class Model {
       }
 
       if (this.renderer) {
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(this.width, this.height);
       }
     };
