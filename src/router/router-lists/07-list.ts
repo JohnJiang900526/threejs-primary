@@ -19,10 +19,17 @@ import PointsBillboards from "@/pages/model-list/detail07/196-points-billboards/
 import PointsDynamic from "@/pages/model-list/detail07/197-points-dynamic/index.vue";
 import PointsSprites from "@/pages/model-list/detail07/198-points-sprites/index.vue";
 import PointsWaves from "@/pages/model-list/detail07/199-points-waves/index.vue";
+import Portal from "@/pages/model-list/detail07/200-webgl-portal/index.vue";
 
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-portal',
+    name: 'Portal',
+    meta: {title: "webgl-portal"},
+    component: Portal,
+  },
   {
     path: '/list/webgl-points-waves',
     name: 'PointsWaves',
