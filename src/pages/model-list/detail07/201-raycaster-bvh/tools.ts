@@ -43,6 +43,7 @@ export class Model {
   }
   private gui: GUI
   constructor(container: HTMLDivElement) {
+    
     THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
     THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
     THREE.Mesh.prototype.raycast = acceleratedRaycast;
