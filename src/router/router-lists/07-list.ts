@@ -20,10 +20,17 @@ import PointsDynamic from "@/pages/model-list/detail07/197-points-dynamic/index.
 import PointsSprites from "@/pages/model-list/detail07/198-points-sprites/index.vue";
 import PointsWaves from "@/pages/model-list/detail07/199-points-waves/index.vue";
 import Portal from "@/pages/model-list/detail07/200-webgl-portal/index.vue";
+import RaycasterBvh from "@/pages/model-list/detail07/201-raycaster-bvh/index.vue";
 
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-raycaster-bvh',
+    name: 'RaycasterBvh',
+    meta: {title: "webgl-raycaster-bvh"},
+    component: RaycasterBvh,
+  },
   {
     path: '/list/webgl-portal',
     name: 'Portal',
