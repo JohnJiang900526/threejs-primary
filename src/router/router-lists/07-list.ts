@@ -21,10 +21,17 @@ import PointsSprites from "@/pages/model-list/detail07/198-points-sprites/index.
 import PointsWaves from "@/pages/model-list/detail07/199-points-waves/index.vue";
 import Portal from "@/pages/model-list/detail07/200-webgl-portal/index.vue";
 import RaycasterBvh from "@/pages/model-list/detail07/201-raycaster-bvh/index.vue";
+import RaycasterSprite from "@/pages/model-list/detail07/202-raycaster-sprite/index.vue";
 
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-raycaster-sprite',
+    name: 'RaycasterSprite',
+    meta: {title: "webgl-raycaster-sprite"},
+    component: RaycasterSprite,
+  },
   {
     path: '/list/webgl-raycaster-bvh',
     name: 'RaycasterBvh',
