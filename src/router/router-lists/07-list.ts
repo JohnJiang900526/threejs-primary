@@ -24,9 +24,16 @@ import RaycasterBvh from "@/pages/model-list/detail07/201-raycaster-bvh/index.vu
 import RaycasterSprite from "@/pages/model-list/detail07/202-raycaster-sprite/index.vue";
 import RaycasterTexture from "@/pages/model-list/detail07/203-raycaster-texture/index.vue";
 import ReadPixels from "@/pages/model-list/detail07/204-read-pixels/index.vue";
+import RendererPathtracer from "@/pages/model-list/detail07/205-renderer-pathtracer/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-renderer-pathtracer',
+    name: 'RendererPathtracer',
+    meta: {title: "webgl-renderer-pathtracer"},
+    component: RendererPathtracer,
+  },
   {
     path: '/list/webgl-read-pixels',
     name: 'ReadPixels',
