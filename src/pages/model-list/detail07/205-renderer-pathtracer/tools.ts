@@ -14,6 +14,7 @@ import {
   PathTracingSceneGenerator
   // @ts-ignore
 } from 'three-gpu-pathtracer';
+
 import GUI from 'lil-gui';
 import { showLoadingToast } from 'vant';
 import type { MeshBVH } from 'three-mesh-bvh';
@@ -117,6 +118,7 @@ export class Model {
       this.delaySamples = 5;
       this.pathTracer?.reset();
     });
+
     // load
     const toast = showLoadingToast({
       message: '加载中...',
@@ -125,7 +127,7 @@ export class Model {
     });
     this.loadModel().then(() => {
       toast.close();
-    }).catch(() => { toast.close(); })
+    }).catch(() => { toast.close(); });
 
     this.initStats();
     this.createGUI();
@@ -145,20 +147,19 @@ export class Model {
 
     const ldrawPath = "/examples/models/ldraw/officialLibrary/";
     const ldrawUrl = "models/7140-1-X-wingFighter.mpd_Packed.mpd";
-    const ldrawPromise = new LDrawLoader().setPath(ldrawPath).loadAsync(ldrawUrl).then((legoGroup) => {
-      legoGroup = LDrawUtils.mergeObject(legoGroup);
-      legoGroup.rotation.x = Math.PI;
+    const ldrawPromise = new LDrawLoader().setPath(ldrawPath).loadAsync(ldrawUrl).then((group) => {
+      group = LDrawUtils.mergeObject(group);
+      group.rotation.x = Math.PI;
 
       model = new THREE.Group();
-      model.add(legoGroup);
+      model.add(group);
       model.updateMatrixWorld();
     });
 
-    const envMapPath = "/examples/textures/equirectangular/";
-    const envMapUrl = "royal_esplanade_1k.hdr";
-    const envMapPromise = new RGBELoader().setPath(envMapPath).loadAsync(envMapUrl).then(tex => {
+    const envMapUrl = "/examples/textures/equirectangular/royal_esplanade_1k.hdr";
+    const envMapPromise = new RGBELoader().loadAsync(envMapUrl).then((texture) => {
       const envMapGenerator = new BlurredEnvMapGenerator(this.renderer);
-      const blurredEnvMap = envMapGenerator.generate(tex, 0);
+      const blurredEnvMap = envMapGenerator.generate(texture, 0);
 
       this.scene.environment = blurredEnvMap;
       envMap = blurredEnvMap;
@@ -168,8 +169,8 @@ export class Model {
 
     // Adjust camera
     const bbox = new THREE.Box3().setFromObject(model as THREE.Object3D);
-    const size = bbox.getSize( new THREE.Vector3() );
-    const radius = Math.max( size.x, Math.max( size.y, size.z ) ) * 0.4;
+    const size = bbox.getSize(new THREE.Vector3());
+    const radius = Math.max(size.x, Math.max(size.y, size.z)) * 0.4;
 
     if (this.controls) {
       this.controls.target0.copy(bbox.getCenter(new THREE.Vector3()));
@@ -178,25 +179,22 @@ export class Model {
     }
 
     // add floor
-    this.floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(),
-      new THREE.MeshStandardMaterial( {
-        side: THREE.DoubleSide,
-        roughness: 0.01,
-        metalness: 1,
-        map: this.generateRadialFloorTexture(1024),
-        transparent: true,
-      }),
-    );
+    const floorGeometry = new THREE.PlaneGeometry();
+    const floorMaterial = new THREE.MeshStandardMaterial( {
+      side: THREE.DoubleSide,
+      roughness: 0.01,
+      metalness: 1,
+      map: this.createTexture(1024),
+      transparent: true,
+    });
+    this.floor = new THREE.Mesh(floorGeometry, floorMaterial);
     this.floor.scale.setScalar(2500);
-    this.floor.rotation.x = - Math.PI / 2;
+    this.floor.rotation.x = -Math.PI / 2;
     this.floor.position.y = bbox.min.y;
     model.add(this.floor);
     model.updateMatrixWorld();
 
-    const reducer = new MaterialReducer();
-    reducer.process(model);
-
+    (new MaterialReducer()).process(model);
     const generator = new PathTracingSceneGenerator();
     const result = generator.generate(model) as IInfoType;
 
@@ -220,16 +218,20 @@ export class Model {
     material.materialIndexAttribute?.updateFrom(geometry.attributes.materialIndex);
     material.textures?.setTextures(this.renderer, 2048, 2048, textures);
     material.materials?.updateFrom(materials, textures);
+
+    this.pathTracer.material = material;
     this.pathTracer.material.envMapInfo?.updateFrom(envMap);
 
-    const scale = this.params.resolutionScale;
-    const dpr = window.devicePixelRatio;
     // 初始化执行
-    this.pathTracer?.setSize(this.width * scale * dpr, this.height * scale * dpr);
-    this.pathTracer?.reset();
+    {
+      const scale = this.params.resolutionScale;
+      const dpr = window.devicePixelRatio;
+      this.pathTracer?.setSize(this.width * scale * dpr, this.height * scale * dpr);
+      this.pathTracer?.reset();
+    }
   }
 
-  private generateRadialFloorTexture(dim: number) {
+  private createTexture(dim: number) {
     const data = new Uint8Array(dim * dim * 4);
 
     for (let x = 0; x < dim; x++) {
@@ -239,7 +241,7 @@ export class Model {
         const xCent = 2.0 * (xNorm - 0.5);
         const yCent = 2.0 * (yNorm - 0.5);
 
-        let a = Math.max( Math.min( 1.0 - Math.sqrt( xCent ** 2 + yCent ** 2 ), 1.0 ), 0.0 );
+        let a = Math.max(Math.min(1.0 - Math.sqrt(xCent ** 2 + yCent ** 2), 1.0), 0.0);
         a = a ** 1.5;
         a = a * 1.5;
         a = Math.min(a, 1.0);
@@ -252,15 +254,16 @@ export class Model {
       }
     }
 
-    const tex = new THREE.DataTexture(data, dim, dim);
-    tex.format = THREE.RGBAFormat;
-    tex.type = THREE.UnsignedByteType;
-    tex.minFilter = THREE.LinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.needsUpdate = true;
-    return tex;
+    const texture = new THREE.DataTexture(data, dim, dim);
+    texture.format = THREE.RGBAFormat;
+    texture.type = THREE.UnsignedByteType;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.needsUpdate = true;
+
+    return texture;
   }
 
   private createGUI() {
@@ -305,12 +308,13 @@ export class Model {
     this.pathTracer.material.setDefine('FEATURE_MIS', 1);
     this.pathTracer.material?.bgGradientTop?.set(0xeeeeee);
     this.pathTracer.material?.bgGradientBottom?.set(0xeaeaea);
-    this.pathTracer.camera = this.camera;
+    this.pathTracer.camera = this.camera as THREE.PerspectiveCamera;
 
-    this.fsQuad = new FullScreenQuad(new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshBasicMaterial({
       map: this.pathTracer.target.texture,
       blending: THREE.CustomBlending
-    }));
+    });
+    this.fsQuad = new FullScreenQuad(material);
   }
 
   // 创建渲染器
@@ -347,7 +351,11 @@ export class Model {
     if (!this.sceneInfo) { return; }
     // 执行渲染
     if (this.renderer && this.camera && this.pathTracer) {
-      this.renderer.toneMapping = this.params.toneMapping ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+      if (this.params.toneMapping) {
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      } else {
+        this.renderer.toneMapping = THREE.NoToneMapping;
+      }
 
       if (this.pathTracer.samples < 1.0 || ! this.params.enable) {
         this.renderer.render(this.scene, this.camera);
@@ -363,7 +371,7 @@ export class Model {
       material.metalness = this.params.metalness;
       this.floor.material = material;
 
-      this.pathTracer.material.materials.updateFrom(this.sceneInfo.materials, this.sceneInfo.textures );
+      this.pathTracer.material.materials.updateFrom(this.sceneInfo.materials, this.sceneInfo.textures);
       this.pathTracer.material.filterGlossyFactor = 0.5;
       this.pathTracer.material.physicalCamera.updateFrom(this.camera);
 
@@ -374,7 +382,7 @@ export class Model {
 
       if (this.renderer && this.fsQuad) {
         this.renderer.autoClear = false;
-        this.fsQuad.render( this.renderer );
+        this.fsQuad.render(this.renderer);
         this.renderer.autoClear = true;
       }
     } else if (this.delaySamples > 0) {
