@@ -46,7 +46,7 @@ export default defineComponent({
 
   .webgl-renderer-pathtracer-page {
     .absolute-page();
-    background-color: #fff;
+    background-color: #ddd;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
@@ -58,6 +58,10 @@ export default defineComponent({
         bottom: 0;
         left: 0;
         right: auto;
+        .gui-render {
+          padding: 6px;
+          line-height: 28px;
+        }
       }
     }
   }
