@@ -25,9 +25,16 @@ import RaycasterSprite from "@/pages/model-list/detail07/202-raycaster-sprite/in
 import RaycasterTexture from "@/pages/model-list/detail07/203-raycaster-texture/index.vue";
 import ReadPixels from "@/pages/model-list/detail07/204-read-pixels/index.vue";
 import RendererPathtracer from "@/pages/model-list/detail07/205-renderer-pathtracer/index.vue";
+import Refraction from "@/pages/model-list/detail07/206-webgl-refraction/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-refraction',
+    name: 'Refraction',
+    meta: {title: "webgl-refraction"},
+    component: Refraction,
+  },
   {
     path: '/list/webgl-renderer-pathtracer',
     name: 'RendererPathtracer',
