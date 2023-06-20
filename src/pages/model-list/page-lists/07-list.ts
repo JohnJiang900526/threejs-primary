@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "209",
+    title: "209.WEBGL 着色器 熔岩",
+    path: "/list/webgl-shader-lava",
+  },
+  {
     key: "208",
     title: "208.WEBGL 着色器",
     path: "/list/webgl-shader",
