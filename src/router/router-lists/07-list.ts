@@ -27,9 +27,16 @@ import ReadPixels from "@/pages/model-list/detail07/204-read-pixels/index.vue";
 import RendererPathtracer from "@/pages/model-list/detail07/205-renderer-pathtracer/index.vue";
 import Refraction from "@/pages/model-list/detail07/206-webgl-refraction/index.vue";
 import WebglRtt from "@/pages/model-list/detail07/207-webgl-rtt/index.vue";
+import WebglShader from "@/pages/model-list/detail07/208-webgl-shader/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-shader',
+    name: 'WebglShader',
+    meta: {title: "webgl-shader"},
+    component: WebglShader,
+  },
   {
     path: '/list/webgl-rtt',
     name: 'WebglRtt',
