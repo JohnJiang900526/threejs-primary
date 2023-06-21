@@ -61,14 +61,16 @@ export class Model {
 
     // 相机
     this.camera = new THREE.PerspectiveCamera(55, this.aspect, 1, 20000);
-    this.camera.position.set(30, 30, 100);
+    this.camera.position.set(30, 30, 200);
 
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    // 你能够垂直旋转的角度的上限，范围是0到Math.PI，其默认值为Math.PI。
     this.controls.maxPolarAngle = Math.PI * 0.495;
+    // 控制器的焦点，.object的轨道围绕它运行。 它可以在任何时候被手动更新，以更改控制器的焦点。
     this.controls.target.set(0, 10, 0);
     this.controls.minDistance = 40.0;
     this.controls.maxDistance = 200.0;
@@ -91,7 +93,7 @@ export class Model {
   }
 
   private setUpGUI() {
-    const folderSky = this.gui.addFolder( 'Sky' );
+    const folderSky = this.gui.addFolder('天空');
     folderSky.add(this.parameters, 'elevation', 0, 90, 0.1).name("太阳高度").onChange(() => {
       this.updateSun();
     });
@@ -99,7 +101,7 @@ export class Model {
       this.updateSun();
     });
 
-    const folderWater = this.gui.addFolder('Water');
+    const folderWater = this.gui.addFolder('水纹');
     const waterUniforms = (this.water as Water).material.uniforms;
     folderWater.add(waterUniforms.distortionScale, 'value', 0, 8, 0.1 ).name('失真比例');
     folderWater.add(waterUniforms.size, 'value', 0.1, 10, 0.1 ).name('水纹大小');
@@ -108,11 +110,9 @@ export class Model {
   private generateWater() {
     const loader = new THREE.TextureLoader();
     const url = "/examples/textures/waternormals.jpg";
-    const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
+    const geometry = new THREE.PlaneGeometry(10000, 10000);
 
-    this.water = new Water(
-      waterGeometry,
-      {
+    this.water = new Water(geometry, {
         textureWidth: 512,
         textureHeight: 512,
         waterNormals: loader.load(url, (texture) => {
@@ -124,13 +124,14 @@ export class Model {
         waterColor: 0x001e0f,
         distortionScale: 3.7,
         fog: this.scene.fog !== undefined
-      }
-    );
+    });
     this.water.rotation.x = -Math.PI / 2;
     this.scene.add(this.water);
   }
 
   private generateSky () {
+    this.pmremGenerator = new THREE.PMREMGenerator(this.renderer as THREE.WebGLRenderer);
+
     this.sky = new Sky();
     this.sky.scale.setScalar(10000);
     this.scene.add(this.sky);
@@ -141,7 +142,6 @@ export class Model {
     skyUniforms['mieCoefficient'].value = 0.005;
     skyUniforms['mieDirectionalG'].value = 0.8;
 
-    this.pmremGenerator = new THREE.PMREMGenerator(this.renderer as THREE.WebGLRenderer);
     this.updateSun();
   }
 
@@ -149,6 +149,7 @@ export class Model {
     const phi = THREE.MathUtils.degToRad(90 - this.parameters.elevation);
     const theta = THREE.MathUtils.degToRad(this.parameters.azimuth);
 
+    // 从球坐标中的radius、phi和theta设置该向量。
     this.sun.setFromSphericalCoords(1, phi, theta);
 
     this.sky.material.uniforms['sunPosition'].value.copy(this.sun);
@@ -197,7 +198,7 @@ export class Model {
     window.requestAnimationFrame(() => { this.animate(); });
 
     const time = performance.now() * 0.001;
-    this.mesh.position.y = Math.sin(time) * 20 + 5;
+    this.mesh.position.y = Math.sin(time) * 15 + 5;
     this.mesh.rotation.x = time * 0.5;
     this.mesh.rotation.z = time * 0.51;
 
