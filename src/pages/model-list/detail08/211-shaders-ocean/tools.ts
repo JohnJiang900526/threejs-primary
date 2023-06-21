@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { showLoadingToast } from 'vant';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Water } from 'three/examples/jsm/objects/Water';
+import { Sky } from 'three/examples/jsm/objects/Sky';
+import GUI from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -13,11 +15,18 @@ export class Model {
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
 
+  private controls: null | OrbitControls;
+  private water: null | Water;
+  private sun: THREE.Vector3;
+  private sky: Sky;
   private mesh: THREE.Mesh;
-  private mixer: THREE.AnimationMixer | null;
-  private radius: number;
-  private theta: number;
-  private prevTime: number;
+  private parameters: {
+    elevation: number,
+    azimuth: number,
+  };
+  private pmremGenerator: null | THREE.PMREMGenerator;
+  private renderTarget: undefined | THREE.WebGLRenderTarget;
+  private gui: GUI
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -28,27 +37,48 @@ export class Model {
     this.camera = null;
     this.stats = null;
 
+    this.controls = null;
+    this.water = null;
+    this.sky = new Sky();
+    this.sun = new THREE.Vector3();
     this.mesh = new THREE.Mesh();
-    this.mixer = null;
-    this.radius = 600;
-    this.theta = 0;
-    this.prevTime = Date.now();
+    this.parameters = {
+      elevation: 2,
+      azimuth: 180,
+    };
+    this.pmremGenerator = null;
+    this.renderTarget = undefined;
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: false,
+      title: "控制面板"
+    });
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf0f0f0);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 10000);
-    this.camera.position.y = 300;
+    this.camera = new THREE.PerspectiveCamera(55, this.aspect, 1, 20000);
+    this.camera.position.set(30, 30, 100);
 
-    this.generateLight();
-    this.loadModel();
     // 渲染器
     this.createRenderer();
 
+    // 控制器
+    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.maxPolarAngle = Math.PI * 0.495;
+    this.controls.target.set(0, 10, 0);
+    this.controls.minDistance = 40.0;
+    this.controls.maxDistance = 200.0;
+    this.controls.update();
+
+    this.generateWater();
+    this.generateSky();
+    this.createModel();
+
+    this.setUpGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -60,40 +90,93 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private loadModel() {
-    const loader = new GLTFLoader();
-    const url = "/examples/models/gltf/Horse.glb";
-    const toast = showLoadingToast({
-      message: '加载中...',
-      forbidClick: true,
-      loadingType: 'spinner',
+  private setUpGUI() {
+    const folderSky = this.gui.addFolder( 'Sky' );
+    folderSky.add(this.parameters, 'elevation', 0, 90, 0.1).name("太阳高度").onChange(() => {
+      this.updateSun();
     });
-    loader.load(url, (gltf) => {
-      toast.close();
+    folderSky.add(this.parameters, 'azimuth', -180, 180, 0.1).name("方位").onChange(() => {
+      this.updateSun();
+    });
 
-      // 核心
-      this.mesh = gltf.scene.children[0] as THREE.Mesh;
-      this.mesh.scale.set(1.5, 1.5, 1.5);
-      this.scene.add(this.mesh);
-      this.mixer = new THREE.AnimationMixer(this.mesh);
-      this.mixer.clipAction(gltf.animations[0]).setDuration(1).play();
-    }, undefined, () => { toast.close(); })
+    const folderWater = this.gui.addFolder('Water');
+    const waterUniforms = (this.water as Water).material.uniforms;
+    folderWater.add(waterUniforms.distortionScale, 'value', 0, 8, 0.1 ).name('失真比例');
+    folderWater.add(waterUniforms.size, 'value', 0.1, 10, 0.1 ).name('水纹大小');
   }
 
-  private generateLight() {
-    const light1 = new THREE.DirectionalLight(0xefefff, 1.5);
-    light1.position.set(1, 1, 1).normalize();
+  private generateWater() {
+    const loader = new THREE.TextureLoader();
+    const url = "/examples/textures/waternormals.jpg";
+    const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
 
-    const light2 = new THREE.DirectionalLight(0xffefef, 1.5);
-    light2.position.set(-1, -1, -1).normalize();
-    
-    this.scene.add(light1, light2);
+    this.water = new Water(
+      waterGeometry,
+      {
+        textureWidth: 512,
+        textureHeight: 512,
+        waterNormals: loader.load(url, (texture) => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+        }),
+        sunDirection: new THREE.Vector3(),
+        sunColor: 0xffffff,
+        waterColor: 0x001e0f,
+        distortionScale: 3.7,
+        fog: this.scene.fog !== undefined
+      }
+    );
+    this.water.rotation.x = -Math.PI / 2;
+    this.scene.add(this.water);
+  }
+
+  private generateSky () {
+    this.sky = new Sky();
+    this.sky.scale.setScalar(10000);
+    this.scene.add(this.sky);
+
+    const skyUniforms = this.sky.material.uniforms;
+    skyUniforms['turbidity'].value = 10;
+    skyUniforms['rayleigh'].value = 2;
+    skyUniforms['mieCoefficient'].value = 0.005;
+    skyUniforms['mieDirectionalG'].value = 0.8;
+
+    this.pmremGenerator = new THREE.PMREMGenerator(this.renderer as THREE.WebGLRenderer);
+    this.updateSun();
+  }
+
+  private updateSun() {
+    const phi = THREE.MathUtils.degToRad(90 - this.parameters.elevation);
+    const theta = THREE.MathUtils.degToRad(this.parameters.azimuth);
+
+    this.sun.setFromSphericalCoords(1, phi, theta);
+
+    this.sky.material.uniforms['sunPosition'].value.copy(this.sun);
+    if (this.water) {
+      this.water.material.uniforms['sunDirection'].value.copy(this.sun).normalize();
+    }
+
+    if (this.renderTarget) { this.renderTarget.dispose(); }
+
+    // @ts-ignore
+    this.renderTarget = this.pmremGenerator?.fromScene(this.sky);
+    if (this.renderTarget) {
+      this.scene.environment = this.renderTarget.texture;
+    }
+  }
+
+  private createModel() {
+    const geometry = new THREE.BoxGeometry(20, 20, 20);
+    const material = new THREE.MeshStandardMaterial({ roughness: 0 });
+
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(this.mesh);
   }
 
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
@@ -113,19 +196,17 @@ export class Model {
   private animate() {
     window.requestAnimationFrame(() => { this.animate(); });
 
-    // 核心
-    if (this.camera) {
-      this.theta += 0.1;
-      this.camera.position.x = this.radius * Math.sin(THREE.MathUtils.degToRad(this.theta));
-      this.camera.position.z = this.radius * Math.cos(THREE.MathUtils.degToRad(this.theta));
-      this.camera.lookAt(0, 150, 0);
+    const time = performance.now() * 0.001;
+    this.mesh.position.y = Math.sin(time) * 20 + 5;
+    this.mesh.rotation.x = time * 0.5;
+    this.mesh.rotation.z = time * 0.51;
 
-      const time = Date.now();
-      this.mixer?.update((time - this.prevTime) * 0.001);
-      this.prevTime = time;
+    if (this.water) {
+      this.water.material.uniforms['time'].value += 1.0 / 60.0;
     }
 
     this.stats?.update();
+    this.controls?.update();
     
     // 执行渲染
     if (this.renderer && this.camera) {
