@@ -29,9 +29,16 @@ import Refraction from "@/pages/model-list/detail07/206-webgl-refraction/index.v
 import WebglRtt from "@/pages/model-list/detail07/207-webgl-rtt/index.vue";
 import WebglShader from "@/pages/model-list/detail07/208-webgl-shader/index.vue";
 import WebglShaderLava from "@/pages/model-list/detail07/209-shader-lava/index.vue";
+import WebglShader2 from "@/pages/model-list/detail07/210-webgl-shader2/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-shader2',
+    name: 'WebglShader2',
+    meta: {title: "webgl-shader2"},
+    component: WebglShader2,
+  },
   {
     path: '/list/webgl-shader-lava',
     name: 'WebglShaderLava',
