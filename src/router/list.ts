@@ -10,6 +10,7 @@ import routerList04 from "@/router/router-lists/04-list";
 import routerList05 from "@/router/router-lists/05-list";
 import routerList06 from "@/router/router-lists/06-list";
 import routerList07 from "@/router/router-lists/07-list";
+import routerList08 from "@/router/router-lists/08-list";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -24,6 +25,7 @@ const routes: RouteRecordRaw[] = [
     meta: {title: "模型列表"},
     component: List,
     children: [
+      ...routerList08,
       ...routerList07,
       ...routerList06,
       ...routerList05,
