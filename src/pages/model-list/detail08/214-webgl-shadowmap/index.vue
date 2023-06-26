@@ -44,7 +44,7 @@ export default defineComponent({
 
   .webgl-shadowmap-page {
     .absolute-page();
-    background-color: #8FBCD4;
+    background-color: #59472b;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
