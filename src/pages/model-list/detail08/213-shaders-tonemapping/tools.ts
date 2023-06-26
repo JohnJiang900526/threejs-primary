@@ -154,7 +154,7 @@ export class Model {
   private initComposer() {
     const height = this.height || 1;
 
-    const parameters: {[key: string]: any} = { 
+    const parameters: THREE.WebGLRenderTargetOptions = { 
       minFilter: THREE.LinearFilter, 
       magFilter: THREE.LinearFilter, 
       format: THREE.RGBAFormat,
@@ -177,7 +177,13 @@ export class Model {
 
 
     const hdrRenderTarget = new THREE.WebGLRenderTarget(this.windowThirdX, height, parameters);
+    // 效果合成器（EffectComposer）
+    // 用于在three.js中实现后期处理效果。该类管理了产生最终视觉效果的后期处理过程链。 
+    // 后期处理过程根据它们添加/插入的顺序来执行，最后一个过程会被自动渲染到屏幕上。
     this.dynamicHdrEffectComposer = new EffectComposer(this.renderer as THREE.WebGLRenderer, hdrRenderTarget);
+    // .setSize ( width : Integer, height : Integer ) : undefined
+    // width -- EffectComposer的宽度。
+    // height -- EffectComposer的高度。
     this.dynamicHdrEffectComposer.setSize(this.width, height);
     this.hdrEffectComposer = new EffectComposer(this.renderer as THREE.WebGLRenderer, hdrRenderTarget);
 
@@ -194,6 +200,9 @@ export class Model {
     this.bloomPass = new BloomPass();
     const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
 
+    // .addPass ( pass : Pass ) : undefined
+    // pass -- 将被添加到过程链的过程
+    // 将传入的过程添加到过程链。
     this.dynamicHdrEffectComposer.addPass(skyboxPass);
     this.dynamicHdrEffectComposer.addPass(scenePass);
     this.dynamicHdrEffectComposer.addPass(this.adaptToneMappingPass);
@@ -214,14 +223,14 @@ export class Model {
   }
 
   private getBackground() {
-    const r = '/examples/textures/cube/MilkyWay/';
+    const path = '/examples/textures/cube/MilkyWay/';
     const urls = [ 
       'dark-s_px.jpg', 'dark-s_nx.jpg',
       'dark-s_py.jpg', 'dark-s_ny.jpg',
       'dark-s_pz.jpg', 'dark-s_nz.jpg',
     ];
 
-    const textureCube = (new THREE.CubeTextureLoader()).setPath(r).load(urls);
+    const textureCube = (new THREE.CubeTextureLoader()).setPath(path).load(urls);
     textureCube.encoding = THREE.sRGBEncoding;
     this.sceneCube.background = textureCube;
     return textureCube;
@@ -271,21 +280,19 @@ export class Model {
     });
 
     {
-      {
-        const quadBG = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), this.currentLuminanceMat);
-        quadBG.position.z = -500;
-        quadBG.position.x = -this.width * 0.5 + this.width * 0.05;
-        quadBG.scale.set(this.width, this.height, 1);
-        this.debugScene.add(quadBG);
-      }
+      const quadBG = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), this.currentLuminanceMat);
+      quadBG.position.z = -500;
+      quadBG.position.x = -this.width * 0.5 + this.width * 0.05;
+      quadBG.scale.set(this.width, this.height, 1);
+      this.debugScene.add(quadBG);
+    }
 
-      {
-        const quadBG = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), this.adaptiveLuminanceMat);
-        quadBG.position.z = -500;
-        quadBG.position.x = -this.width * 0.5 + this.width * 0.15;
-        quadBG.scale.set(this.width, window.innerHeight, 1);
-        this.debugScene.add(quadBG);
-      }
+    {
+      const quadBG = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), this.adaptiveLuminanceMat);
+      quadBG.position.z = -500;
+      quadBG.position.x = -this.width * 0.5 + this.width * 0.15;
+      quadBG.scale.set(this.width, window.innerHeight, 1);
+      this.debugScene.add(quadBG);
     }
   }
 
@@ -396,8 +403,6 @@ export class Model {
       sphereAtmoMesh.scale.set(1.05, 1.05, 1.05);
       this.scene.add(sphereAtmoMesh);
     }
-
-
   }
 
   private generateLight() {
@@ -427,10 +432,7 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
-  // 持续动画
-  private animate() {
-    window.requestAnimationFrame(() => { this.animate(); });
-
+  private render() {
     if (this.bloomPass) {
       // @ts-ignore
       this.bloomPass.combineUniforms['strength'].value = this.params.bloomAmount;
@@ -461,9 +463,15 @@ export class Model {
     }
 
     this.directionalLight.intensity = this.params.sunLight;
+  }
+
+  // 持续动画
+  private animate() {
+    window.requestAnimationFrame(() => { this.animate(); });
 
     this.controls?.update();
     this.stats?.update();
+    this.render();
     
     // 执行渲染
     if (this.renderer && this.camera) {
