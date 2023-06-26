@@ -3,8 +3,22 @@ import type { RouteRecordRaw } from "vue-router";
 import ShadersOcean from "@/pages/model-list/detail08/211-shaders-ocean/index.vue";
 import ShadersSky from "@/pages/model-list/detail08/212-shaders-sky/index.vue";
 import ShadersTonemapping from "@/pages/model-list/detail08/213-shaders-tonemapping/index.vue";
+import Shadowmap from "@/pages/model-list/detail08/214-webgl-shadowmap/index.vue";
+import ShadowmapPerformance from "@/pages/model-list/detail08/215-shadowmap-performance/index.vue";
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-shadowmap-performance',
+    name: 'ShadowmapPerformance',
+    meta: {title: "webgl-shadowmap-performance"},
+    component: ShadowmapPerformance,
+  },
+  {
+    path: '/list/webgl-shadowmap',
+    name: 'Shadowmap',
+    meta: {title: "webgl-shadowmap"},
+    component: Shadowmap,
+  },
   {
     path: '/list/webgl-shaders-tonemapping',
     name: 'ShadersTonemapping',
