@@ -5,8 +5,16 @@ import ShadersSky from "@/pages/model-list/detail08/212-shaders-sky/index.vue";
 import ShadersTonemapping from "@/pages/model-list/detail08/213-shaders-tonemapping/index.vue";
 import Shadowmap from "@/pages/model-list/detail08/214-webgl-shadowmap/index.vue";
 import ShadowmapPerformance from "@/pages/model-list/detail08/215-shadowmap-performance/index.vue";
+import ShadowmapPointlight from "@/pages/model-list/detail08/216-shadowmap-pointlight/index.vue";
+
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-shadowmap-pointlight',
+    name: 'ShadowmapPointlight',
+    meta: {title: "webgl-shadowmap-pointlight"},
+    component: ShadowmapPointlight,
+  },
   {
     path: '/list/webgl-shadowmap-performance',
     name: 'ShadowmapPerformance',
