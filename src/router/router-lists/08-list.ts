@@ -7,9 +7,16 @@ import Shadowmap from "@/pages/model-list/detail08/214-webgl-shadowmap/index.vue
 import ShadowmapPerformance from "@/pages/model-list/detail08/215-shadowmap-performance/index.vue";
 import ShadowmapPointlight from "@/pages/model-list/detail08/216-shadowmap-pointlight/index.vue";
 import ShadowmapViewer from "@/pages/model-list/detail08/217-shadowmap-viewer/index.vue";
+import ShadowmapContact from "@/pages/model-list/detail08/218-shadow-contact/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-shadow-contact',
+    name: 'ShadowmapContact',
+    meta: {title: "webgl-shadow-contact"},
+    component: ShadowmapContact,
+  },
   {
     path: '/list/webgl-shadowmap-viewer',
     name: 'ShadowmapViewer',

@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "218",
+    title: "218.WEBGL 阴影关联",
+    path: "/list/webgl-shadow-contact",
+  },
+  {
     key: "217",
     title: "217.WEBGL 阴影查看器",
     path: "/list/webgl-shadowmap-viewer",
