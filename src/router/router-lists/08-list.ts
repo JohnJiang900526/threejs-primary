@@ -11,9 +11,16 @@ import ShadowContact from "@/pages/model-list/detail08/218-shadow-contact/index.
 import ShadowmapVSM from "@/pages/model-list/detail08/219-shadowmap-vsm/index.vue";
 import ShadowMesh from "@/pages/model-list/detail08/220-shadow-mesh/index.vue";
 import SkinningSimple from "@/pages/model-list/detail08/221-skinning-simple/index.vue";
+import Sprites from "@/pages/model-list/detail08/222-webgl-sprites/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-sprites',
+    name: 'Sprites',
+    meta: {title: "webgl-sprites"},
+    component: Sprites,
+  },
   {
     path: '/list/webgl-skinning-simple',
     name: 'SkinningSimple',
