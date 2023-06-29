@@ -9,9 +9,16 @@ import ShadowmapPointlight from "@/pages/model-list/detail08/216-shadowmap-point
 import ShadowmapViewer from "@/pages/model-list/detail08/217-shadowmap-viewer/index.vue";
 import ShadowContact from "@/pages/model-list/detail08/218-shadow-contact/index.vue";
 import ShadowmapVSM from "@/pages/model-list/detail08/219-shadowmap-vsm/index.vue";
+import ShadowMesh from "@/pages/model-list/detail08/220-shadow-mesh/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-shadow-mesh',
+    name: 'ShadowMesh',
+    meta: {title: "webgl-shadow-mesh"},
+    component: ShadowMesh,
+  },
   {
     path: '/list/webgl-shadowmap-vsm',
     name: 'ShadowmapVSM',
