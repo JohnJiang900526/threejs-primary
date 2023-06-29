@@ -110,12 +110,14 @@ export class Model {
     const geometry = new THREE.TorusKnotGeometry(25, 8, 75, 20);
     const material = new THREE.MeshPhongMaterial({
       color: 0x999999,
+      // .specular高亮的程度，越高的值越闪亮。默认值为 30。
       shininess: 0,
+      // 材质的高光颜色。默认值为0x111111（深灰色）的颜色Color。
       specular: 0x222222
     });
 
     this.torusKnot = new THREE.Mesh(geometry, material);
-    this.torusKnot.scale.multiplyScalar( 1 / 18 );
+    this.torusKnot.scale.multiplyScalar(1 / 18);
     this.torusKnot.position.y = 3;
     this.torusKnot.castShadow = true;
     this.torusKnot.receiveShadow = true;
