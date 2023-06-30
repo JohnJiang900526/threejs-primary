@@ -10,6 +10,36 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "230",
+    title: "230.WEBGL 水流图",
+    path: "/list/webgl-water-flowmap",
+  },
+  {
+    key: "229",
+    title: "229.WEBGL 水流",
+    path: "/list/webgl-water",
+  },
+  {
+    key: "228",
+    title: "228.WEBGL 视频全景",
+    path: "/list/webgl-video-panorama-equirectangular",
+  },
+  {
+    key: "227",
+    title: "227.WEBGL 视频运动",
+    path: "/list/webgl-video-kinect",
+  },
+  {
+    key: "226",
+    title: "226.WEBGL 小径",
+    path: "/list/webgl-trails",
+  },
+  {
+    key: "225",
+    title: "225.WEBGL 色调映射",
+    path: "/list/webgl-tonemapping",
+  },
+  {
     key: "224",
     title: "224.WEBGL 测试记忆2",
     path: "/list/webgl-test-memory2",

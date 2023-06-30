@@ -14,9 +14,51 @@ import SkinningSimple from "@/pages/model-list/detail08/221-skinning-simple/inde
 import Sprites from "@/pages/model-list/detail08/222-webgl-sprites/index.vue";
 import TestMemory from "@/pages/model-list/detail08/223-test-memory/index.vue";
 import TestMemory2 from "@/pages/model-list/detail08/224-test-memory2/index.vue";
+import Tonemapping from "@/pages/model-list/detail08/225-webgl-tonemapping/index.vue";
+import Trails from "@/pages/model-list/detail08/226-webgl-trails/index.vue";
+import VideoKinect from "@/pages/model-list/detail08/227-video-kinect/index.vue";
+import VideoEquirectangular from "@/pages/model-list/detail08/228-video-panorama-equirectangular/index.vue";
+import Water from "@/pages/model-list/detail08/229-webgl-water/index.vue";
+import WaterFlowMap from "@/pages/model-list/detail08/230-water-flowmap/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-water-flowmap',
+    name: 'WaterFlowMap',
+    meta: {title: "webgl-water-flowmap"},
+    component: WaterFlowMap,
+  },
+  {
+    path: '/list/webgl-water',
+    name: 'Water',
+    meta: {title: "webgl-water"},
+    component: Water,
+  },
+  {
+    path: '/list/webgl-video-panorama-equirectangular',
+    name: 'VideoEquirectangular',
+    meta: {title: "webgl-video-panorama-equirectangular"},
+    component: VideoEquirectangular,
+  },
+  {
+    path: '/list/webgl-video-kinect',
+    name: 'VideoKinect',
+    meta: {title: "webgl-video-kinect"},
+    component: VideoKinect,
+  },
+  {
+    path: '/list/webgl-trails',
+    name: 'Trails',
+    meta: {title: "webgl-trails"},
+    component: Trails,
+  },
+  {
+    path: '/list/webgl-tonemapping',
+    name: 'Tonemapping',
+    meta: {title: "webgl-tonemapping"},
+    component: Tonemapping,
+  },
   {
     path: '/list/webgl-test-memory2',
     name: 'TestMemory2',
