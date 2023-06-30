@@ -13,9 +13,16 @@ import ShadowMesh from "@/pages/model-list/detail08/220-shadow-mesh/index.vue";
 import SkinningSimple from "@/pages/model-list/detail08/221-skinning-simple/index.vue";
 import Sprites from "@/pages/model-list/detail08/222-webgl-sprites/index.vue";
 import TestMemory from "@/pages/model-list/detail08/223-test-memory/index.vue";
+import TestMemory2 from "@/pages/model-list/detail08/224-test-memory2/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-test-memory2',
+    name: 'TestMemory2',
+    meta: {title: "webgl-test-memory2"},
+    component: TestMemory2,
+  },
   {
     path: '/list/webgl-test-memory',
     name: 'TestMemory',

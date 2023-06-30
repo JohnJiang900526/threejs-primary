@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "224",
+    title: "224.WEBGL 测试记忆2",
+    path: "/list/webgl-test-memory2",
+  },
+  {
     key: "223",
     title: "223.WEBGL 测试记忆",
     path: "/list/webgl-test-memory",

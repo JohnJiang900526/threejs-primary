@@ -3,8 +3,8 @@
 </script>
 
 <template>
-  <div class="webgl-test-memory-page">
-    <Page title="webgl-test-memory">
+  <div class="webgl-test-memory2-page">
+    <Page title="webgl-test-memory2">
       <div ref="container" class="key-frame-page-inner">
       </div>
     </Page>
@@ -29,7 +29,9 @@ export default defineComponent({
     // 渲染入口
     render() {
       objModel = new Model(this.$refs.container as HTMLDivElement);
-      objModel.init();
+      setTimeout(() => {
+        objModel?.init();
+      }, 0);
     },
   },
   // 卸载前函数
@@ -43,9 +45,9 @@ export default defineComponent({
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .webgl-test-memory-page {
+  .webgl-test-memory2-page {
     .absolute-page();
-    background-color: #a0a0a0;
+    background-color: #fff;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
