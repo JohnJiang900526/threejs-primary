@@ -11,12 +11,12 @@ export interface listType {
 const list: listType[] = [
   {
     key: "240",
-    title: "240.WEBGL 节点点",
+    title: "240.WEBGL nodes点",
     path: "/list/webgl-nodes-points",
   },
   {
     key: "239",
-    title: "239.WEBGL 节点演示",
+    title: "239.WEBGL nodes演练",
     path: "/list/webgl-nodes-playground",
   },
   {
