@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { nodeFrame } from 'three/examples/jsm/renderers/webgl/nodes/WebGLNodes';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
+import { showLoadingToast } from 'vant';
+
 
 export class Model {
   private width: number;
@@ -29,18 +34,25 @@ export class Model {
   }
 
   init() {
-    // 场景
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000000);
-
-    // 相机
-    this.camera = new THREE.PerspectiveCamera(45, this.aspect, 1, 200);
-    this.camera.position.set(0, 25, 0);
-
     // 渲染器
     this.createRenderer();
 
+    // 场景
+    this.scene = new THREE.Scene();
+
+    // 相机
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.1, 20);
+    this.camera.position.set(-0.75, 0.7, 1.25);
+
+    this.generateTexture();
+    this.loadModel();
+
+    // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.enableDamping = true;
+    this.controls.minDistance = 1;
+    this.controls.maxDistance = 10;
+    this.controls.target.set(0, 0.35, 0);
     this.controls.update();
 
     this.initStats();
@@ -54,9 +66,35 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private loadModel() {
+    const loader = new GLTFLoader();
+    const url = "/examples/models/gltf/SheenChair.glb";
+
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
+    loader.load(url, (gltf) => {
+      toast.close();
+      this.scene.add(gltf.scene);
+    }, undefined, () => { toast.close(); });
+  }
+
+  private generateTexture() {
+    const environment = new RoomEnvironment();
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer as THREE.WebGLRenderer);
+
+    this.scene.background = new THREE.Color(0xbbbbbb);
+    this.scene.environment = pmremGenerator.fromScene(environment).texture;
+  }
+
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1;
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
@@ -77,6 +115,7 @@ export class Model {
     this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
+    nodeFrame.update();
     this.stats?.update();
     this.controls?.update();
 
