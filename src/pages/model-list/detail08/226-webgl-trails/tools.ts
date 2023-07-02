@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export class Model {
   private width: number;
@@ -13,7 +12,7 @@ export class Model {
   private stats: null | Stats;
   private animateNumber: number;
 
-  private controls: null | OrbitControls;
+  private clock: THREE.Clock;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -25,23 +24,22 @@ export class Model {
     this.stats = null;
     this.animateNumber = 0;
 
-    this.controls = null;
+    this.clock = new THREE.Clock();
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xffffff);
+    this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 10000);
-    this.camera.position.z = 200;
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.1, 10);
+    this.camera.position.set(0, 0, 1);
 
+    this.createMesh();
     // 渲染器
     this.createRenderer();
 
-    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.update();
 
     this.initStats();
     this.animate();
@@ -54,9 +52,40 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private createMesh() {
+    const colorArray = [
+      new THREE.Color(0xff0080), 
+      new THREE.Color(0xffffff), 
+      new THREE.Color(0x8000ff),
+    ];
+    const positions: number[] = [];
+    const colors: number[] = [];
+
+    for (let i = 0; i < 100; i ++) {
+      positions.push(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+      const clr = colorArray[Math.floor(Math.random() * colorArray.length)];
+      colors.push(clr.r, clr.g, clr.b);
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({ 
+      size: 4, 
+      vertexColors: true, 
+      depthTest: false, 
+      sizeAttenuation: false 
+    });
+
+    const mesh = new THREE.Points(geometry, material);
+    this.scene.add(mesh);
+  }
+
   // 创建渲染器
   private createRenderer() {
-    this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
+    this.renderer.autoClearColor = false;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
@@ -77,8 +106,10 @@ export class Model {
     this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
+    const time = this.clock.getElapsedTime();
+		this.scene.rotation.y = time * 0.5;
+
     this.stats?.update();
-    this.controls?.update();
 
     // 执行渲染
     if (this.renderer && this.camera) {
