@@ -45,7 +45,7 @@ export default defineComponent({
 
   .webgl-tonemapping-page {
     .absolute-page();
-    background-color: #a0a0a0;
+    background-color: #c4ceda;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
