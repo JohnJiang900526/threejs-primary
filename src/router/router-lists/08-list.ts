@@ -20,9 +20,80 @@ import VideoKinect from "@/pages/model-list/detail08/227-video-kinect/index.vue"
 import VideoEquirectangular from "@/pages/model-list/detail08/228-video-panorama-equirectangular/index.vue";
 import Water from "@/pages/model-list/detail08/229-webgl-water/index.vue";
 import WaterFlowMap from "@/pages/model-list/detail08/230-water-flowmap/index.vue";
+import GltfIridescence from "@/pages/model-list/detail08/231-gltf-iridescence/index.vue";
+import GltfTransmission from "@/pages/model-list/detail08/232-gltf-transmission/index.vue";
+import GltfSheen from "@/pages/model-list/detail08/233-gltf-sheen/index.vue";
+import LoaderMaterialx from "@/pages/model-list/detail08/234-loader-materialx/index.vue";
+import InstanceUniform from "@/pages/model-list/detail08/235-materials-instance-uniform/index.vue";
+import PhysicalClearcoat from "@/pages/model-list/detail08/236-materials-physical-clearcoat/index.vue";
+import Standard from "@/pages/model-list/detail08/237-materials-standard/index.vue";
+import Noise from "@/pages/model-list/detail08/238-materialx-noise/index.vue";
+import Playground from "@/pages/model-list/detail08/239-nodes-playground/index.vue";
+import Points from "@/pages/model-list/detail08/240-nodes-points/index.vue";
+
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-nodes-points',
+    name: 'Points',
+    meta: {title: "webgl-nodes-points"},
+    component: Points,
+  },
+  {
+    path: '/list/webgl-nodes-playground',
+    name: 'Playground',
+    meta: {title: "webgl-nodes-playground"},
+    component: Playground,
+  },
+  {
+    path: '/list/webgl-materials-noise',
+    name: 'Noise',
+    meta: {title: "webgl-materials-noise"},
+    component: Noise,
+  },
+  {
+    path: '/list/webgl-materials-standard',
+    name: 'Standard',
+    meta: {title: "webgl-materials-standard"},
+    component: Standard,
+  },
+  {
+    path: '/list/webgl-materials-physical-clearcoat',
+    name: 'PhysicalClearcoat',
+    meta: {title: "webgl-materials-physical-clearcoat"},
+    component: PhysicalClearcoat,
+  },
+  {
+    path: '/list/webgl-materials-instance-uniform',
+    name: 'InstanceUniform',
+    meta: {title: "webgl-materials-instance-uniform"},
+    component: InstanceUniform,
+  },
+  {
+    path: '/list/webgl-loader-materialx',
+    name: 'LoaderMaterialx',
+    meta: {title: "webgl-loader-materialx"},
+    component: LoaderMaterialx,
+  },
+  {
+    path: '/list/webgl-gltf-sheen',
+    name: 'GltfSheen',
+    meta: {title: "webgl-gltf-sheen"},
+    component: GltfSheen,
+  },
+  {
+    path: '/list/webgl-gltf-transmission',
+    name: 'GltfTransmission',
+    meta: {title: "webgl-gltf-transmission"},
+    component: GltfTransmission,
+  },
+  {
+    path: '/list/webgl-gltf-iridescence',
+    name: 'GltfIridescence',
+    meta: {title: "webgl-gltf-iridescence"},
+    component: GltfIridescence,
+  },
   {
     path: '/list/webgl-water-flowmap',
     name: 'WaterFlowMap',

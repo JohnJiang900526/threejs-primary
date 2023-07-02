@@ -10,6 +10,56 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "240",
+    title: "240.WEBGL 节点点",
+    path: "/list/webgl-nodes-points",
+  },
+  {
+    key: "239",
+    title: "239.WEBGL 节点演示",
+    path: "/list/webgl-nodes-playground",
+  },
+  {
+    key: "238",
+    title: "238.WEBGL 材质噪声",
+    path: "/list/webgl-materials-noise",
+  },
+  {
+    key: "237",
+    title: "237.WEBGL 材质标准化",
+    path: "/list/webgl-materials-standard",
+  },
+  {
+    key: "236",
+    title: "236.WEBGL 材料物理透明涂层",
+    path: "/list/webgl-materials-physical-clearcoat",
+  },
+  {
+    key: "235",
+    title: "235.WEBGL 材质实例化uniform",
+    path: "/list/webgl-materials-instance-uniform",
+  },
+  {
+    key: "234",
+    title: "234.WEBGL 材质加载器",
+    path: "/list/webgl-loader-materialx",
+  },
+  {
+    key: "233",
+    title: "233.WEBGL gltf光泽",
+    path: "/list/webgl-gltf-sheen",
+  },
+  {
+    key: "232",
+    title: "232.WEBGL gltf变速器",
+    path: "/list/webgl-gltf-transmission",
+  },
+  {
+    key: "231",
+    title: "231.WEBGL gltf虹彩",
+    path: "/list/webgl-gltf-iridescence",
+  },
+  {
     key: "230",
     title: "230.WEBGL 水流图",
     path: "/list/webgl-water-flowmap",
