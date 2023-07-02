@@ -6,6 +6,7 @@ import { MaterialXLoader } from 'three/examples/jsm/loaders/MaterialXLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { nodeFrame } from 'three/examples/jsm/renderers/webgl/nodes/WebGLNodes';
+import { showLoadingToast } from 'vant';
 
 const SAMPLE_PATH = 'https://raw.githubusercontent.com/materialx/MaterialX/main/resources/Materials/Examples/StandardSurface/';
 
@@ -72,7 +73,14 @@ export class Model {
     this.camera = new THREE.PerspectiveCamera(45, this.aspect, 0.25, 1000);
     this.camera.position.set(0, 3, 50);
 
-    this.loadModel();
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
+    this.loadModel().then(() => {
+      toast.close();
+    }).catch(() => { toast.close(); });
 
     // 渲染器
     this.createRenderer();
@@ -139,11 +147,11 @@ export class Model {
     const DIST_Y = 4;
 
     const lineCount = Math.floor(this.models.length / COLUMN_COUNT) - 1.5;
-    const offsetX = (DIST_X * ( COLUMN_COUNT - 1 ) ) * - 0.5;
-    const offsetY = (DIST_Y * lineCount ) * 0.5;
+    const offsetX = (DIST_X * ( COLUMN_COUNT - 1)) * -0.5;
+    const offsetY = (DIST_Y * lineCount) * 0.5;
 
     this.models.forEach((model, i) => {
-      model.position.x = (( i % COLUMN_COUNT) * DIST_X) + offsetX;
+      model.position.x = ((i % COLUMN_COUNT) * DIST_X) + offsetX;
       model.position.y = (Math.floor(i / COLUMN_COUNT) * -DIST_Y) + offsetY;
     });
   }
