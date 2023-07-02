@@ -6,6 +6,10 @@
   <div class="webgl-video-panorama-equirectangular-page">
     <Page title="webgl-video-panorama-equirectangular">
       <div ref="container" class="key-frame-page-inner">
+        <video ref="video" loop muted crossOrigin="anonymous" playsinline style="display:none">
+          <source src="/examples/textures/pano.webm">
+          <source src="/examples/textures/pano.mp4">
+        </video>
       </div>
     </Page>
   </div>
@@ -28,7 +32,9 @@ export default defineComponent({
   methods: {
     // 渲染入口
     render() {
-      objModel = new Model(this.$refs.container as HTMLDivElement);
+      const container = this.$refs.container as HTMLDivElement;
+      const video = this.$refs.video as HTMLVideoElement;
+      objModel = new Model(container, video);
       objModel.init();
     },
   },
@@ -45,7 +51,7 @@ export default defineComponent({
 
   .webgl-video-panorama-equirectangular-page {
     .absolute-page();
-    background-color: #a0a0a0;
+    background-color: #000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
