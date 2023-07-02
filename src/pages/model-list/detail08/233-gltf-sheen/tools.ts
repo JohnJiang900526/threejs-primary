@@ -83,6 +83,11 @@ export class Model {
 
   private generateTexture() {
     const environment = new RoomEnvironment();
+    // 从cubeMap环境纹理生成预过滤的Mipmapped辐射环境贴图（PMREM）。
+    // 这允许基于材质粗糙度快速访问不同级别的模糊。它被打包成一种特殊的CubeUV格式，
+    // 使我们能够执行自定义插值，从而支持RGBE等非线性格式。与传统的mipmap链不同，
+    // 它只向下到LOD_MIN级别（如上），然后以相同的LOD_MIN分辨率创建额外的、甚至更多的过滤“mip”，
+    // 与更高的粗糙度级别相关。通过这种方式，我们在限制采样计算的同时，保持了平滑插值漫射照明的分辨率。
     const pmremGenerator = new THREE.PMREMGenerator(this.renderer as THREE.WebGLRenderer);
 
     this.scene.background = new THREE.Color(0xbbbbbb);
