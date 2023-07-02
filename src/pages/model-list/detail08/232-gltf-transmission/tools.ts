@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { NodeMaterial, float, texture, mul } from 'three/examples/jsm/nodes/Nodes';
+import { nodeFrame } from 'three/examples/jsm/renderers/webgl/nodes/WebGLNodes';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { showLoadingToast } from 'vant';
 
 export class Model {
   private width: number;
@@ -14,6 +20,8 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private clock: THREE.Clock;
+  private mixer: null | THREE.AnimationMixer;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,6 +34,8 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.clock = new THREE.Clock();
+    this.mixer = null;
   }
 
   init() {
@@ -34,13 +44,26 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(45, this.aspect, 1, 200);
-    this.camera.position.set(0, 25, 0);
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.25, 20);
+    this.camera.position.set(0, 0.4, 1.7);
+
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
+    this.loadModel().then(() => {
+      toast.close();
+    }).catch(() => { toast.close(); });
 
     // 渲染器
     this.createRenderer();
 
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.enableDamping = true;
+    this.controls.minDistance = 0.5;
+    this.controls.maxDistance = 1;
+    this.controls.target.set(0, 0.1, 0);
     this.controls.update();
 
     this.initStats();
@@ -54,9 +77,49 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private async loadModel() {
+    const rgbLoader = new RGBELoader().setPath('/examples/textures/equirectangular/');
+    const gltfLoader = new GLTFLoader().setPath('/examples/models/gltf/');
+    gltfLoader.setDRACOLoader( new DRACOLoader().setDecoderPath('/examples/js/libs/draco/gltf/'));
+
+    const [envMap, gltf] = await Promise.all([
+      rgbLoader.loadAsync('royal_esplanade_1k.hdr'),
+      gltfLoader.loadAsync('IridescentDishWithOlives.glb'),
+    ]);
+
+    envMap.mapping = THREE.EquirectangularReflectionMapping;
+    this.scene.background = envMap;
+    this.scene.environment = envMap;
+
+    const glassMesh = gltf.scene.getObjectByName('glassCover') as THREE.Mesh;
+    const material = glassMesh.material as THREE.MeshPhysicalMaterial;
+
+    if (material && material.transmission > 0) {
+      const nodeMaterial = NodeMaterial.fromMaterial(material);
+      // @ts-ignore
+      nodeMaterial.transmissionNode = float(1);
+      // @ts-ignore
+      nodeMaterial.iorNode = float(1.5);
+      // @ts-ignore
+      nodeMaterial.thicknessNode = mul(texture(material.thicknessMap).g, 0.1);
+      // @ts-ignore
+      nodeMaterial.transmissionMap = null;
+      // @ts-ignore
+      nodeMaterial.thicknessMap = null;
+      glassMesh.material = nodeMaterial;
+    }
+
+    this.mixer = new THREE.AnimationMixer(gltf.scene);
+    this.mixer.clipAction(gltf.animations[0]).play();
+    this.scene.add(gltf.scene);
+  }
+
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1;
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
@@ -77,8 +140,10 @@ export class Model {
     this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
+    nodeFrame.update()
     this.stats?.update();
     this.controls?.update();
+    this.mixer?.update(this.clock.getDelta());
 
     // 执行渲染
     if (this.renderer && this.camera) {
