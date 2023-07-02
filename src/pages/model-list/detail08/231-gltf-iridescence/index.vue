@@ -45,7 +45,7 @@ export default defineComponent({
 
   .webgl-gltf-iridescence-page {
     .absolute-page();
-    background-color: #000;
+    background-color: #fff;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
