@@ -1,6 +1,30 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { 
+  MeshStandardNodeMaterial, Node, 
+  NodeUpdateType, uniform, 
+  cubeTexture, add, mul, type Swizzable, NodeBuilder 
+} from 'three/examples/jsm/nodes/Nodes';
+import { nodeFrame } from 'three/examples/jsm/renderers/webgl/nodes/WebGLNodes';
+
+class InstanceUniformNode extends Node {
+  uniformNode: Swizzable;
+  constructor() {
+    super('vec3');
+    this.updateType = NodeUpdateType.OBJECT;
+    this.uniformNode = uniform(new THREE.Color());
+  }
+
+  update(frame: any) {
+    // @ts-ignore
+    this.uniformNode.value.copy(frame.object.color);
+  }
+
+  generate(builder: NodeBuilder, output: string) {
+    return this.uniformNode.build(builder, output);
+  }
+}
 
 export class Model {
   private width: number;
@@ -14,6 +38,8 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private pointLight: THREE.PointLight;
+  private objects: THREE.Mesh[];
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,6 +52,8 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.pointLight = new THREE.PointLight();
+    this.objects = [];
   }
 
   init() {
@@ -34,13 +62,17 @@ export class Model {
     this.scene.background = new THREE.Color(0x000000);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(45, this.aspect, 1, 200);
-    this.camera.position.set(0, 25, 0);
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 4000);
+    this.camera.position.set(0, 600, 1500);
 
+    this.createLight();
+    this.createGrid();
+    this.createMesh();
     // 渲染器
     this.createRenderer();
 
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+		this.controls.maxDistance = 2000;
     this.controls.update();
 
     this.initStats();
@@ -52,6 +84,70 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  private createLight() {
+    const ambient = new THREE.AmbientLight(0x111111);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.125);
+
+    dirLight.position.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+    dirLight.position.normalize();
+
+    const geometry = new THREE.SphereGeometry(4, 8, 8);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const meth = new THREE.Mesh(geometry, material);
+
+    if (this.pointLight) { this.pointLight.dispose(); }
+    this.pointLight = new THREE.PointLight(0xffffff, 1);
+    this.pointLight.add(meth);
+    
+    this.scene.add(ambient, dirLight, this.pointLight);
+  }
+
+  private createMesh () {
+    const path = '/examples/textures/cube/SwedishRoyalCastle/';
+    const urls = [
+      'px.jpg', 'nx.jpg',
+      'py.jpg', 'ny.jpg',
+      'pz.jpg', 'nz.jpg',
+    ];
+    const cubeMap = (new THREE.CubeTextureLoader()).setPath(path).load(urls);
+    const instanceUniform = new InstanceUniformNode();
+    const cubeTextureNode = cubeTexture(cubeMap);
+
+    const material = new MeshStandardNodeMaterial();
+    material.colorNode = add(instanceUniform, cubeTextureNode);
+    material.emissiveNode = mul(instanceUniform, cubeTextureNode);
+
+    const geometry = new THREE.SphereGeometry(70, 32, 16);
+    for (let i = 0; i < 12; i++) {
+      this.addMesh(geometry, material);
+    }
+  }
+
+  private addMesh(geometry: THREE.SphereGeometry, material: MeshStandardNodeMaterial) {
+    const mesh = new THREE.Mesh(geometry, material);
+
+    // @ts-ignore
+    mesh.color = new THREE.Color(Math.random() * 0xffffff);
+    mesh.position.x = (this.objects.length % 4 ) * 200 - 300;
+    mesh.position.z = Math.floor(this.objects.length / 4 ) * 200 - 200;
+
+    mesh.rotation.set(
+      Math.random() * 200 - 100,
+      Math.random() * 200 - 100,
+      Math.random() * 200 - 100,
+    );
+
+    this.objects.push(mesh);
+    this.scene.add(mesh);
+  }
+
+  private createGrid() {
+    const helper = new THREE.GridHelper(1000, 40, 0x303030, 0x303030);
+    helper.position.y = -75;
+    this.scene.add(helper);
   }
 
   // 创建渲染器
@@ -77,6 +173,22 @@ export class Model {
     this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
+    {
+      const timer = 0.0001 * Date.now();
+
+      this.objects.forEach((object) => {
+        object.rotation.x += 0.01;
+        object.rotation.y += 0.005;
+      });
+
+      this.pointLight.position.set(
+        Math.sin( timer * 7 ) * 300,
+        Math.cos( timer * 5 ) * 400,
+        Math.cos( timer * 3 ) * 300,
+      );
+    }
+
+    nodeFrame.update();
     this.stats?.update();
     this.controls?.update();
 
