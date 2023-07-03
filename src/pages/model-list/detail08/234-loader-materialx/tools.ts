@@ -8,8 +8,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { nodeFrame } from 'three/examples/jsm/renderers/webgl/nodes/WebGLNodes';
 import { showLoadingToast } from 'vant';
 
-const SAMPLE_PATH = 'https://raw.githubusercontent.com/materialx/MaterialX/main/resources/Materials/Examples/StandardSurface/';
-
 export class Model {
   private width: number;
   private height: number;
@@ -39,24 +37,15 @@ export class Model {
     this.controls = null;
     this.samples = [
       'standard_surface_brass_tiled.mtlx',
-      //'standard_surface_brick_procedural.mtlx',
       'standard_surface_carpaint.mtlx',
-      //'standard_surface_chess_set.mtlx',
       'standard_surface_chrome.mtlx',
       'standard_surface_copper.mtlx',
-      //'standard_surface_default.mtlx',
-      //'standard_surface_glass.mtlx',
-      //'standard_surface_glass_tinted.mtlx',
       'standard_surface_gold.mtlx',
       'standard_surface_greysphere.mtlx',
-      //'standard_surface_greysphere_calibration.mtlx',
       'standard_surface_jade.mtlx',
-      //'standard_surface_look_brass_tiled.mtlx',
-      //'standard_surface_look_wood_tiled.mtlx',
       'standard_surface_marble_solid.mtlx',
       'standard_surface_metal_brushed.mtlx',
       'standard_surface_plastic.mtlx',
-      //'standard_surface_thin_film.mtlx',
       'standard_surface_velvet.mtlx',
       'standard_surface_wood_tiled.mtlx',
     ];
@@ -122,6 +111,7 @@ export class Model {
   private async addSample(sample: string) {
     const model = this.prefab.clone();
     const loader = new MaterialXLoader();
+    const path = "/examples/jsm/materialx/";
 
     this.models.push(model);
     this.scene.add(model);
@@ -129,7 +119,7 @@ export class Model {
     this.updateModelsAlign();
 
     // @ts-ignore
-    const material = await loader.setPath(SAMPLE_PATH).loadAsync(sample).then(({ materials }) => {
+    const material = await loader.setPath(path).loadAsync(sample).then(({ materials }) => {
       return Object.values(materials).pop();
     });
 
