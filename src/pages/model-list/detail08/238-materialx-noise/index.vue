@@ -45,7 +45,7 @@ export default defineComponent({
 
   .webgl-materialx-noise-page {
     .absolute-page();
-    background-color: #000;
+    background-color: #aec5d5;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
