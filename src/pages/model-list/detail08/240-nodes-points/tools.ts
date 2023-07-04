@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as Nodes from 'three/examples/jsm/nodes/Nodes';
+import { nodeFrame } from 'three/examples/jsm/renderers/webgl/nodes/WebGLNodes';
+import { TeapotGeometry } from 'three/examples/jsm/geometries/TeapotGeometry';
+import GUI from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -14,6 +18,9 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private material: Nodes.PointsNodeMaterial;
+  private gui: GUI;
+  private lerpPosition: Nodes.UniformNode
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,24 +33,41 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.material = new Nodes.PointsNodeMaterial({
+      depthWrite: false,
+      transparent: true,
+      // @ts-ignore
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending
+    });
+
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: false,
+      title: "控制面板",
+    });
+    this.lerpPosition = new Nodes.UniformNode(0);
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000000);
+    this.scene.fog = new THREE.FogExp2(0x000000, 0.001);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(45, this.aspect, 1, 200);
-    this.camera.position.set(0, 25, 0);
+    this.camera = new THREE.PerspectiveCamera(55, this.aspect, 1, 2000);
+    this.camera.position.set(0, 100, -300);
 
+    this.createPoints();
     // 渲染器
     this.createRenderer();
 
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.maxDistance = 1000;
     this.controls.update();
 
     this.initStats();
+    this.setUpGUI();
     this.animate();
     this.resize();
   }
@@ -52,6 +76,73 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  // 核心
+  private createPoints() {
+    const teapotGeometry = new TeapotGeometry(50, 7);
+    const sphereGeometry = new THREE.SphereGeometry(50, 130, 16);
+    const geometry = new THREE.BufferGeometry();
+
+    // buffers
+    const speed: number[] = [];
+    const intensity: number[] = [];
+    const size: number[] = [];
+
+    const positionAttribute = teapotGeometry.getAttribute('position');
+    const particleCount = positionAttribute.count;
+
+    for (let i = 0; i < particleCount; i ++) {
+      speed.push(20 + Math.random() * 50);
+      intensity.push(Math.random() * .15);
+      size.push(30 + Math.random() * 230);
+    }
+    geometry.setAttribute('position', positionAttribute);
+    geometry.setAttribute('targetPosition', sphereGeometry.getAttribute('position'));
+    geometry.setAttribute('particleSpeed', new THREE.Float32BufferAttribute(speed, 1));
+    geometry.setAttribute('particleIntensity', new THREE.Float32BufferAttribute(intensity, 1));
+    geometry.setAttribute('particleSize', new THREE.Float32BufferAttribute(size, 1));
+
+    const fireMap = new THREE.TextureLoader().load('/examples/textures/sprites/firetorch_1.jpg');
+    // nodes
+    const targetPosition = new Nodes.AttributeNode('targetPosition', 'vec3');
+    const particleSpeed = new Nodes.AttributeNode('particleSpeed', 'float');
+    const particleIntensity = new Nodes.AttributeNode('particleIntensity', 'float');
+    const particleSize = new Nodes.AttributeNode('particleSize', 'float');
+    const time = new Nodes.TimerNode();
+    const spriteSheetCount = new Nodes.ConstNode(new THREE.Vector2(6, 6));
+    const fireUV = new Nodes.SpriteSheetUVNode(
+      spriteSheetCount, // count
+      new Nodes.PointUVNode(), // uv
+      new Nodes.OperatorNode('*', time, particleSpeed) // current frame
+    );
+    const fireSprite = new Nodes.TextureNode(fireMap, fireUV);
+    const fire = new Nodes.OperatorNode('*', fireSprite, particleIntensity);
+
+    this.lerpPosition = new Nodes.UniformNode(0);
+    const positionNode = new Nodes.MathNode(
+      Nodes.MathNode.MIX, new Nodes.PositionNode(Nodes.PositionNode.LOCAL), 
+      targetPosition, this.lerpPosition
+    );
+
+    this.material.colorNode = fire;
+    this.material.sizeNode = particleSize;
+    this.material.positionNode = positionNode;
+
+    const particles = new THREE.Points(geometry, this.material);
+    this.scene.add(particles);
+  }
+
+  private setUpGUI() {
+    const guiNode = { lerpPosition: 0 };
+
+    this.gui.add( this.material, 'sizeAttenuation' ).onChange(() => {
+      this.material.needsUpdate = true;
+    });
+
+    this.gui.add( guiNode, 'lerpPosition', 0, 1 ).onChange(() => {
+      this.lerpPosition.value = guiNode.lerpPosition;
+    });
   }
 
   // 创建渲染器
@@ -77,6 +168,7 @@ export class Model {
     this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
+    nodeFrame.update();
     this.stats?.update();
     this.controls?.update();
 
