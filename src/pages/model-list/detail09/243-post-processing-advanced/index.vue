@@ -3,8 +3,8 @@
 </script>
 
 <template>
-  <div class="webgl-post-processing-page">
-    <Page title="webgl-post-processing">
+  <div class="webgl-post-processing-advanced-page">
+    <Page title="webgl-post-processing-advanced">
       <div ref="container" class="key-frame-page-inner">
       </div>
     </Page>
@@ -43,9 +43,9 @@ export default defineComponent({
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .webgl-post-processing-page {
+  .webgl-post-processing-advanced-page {
     .absolute-page();
-    background-color: #aec5d5;
+    background-color: #000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
