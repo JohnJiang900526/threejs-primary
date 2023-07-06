@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass';
+import GUI from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -14,6 +18,13 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private composer: null | EffectComposer;
+  private mesh: THREE.Mesh;
+  private afterimagePass: null | AfterimagePass;
+  private params: {
+    enable: boolean
+  }
+  private gui: GUI;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,24 +37,40 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.composer = null;
+    this.mesh = new THREE.Mesh();
+    this.afterimagePass = null;
+    this.params = {
+      enable: true
+    };
+    this.gui = new GUI({
+      container: this.container,
+      autoPlace: false,
+      title: "控制面板"
+    });
   }
 
   init() {
-    // 场景
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xaec5d5);
-
-    // 相机
-    this.camera = new THREE.PerspectiveCamera(27, this.aspect, 1, 10000);
-    this.camera.position.z = 2000;
-
     // 渲染器
     this.createRenderer();
 
+    // 场景
+    this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.Fog(0x000000, 1, 1000);
+
+    // 相机
+    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 1, 1000);
+    this.camera.position.z = 400;
+
+    this.createMesh();
+    this.initComposer();
+
+    // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.update();
 
     this.initStats();
+    this.setUpGUI();
     this.animate();
     this.resize();
   }
@@ -52,6 +79,32 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  private setUpGUI() {
+    if (this.afterimagePass) {
+      // @ts-ignore
+      this.gui.add(this.afterimagePass.uniforms['damp'], 'value', 0, 1, 0.001);
+    }
+    this.gui.add(this.params, 'enable');
+  }
+
+  private initComposer() {
+    if (this.renderer && this.camera) {
+      this.composer = new EffectComposer(this.renderer);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
+  
+      this.afterimagePass = new AfterimagePass();
+      this.composer.addPass(this.afterimagePass);
+    }
+  }
+
+  private createMesh() {
+    const geometry = new THREE.BoxGeometry(150, 150, 150, 2, 2, 2);
+    const material = new THREE.MeshNormalMaterial();
+
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.scene.add( this.mesh );
   }
 
   // 创建渲染器
@@ -77,12 +130,20 @@ export class Model {
     this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
+    {
+      this.mesh.rotation.x += 0.005;
+			this.mesh.rotation.y += 0.01;
+    }
     this.stats?.update();
     this.controls?.update();
 
-    // 执行渲染
-    if (this.renderer && this.camera) {
-      this.renderer.render(this.scene, this.camera);
+    if (this.params.enable) {
+      this.composer?.render();
+    } else {
+      // 执行渲染
+      if (this.renderer && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
     }
   }
 
@@ -104,9 +165,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
-      }
+      this.renderer?.setSize(this.width, this.height);
+      this.composer?.setSize(this.width, this.height);
     };
   }
 }
