@@ -10,6 +10,31 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "250",
+    title: "250.WEBGL 后处理glitch",
+    path: "/list/webgl-post-processing-glitch",
+  },
+  {
+    key: "249",
+    title: "249.WEBGL 后处理fxaa",
+    path: "/list/webgl-post-processing-fxaa",
+  },
+  {
+    key: "248",
+    title: "248.WEBGL 后处理dof2",
+    path: "/list/webgl-post-processing-dof2",
+  },
+  {
+    key: "247",
+    title: "247.WEBGL 后处理dof",
+    path: "/list/webgl-post-processing-dof",
+  },
+  {
+    key: "246",
+    title: "246.WEBGL 后处理crossfade",
+    path: "/list/webgl-post-processing-crossfade",
+  },
+  {
     key: "245",
     title: "245.WEBGL 后处理backgrounds",
     path: "/list/webgl-post-processing-backgrounds",
