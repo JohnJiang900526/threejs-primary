@@ -45,7 +45,7 @@ export default defineComponent({
 
   .webgl-post-processing-crossfade-page {
     .absolute-page();
-    background-color: #aec5d5;
+    background-color: #000;
     .key-frame-page-inner {
       position: relative;
       .width-and-height();
