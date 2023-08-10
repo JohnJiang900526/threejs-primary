@@ -132,13 +132,13 @@ export class Model {
     const geometry3 = geometry1.clone();
 
     const color = new THREE.Color();
-    const positions1 = geometry1.attributes.position;
-    const positions2 = geometry2.attributes.position;
-    const positions3 = geometry3.attributes.position;
+    const positions1 = geometry1.attributes.position as THREE.BufferAttribute;
+    const positions2 = geometry2.attributes.position as THREE.BufferAttribute;
+    const positions3 = geometry3.attributes.position as THREE.BufferAttribute;
 
-    const color1 = geometry1.attributes.color;
-    const color2 = geometry2.attributes.color;
-    const color3 = geometry3.attributes.color;
+    const color1 = geometry1.attributes.color as THREE.BufferAttribute;
+    const color2 = geometry2.attributes.color as THREE.BufferAttribute;
+    const color3 = geometry3.attributes.color as THREE.BufferAttribute;
 
     for (let i = 0; i < count; i++) {
       // .setHSL ( h : Float, s : Float, l : Float, colorSpace : string = LinearSRGBColorSpace )

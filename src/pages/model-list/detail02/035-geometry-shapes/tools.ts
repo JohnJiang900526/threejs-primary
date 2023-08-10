@@ -272,8 +272,8 @@ export class Model {
     // ShapeGeometry(shapes : Array, curveSegments : Integer)
     // shapes — 一个单独的shape，或者一个包含形状的Array
     // curveSegments - Integer - 每一个形状的分段数，默认值为12
-    let geometry = new THREE.ShapeGeometry(shape);
-    let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({side: THREE.DoubleSide, map: this.texture}));
+    let geometry: THREE.ShapeGeometry | THREE.ExtrudeGeometry = new THREE.ShapeGeometry(shape);
+    let mesh: THREE.Mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({side: THREE.DoubleSide, map: this.texture}));
     mesh.position.set(x, y, z -175);
     mesh.rotation.set(rx, ry, rz);
     mesh.scale.set(s, s, s);

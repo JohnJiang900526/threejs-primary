@@ -94,7 +94,7 @@ export class Model {
     // 返回一个新的 BufferGeometry ，其中包含将所有（在容差范围内的）具有相似属性的顶点合并而成的顶点
     const dodecahedronGeometry = BufferGeometryUtils.mergeVertices(baseDodecahedronGeometry);
     const vertices = [];
-    const positionAttribute = dodecahedronGeometry.getAttribute('position');
+    const positionAttribute = dodecahedronGeometry.getAttribute('position') as THREE.BufferAttribute;
     for ( let i = 0; i < positionAttribute.count; i++) {
       const vertex = new THREE.Vector3();
       // .fromBufferAttribute ( attribute : BufferAttribute, index : Integer ) : this

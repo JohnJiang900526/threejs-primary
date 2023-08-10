@@ -139,7 +139,9 @@ export class Model {
     const dict:{[key: string]: {[key: string]: number}} = {};
 
     const count = this.bufferGeo.attributes.position.count;
+    // @ts-ignore
     const array = this.bufferGeo.attributes.position.array;
+    // @ts-ignore
     const normArray = this.bufferGeo.attributes.normal.array;
 
     for (let i = 0; i < count; i += 3) {

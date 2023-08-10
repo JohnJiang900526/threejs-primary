@@ -150,8 +150,8 @@ export class Model {
       this.lut.setMax(2000);
 
       const geometry = this.mesh.geometry;
-      const pressures = geometry.attributes.pressure;
-      const colors = geometry.attributes.color;
+      const pressures = geometry.attributes.pressure as THREE.BufferAttribute;
+      const colors = geometry.attributes.color as THREE.BufferAttribute;
 
       for ( let i = 0; i < pressures.array.length; i++ ) {
         const colorValue = pressures.array[i];

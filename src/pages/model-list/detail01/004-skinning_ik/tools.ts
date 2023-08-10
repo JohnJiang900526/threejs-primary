@@ -86,17 +86,13 @@ export class Model {
     // 定义渲染器的输出编码。默认为THREE.LinearEncoding
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     // 是否使用物理上正确的光照模式。 默认是false
+    // @ts-ignore
     this.renderer.physicallyCorrectLights = true;
     // 一个canvas HTML对象，渲染器在其上绘制输出
     this.container.appendChild(this.renderer.domElement);
 
     // 创建统计信息 性能统计信息
-    this.stats = Stats();
-    // 输出的dom对象也可以使用domElement
-    const dom = this.stats.dom;
-    // 其position属性默认是fixed，根据需要可以设置为reletive | absolute | fixed
-    dom.style.position = "absolute";
-    this.container.appendChild(this.stats.dom);
+    this.initStats();
 
     // 创建一个控制器
     // Orbit controls（轨道控制器）可以使得相机围绕目标进行轨道运动
@@ -198,6 +194,16 @@ export class Model {
     });
 
     this.resize();
+  }
+
+  // 性能统计
+  private initStats() {
+    // @ts-ignore
+    this.stats = Stats();
+    // @ts-ignore
+    this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
+    this.container.appendChild(this.stats.domElement);
   }
 
   // 开启动画

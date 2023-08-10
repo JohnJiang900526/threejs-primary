@@ -321,8 +321,10 @@ export class Model {
 
   // 性能统计
   private initStats() {
-    this.stats = Stats();
+    this.stats = new Stats();
+    // @ts-ignore
     this.stats.domElement.style.position = "absolute";
+    // @ts-ignore
     this.container.appendChild(this.stats.domElement);
 
     if (this.renderer) {
@@ -370,7 +372,7 @@ export class Model {
         this.sphereOnLine.position.copy(intersect.pointOnLine);
         
         const index = intersect.faceIndex as number;
-        const colors = obj.geometry.getAttribute('instanceColorStart');
+        const colors = obj.geometry.getAttribute('instanceColorStart') as THREE.BufferAttribute;
         const color = new THREE.Color().setRGB(
           colors.getX(index), 
           colors.getY(index), 

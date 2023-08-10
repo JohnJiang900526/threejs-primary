@@ -82,7 +82,7 @@ export class Model {
     this.geometry = new THREE.PlaneGeometry(20000, 20000, this.worldWidth - 1, this.worldDepth - 1);
     this.geometry.rotateX(-Math.PI / 2);
     // 设置位置属性
-    const position = this.geometry.attributes.position;
+    const position = this.geometry.attributes.position as THREE.BufferAttribute;
     // @ts-ignore
     position.usage = THREE.DynamicDrawUsage;
     for (let i = 0; i < position.count; i++) {
@@ -119,7 +119,7 @@ export class Model {
       const delta = this.clock.getDelta();
       const time = this.clock.getElapsedTime() * 10;
 
-      const position = this.geometry.attributes.position;
+      const position = this.geometry.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < position.count; i++) {
         // .setY ( index : Integer, y : Float ) : this
         // 设置给定索引的矢量的第二维数据（设置 Y 值）

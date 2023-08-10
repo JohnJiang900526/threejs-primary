@@ -287,6 +287,7 @@ export class Model {
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
     // 是否使用物理上正确的光照模式。 默认是false
+    // @ts-ignore
     this.renderer.physicallyCorrectLights = true;
     // 定义渲染器的输出编码。默认为THREE.LinearEncoding
     this.renderer.outputEncoding = THREE.sRGBEncoding;

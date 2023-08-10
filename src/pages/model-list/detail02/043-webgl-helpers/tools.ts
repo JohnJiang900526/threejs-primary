@@ -121,7 +121,7 @@ export class Model {
       // 线段（LineSegments）
       // 在若干对的顶点之间绘制的一系列的线
       // 它和Line几乎是相同的，唯一的区别是它在渲染时使用的是gl.LINES， 而不是gl.LINE_STRIP
-      let line = new THREE.LineSegments(wireframe);
+      let line:THREE.LineSegments = new THREE.LineSegments(wireframe);
       // .depthTest : Boolean
       // 是否在渲染此材质时启用深度测试。默认为 true
       (line.material as THREE.Material).depthTest = false;

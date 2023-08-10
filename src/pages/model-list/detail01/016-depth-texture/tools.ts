@@ -208,7 +208,9 @@ export class Model {
     // 深度纹理（DepthTexture）
     // format -- 这个值必须是DepthFormat（默认值）或者DepthStencilFormat。 
     // 请参阅format constants（格式常量）来了解详细信息。
+    // @ts-ignore
     this.target.depthTexture.format = format;
+    // @ts-ignore
     this.target.depthTexture.type = type;
   }
 

@@ -97,7 +97,7 @@ export class Model {
 
   // Y方向翻转
   private flipY(geometry: THREE.PlaneGeometry) {
-    const uv = geometry.attributes.uv;
+    const uv = geometry.attributes.uv as THREE.BufferAttribute;
     for (let i = 0; i < uv.count; i++) {
       uv.setY(i, 1 - uv.getY(i));
     }

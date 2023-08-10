@@ -104,7 +104,7 @@ export class Model {
     // 将该向量的x、y和z值同时设置为等于传入的scalar
     this.line.scale.setScalar(0.05);
     this.scene.add(this.line);
-    this.updateColors(this.line.geometry.getAttribute("color"));
+    this.updateColors(this.line.geometry.getAttribute("color") as THREE.BufferAttribute);
 
     // 创建纹理
     // FramebufferTexture This class can only be used in combination with WebGLRenderer.copyFramebufferToTexture().
@@ -187,7 +187,8 @@ export class Model {
 
   // 性能统计
   private initStats() {
-    this.stats = Stats();
+    this.stats = new Stats();
+    // @ts-ignore
     const dom = this.stats.domElement;
     dom.style.position = "absolute";
     dom.style.right = "0px";
@@ -206,7 +207,7 @@ export class Model {
 
     // 执行渲染
     if (this.scene && this.camera && this.renderer && this.line && this.texture) {
-      const colorAttribute = this.line.geometry.getAttribute('color');
+      const colorAttribute = this.line.geometry.getAttribute('color') as THREE.BufferAttribute;
       this.updateColors(colorAttribute);
 
       // .clear ( color : Boolean, depth : Boolean, stencil : Boolean ) : undefined

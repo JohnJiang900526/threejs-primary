@@ -315,7 +315,7 @@ export class Model {
       // 这一方法不支持其父级被旋转过或者被位移过的物体
       (this.mouseHelper as THREE.Mesh).lookAt(n);
 
-      const positions = (this.line as THREE.Line).geometry.attributes.position;
+      const positions = (this.line as THREE.Line).geometry.attributes.position as THREE.BufferAttribute;
       // .setXYZ ( index : Integer, x : Float, y : Float, z : Float ) : this
       // 设置给定索引的矢量的第一、二、三维数据（设置 X、Y 和 Z 值）
       positions.setXYZ(0, p.x, p.y, p.z);

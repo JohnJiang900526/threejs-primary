@@ -33,7 +33,7 @@ export class Model {
   init(fn1?: () => void, fn2?: (e: ErrorEvent) => void) {
     // 默认的物体的up方向，同时也作为DirectionalLight、HemisphereLight和Spotlight
     // （自顶向下创建的灯光）的默认方向。 默认设为( 0, 1, 0 )
-    THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
+    THREE.Object3D.DEFAULT_UP = new THREE.Vector3(0, 0, 1);
 
     // 创建场景
     this.scene = new THREE.Scene();

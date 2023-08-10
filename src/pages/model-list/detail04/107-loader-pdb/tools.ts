@@ -162,8 +162,8 @@ export class Model {
       geometryBonds.translate(x, y, z);
 
       // 原子和label
-      let positions = geometryAtoms.getAttribute('position');
-      const colors = geometryAtoms.getAttribute('color');
+      let positions = geometryAtoms.getAttribute('position') as THREE.BufferAttribute;
+      const colors = geometryAtoms.getAttribute('color') as THREE.BufferAttribute;
       const position = new THREE.Vector3();
       const color = new THREE.Color();
       for (let i = 0; i < positions.count; i++) {
@@ -192,7 +192,7 @@ export class Model {
       }
 
       // 原子之间的接线
-      positions = geometryBonds.getAttribute('position');
+      positions = geometryBonds.getAttribute('position') as THREE.BufferAttribute;
       const start = new THREE.Vector3();
       const end = new THREE.Vector3();
       for (let i = 0; i < positions.count; i += 2) {

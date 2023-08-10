@@ -440,12 +440,12 @@ export class Model {
 
       if (this.camera) {
         if (this.camera.type === "PerspectiveCamera") {
-          this.camera.aspect = this.aspect;
+          (this.camera as THREE.PerspectiveCamera).aspect = this.aspect;
         } else if (this.camera.type === "OrthographicCamera") {
-          this.camera.left = -this.height * this.aspect;
-          this.camera.right = this.height * this.aspect;
-          this.camera.top = this.height;
-          this.camera.bottom = -this.height;
+          (this.camera as THREE.OrthographicCamera).left = -this.height * this.aspect;
+          (this.camera as THREE.OrthographicCamera).right = this.height * this.aspect;
+          (this.camera as THREE.OrthographicCamera).top = this.height;
+          (this.camera as THREE.OrthographicCamera).bottom = -this.height;
         }
 
         // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。

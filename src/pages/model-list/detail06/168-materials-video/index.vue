@@ -9,8 +9,8 @@
       </div>
 
       <video ref="video" loop crossOrigin="anonymous" playsinline style="display:none">
-        <source src="/examples/textures/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>
-        <source src="/examples/textures/sintel.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+        <source :src="'/examples/textures/sintel.ogv'" type='video/ogg; codecs="theora, vorbis"'>
+        <source :src="'/examples/textures/sintel.mp4'" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
       </video>
     </Page>
   </div>

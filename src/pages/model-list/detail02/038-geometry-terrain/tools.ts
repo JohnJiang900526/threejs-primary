@@ -80,6 +80,7 @@ export class Model {
     const geometry = new THREE.PlaneGeometry(7500, 7500, this.worldWidth - 1, this.worldDepth - 1);
 
     geometry.rotateX(-Math.PI / 2);
+    // @ts-ignore
     const vertices = geometry.attributes.position.array;
     for (let i = 0, j = 0; i < vertices.length; i++, j += 3) {
       // @ts-ignore
