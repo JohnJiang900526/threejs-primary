@@ -10,6 +10,21 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "253",
+    title: "253.WEBGL 后处理屏蔽",
+    path: "/list/webgl-post-processing-masking",
+  },
+  {
+    key: "252",
+    title: "252.WEBGL 后处理rgb半色调",
+    path: "/list/webgl-post-processing-rgb-halftone",
+  },
+  {
+    key: "251",
+    title: "251.WEBGL 后处理神的光辉",
+    path: "/list/webgl-post-processing-godrays",
+  },
+  {
     key: "250",
     title: "250.WEBGL 后处理glitch",
     path: "/list/webgl-post-processing-glitch",

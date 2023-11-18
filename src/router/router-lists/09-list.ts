@@ -9,9 +9,30 @@ import PostProcessingDof from "@/pages/model-list/detail09/247-post-processing-d
 import PostProcessingDof2 from "@/pages/model-list/detail09/248-post-processing-dof2/index.vue";
 import PostProcessingFxaa from "@/pages/model-list/detail09/249-post-processing-fxaa/index.vue";
 import PostProcessingGlitch from "@/pages/model-list/detail09/250-post-processing-glitch/index.vue";
+import PostProcessingGodrays from "@/pages/model-list/detail09/251-post-processing-godrays/index.vue";
+import PostProcessingRgbHalftone from "@/pages/model-list/detail09/252-post-processing-rgb-halftone/index.vue";
+import PostProcessingMasking from "@/pages/model-list/detail09/253-post-processing-masking/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-post-processing-masking',
+    name: 'PostProcessingMasking',
+    meta: {title: "webgl-post-processing-masking"},
+    component: PostProcessingMasking,
+  },
+  {
+    path: '/list/webgl-post-processing-rgb-halftone',
+    name: 'PostProcessingRgbHalftone',
+    meta: {title: "webgl-post-processing-rgb-halftone"},
+    component: PostProcessingRgbHalftone,
+  },
+  {
+    path: '/list/webgl-post-processing-godrays',
+    name: 'PostProcessingGodrays',
+    meta: {title: "webgl-post-processing-godrays"},
+    component: PostProcessingGodrays,
+  },
   {
     path: '/list/webgl-post-processing-glitch',
     name: 'PostProcessingGlitch',
