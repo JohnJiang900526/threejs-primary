@@ -81,11 +81,14 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 初始化作曲家
   private initComposer() {
     this.composer = new EffectComposer(this.renderer!);
     const renderPass = new RenderPass(this.scene, this.camera!);
 
+    // 添加处理过程
     this.composer.addPass(renderPass);
+    // 添加处理过程
     this.composer.addPass(this.glitchPass);
   }
 
@@ -103,8 +106,13 @@ export class Model {
         Math.random() - 0.5, 
         Math.random() - 0.5, 
         Math.random() - 0.5,
-      ).normalize();
+      );
+      // 将该向量转换为单位向量（unit vector）， 
+      // 也就是说，将该向量的方向设置为和原向量相同，但是其长度（length）为1。
+      mesh.position.normalize();
 
+      // .multiplyScalar ( s : Float ) : this
+      // 将该向量与所传入的标量s进行相乘。
       mesh.position.multiplyScalar(Math.random() * 400);
       mesh.rotation.set(
         Math.random() * 2,
@@ -118,12 +126,16 @@ export class Model {
     }
   }
 
+  // 初始化gui
   private initGUI() {
     this.gui.add(this.params, 'goWild').name("显示故障");
   }
 
   // 创建光照
   private generateLight() {
+    // 漫散射光
+    // 环境光会均匀的照亮场景中的所有物体。
+    // 环境光不能用来投射阴影，因为它没有方向
     const light1 = new THREE.AmbientLight(0x222222);
 
     this.light.position.set(1, 1, 1);
@@ -156,7 +168,8 @@ export class Model {
     this.stats?.update();
     this.controls?.update();
 
-    if (this.glitchPass.goWild !== this.params.goWild) {
+    const goWild = this.glitchPass.goWild;
+    if (goWild !== this.params.goWild) {
       this.glitchPass.goWild = this.params.goWild;
     }
 
