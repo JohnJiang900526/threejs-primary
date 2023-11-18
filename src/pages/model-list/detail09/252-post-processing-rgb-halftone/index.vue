@@ -1,7 +1,7 @@
 <template>
-  <div class="webgl-post-processing-rgb-halftone-page">
-    <Page title="webgl-post-processing-rgb-halftone">
-      <div ref="container" class="key-frame-page-inner">
+  <div class="webgl-page">
+    <Page title="252.后处理rgb半色调">
+      <div ref="container" class="page-inner">
       </div>
     </Page>
   </div>
@@ -29,10 +29,9 @@ onBeforeUnmount(() => {
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .webgl-post-processing-rgb-halftone-page {
+  .webgl-page {
     .absolute-page();
-    background-color: #aec5d5;
-    .key-frame-page-inner {
+    .page-inner {
       position: relative;
       .width-and-height();
       .lil-gui.root {
