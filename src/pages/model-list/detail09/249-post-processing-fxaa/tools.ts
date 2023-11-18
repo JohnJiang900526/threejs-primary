@@ -46,7 +46,6 @@ export class Model {
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xaec5d5);
     this.scene.add(this.group);
 
     // 相机
@@ -59,6 +58,7 @@ export class Model {
     this.createRenderer();
     this.generatePass();
 
+    // 轨道控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.update();
 
@@ -81,13 +81,19 @@ export class Model {
 
     this.fxaaPass = new ShaderPass(FXAAShader);
     const copyPass = new ShaderPass(CopyShader);
+    
+    // 效果合成器（EffectComposer）
+    // 用于在three.js中实现后期处理效果。该类管理了产生最终视觉效果的后期处理过程链。 
+    // 后期处理过程根据它们添加/插入的顺序来执行，最后一个过程会被自动渲染到屏幕上。
     this.composer1 = new EffectComposer(this.renderer!);
     this.composer1.addPass(renderPass);
     this.composer1.addPass(copyPass);
 
     const pixelRatio = this.renderer?.getPixelRatio() as number;
-    this.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / (this.width * pixelRatio );
-    this.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / (this.height * pixelRatio );
+    Object.assign(this.fxaaPass.material.uniforms['resolution'].value || {}, {
+      x: 1 / (this.width * pixelRatio ),
+      y: 1 / (this.height * pixelRatio),
+    });
 
     this.composer2 = new EffectComposer(this.renderer!);
     this.composer2.addPass(renderPass);
@@ -96,19 +102,27 @@ export class Model {
 
   // 创建需要渲染的mesh
   private createMesh() {
-    const geometry = new THREE.TetrahedronGeometry( 10 );
-    const material = new THREE.MeshStandardMaterial( { color: 0xee0808, flatShading: true } );
+    const geometry = new THREE.TetrahedronGeometry(10);
+    const material = new THREE.MeshStandardMaterial({ 
+      color: 0xee0808,
+      // 定义材质是否使用平面着色进行渲染。默认值为false
+      flatShading: true,
+    });
 
     for (let i = 0; i < 100; i++) {
       const mesh = new THREE.Mesh(geometry, material);
 
+      // 设置mesh位置
       mesh.position.set(
         Math.random() * 500 - 250,
         Math.random() * 500 - 250,
         Math.random() * 500 - 250,
       );
-      mesh.scale.setScalar( Math.random() * 2 + 1 );
+      // 设置缩放
+      mesh.scale.setScalar(Math.random() * 2 + 1);
 
+      // 设置旋转角度
+      // 物体的局部旋转，以弧度来表示。（请参阅Euler angles-欧拉角）
       mesh.rotation.set(
         Math.random() * Math.PI,
         Math.random() * Math.PI,
@@ -121,6 +135,9 @@ export class Model {
 
   // 创建灯光
   private createLight() {
+    // 半球光（HemisphereLight）
+    // 光源直接放置于场景之上，光照颜色从天空光线颜色渐变到地面光线颜色。
+    // 半球光不能投射阴影。
     const light1 = new THREE.HemisphereLight(0xffffff, 0x444444);
     light1.position.set(0, 1000, 0);
     this.scene.add(light1);
@@ -133,6 +150,7 @@ export class Model {
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    // 定义渲染器是否在渲染每一帧之前自动清除其输出
     this.renderer.autoClear = false;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
@@ -160,15 +178,23 @@ export class Model {
     const halfWidth = this.width / 2;
     this.group.rotation.y += this.clock.getDelta() * 0.1;
 
-    this.renderer?.setScissorTest(true);
-
-    this.renderer?.setScissor(0, 0, halfWidth - 2, this.height);
-    this.composer1?.render();
-
-    this.renderer?.setScissor(halfWidth, 0, halfWidth, this.height);
-    this.composer2?.render();
-
-    this.renderer?.setScissorTest(false);
+    if (this.renderer && this.composer1 && this.composer2) {
+      // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
+      this.renderer?.setScissorTest(true);
+  
+      // .setScissor ( x : Integer, y : Integer, width : Integer, height : Integer )
+      // 将剪裁区域设为(x, y)到(x + width, y + height) Sets the scissor area from
+      this.renderer?.setScissor(0, 0, halfWidth - 2, this.height);
+      this.composer1?.render();
+  
+      // .setScissor ( x : Integer, y : Integer, width : Integer, height : Integer )
+      // 将剪裁区域设为(x, y)到(x + width, y + height) Sets the scissor area from
+      this.renderer?.setScissor(halfWidth, 0, halfWidth, this.height);
+      this.composer2?.render();
+  
+      // 启用或禁用剪裁检测. 若启用，则只有在所定义的裁剪区域内的像素才会受之后的渲染器影响
+      this.renderer?.setScissorTest(false);
+    }
   }
 
   // 消除 副作用
@@ -191,14 +217,15 @@ export class Model {
 
       if (this.renderer) {
         this.renderer.setSize(this.width, this.height);
-
         this.composer1?.setSize(this.width, this.height);
 				this.composer2?.setSize(this.width, this.height);
 
 				const pixelRatio = this.renderer?.getPixelRatio() as number;
         if (this.fxaaPass) {
-          this.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / (this.width * pixelRatio);
-          this.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / (this.height * pixelRatio);
+          Object.assign(this.fxaaPass.material.uniforms['resolution'].value || {}, {
+            x: 1 / (this.width * pixelRatio ),
+            y: 1 / (this.height * pixelRatio),
+          });
         }
       }
     };
