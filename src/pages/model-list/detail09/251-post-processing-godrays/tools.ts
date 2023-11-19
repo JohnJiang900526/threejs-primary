@@ -77,6 +77,9 @@ export class Model {
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.minDistance = 50;
     this.controls.maxDistance = 500;
+    // 以下两个属性可控制轨道控制器水平旋转
+    this.controls.minPolarAngle = Math.PI/2;
+    this.controls.maxPolarAngle = Math.PI/2;
 
     this.initStats();
     this.animate();
