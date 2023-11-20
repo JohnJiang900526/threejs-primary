@@ -12,13 +12,19 @@ import PostProcessingGlitch from "@/pages/model-list/detail09/250-post-processin
 import PostProcessingGodrays from "@/pages/model-list/detail09/251-post-processing-godrays/index.vue";
 import PostProcessingRgbHalftone from "@/pages/model-list/detail09/252-post-processing-rgb-halftone/index.vue";
 import PostProcessingMasking from "@/pages/model-list/detail09/253-post-processing-masking/index.vue";
-
+import PostProcessingSsaa from "@/pages/model-list/detail09/254-post-processing-ssaa/index.vue";
 
 const routerList: RouteRecordRaw[] = [
   {
+    path: '/list/webgl-post-processing-ssaa',
+    name: 'PostProcessingSsaa',
+    meta: {title: "254.后处理ssaa"},
+    component: PostProcessingSsaa,
+  },
+  {
     path: '/list/webgl-post-processing-masking',
     name: 'PostProcessingMasking',
-    meta: {title: "webgl-post-processing-masking"},
+    meta: {title: "254.后处理 屏蔽"},
     component: PostProcessingMasking,
   },
   {

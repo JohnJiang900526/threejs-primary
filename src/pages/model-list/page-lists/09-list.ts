@@ -10,6 +10,11 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "254",
+    title: "254.WEBGL 后处理ssaa",
+    path: "/list/webgl-post-processing-ssaa",
+  },
+  {
     key: "253",
     title: "253.WEBGL 后处理屏蔽",
     path: "/list/webgl-post-processing-masking",

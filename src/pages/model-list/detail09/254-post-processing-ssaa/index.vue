@@ -1,52 +1,37 @@
-<script setup lang="ts">
-  import Page from "@/base/page/index.vue";
-</script>
-
 <template>
-  <div class="webgl-post-processing-page">
-    <Page title="webgl-post-processing">
-      <div ref="container" class="key-frame-page-inner">
+  <div class="webgl-page">
+    <Page title="254.后处理ssaa">
+      <div ref="container" class="page-inner">
       </div>
     </Page>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import Page from "@/base/page/index.vue";
 import { Model } from "./tools";
 
-let objModel: Model | null;
-export default defineComponent({
-  data() {
-    return {
-      show: false,
-    };
-  },
-  mounted() {
-    this.render();
-  },
-  methods: {
-    // 渲染入口
-    render() {
-      objModel = new Model(this.$refs.container as HTMLDivElement);
-      objModel.init();
-    },
-  },
-  // 卸载前函数
-  beforeUnmount() {
-    objModel?.dispose();
-    objModel = null;
-  }
+let objModel: Model | null = null;
+const container = ref<HTMLDivElement>(document.createElement("div"));
+
+onMounted(() => {
+  objModel = new Model(container.value);
+  objModel?.init();
+});
+
+onBeforeUnmount(() => {
+  objModel?.dispose();
+  objModel = null;
 });
 </script>
 <style lang='less'>
   @import "@/common/style/color.less";
   @import "@/common/style/mixins.less";
 
-  .webgl-post-processing-page {
+  .webgl-page {
     .absolute-page();
-    background-color: #aec5d5;
-    .key-frame-page-inner {
+    .page-inner {
       position: relative;
       .width-and-height();
       .lil-gui.root {
