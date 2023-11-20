@@ -24,7 +24,7 @@ const routerList: RouteRecordRaw[] = [
   {
     path: '/list/webgl-post-processing-rgb-halftone',
     name: 'PostProcessingRgbHalftone',
-    meta: {title: "webgl-post-processing-rgb-halftone"},
+    meta: {title: "252.后处理rgb半色调"},
     component: PostProcessingRgbHalftone,
   },
   {

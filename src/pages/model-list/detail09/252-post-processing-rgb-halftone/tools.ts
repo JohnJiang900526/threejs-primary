@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { HalftonePass } from 'three/examples/jsm/postprocessing/HalftonePass';
+import { GUI } from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -14,6 +18,25 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private clock: THREE.Clock;
+  private rotationSpeed: number;
+  private composer: null | EffectComposer;
+  private group: THREE.Group;
+  private material: THREE.ShaderMaterial;
+  private params: {
+    shape: number;
+    radius: number;
+    rotateR: number;
+    rotateB: number;
+    rotateG: number;
+    scatter: number;
+    blending: number;
+    blendingMode: number;
+    greyscale: boolean;
+    disable: boolean;
+  }
+  private gui: GUI;
+  private halftonePass: HalftonePass;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,23 +49,77 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.clock = new THREE.Clock();
+    this.rotationSpeed = Math.PI / 64;
+    this.composer = null;
+    this.group = new THREE.Group();
+    this.material = new THREE.ShaderMaterial({
+      uniforms: {},
+      vertexShader: [
+        'varying vec2 vUV;',
+        'varying vec3 vNormal;',
+        'void main() {',
+        'vUV = uv;',
+        'vNormal = vec3( normal );',
+        'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'varying vec2 vUV;',
+        'varying vec3 vNormal;',
+        'void main() {',
+        'vec4 c = vec4( abs( vNormal ) + vec3( vUV, 0.0 ), 0.0 );',
+        'gl_FragColor = c;',
+        '}'
+      ].join('\n')
+    });
+    this.params = {
+      shape: 1,
+      radius: 4,
+      rotateR: Math.PI / 12,
+      rotateB: Math.PI / 12 * 2,
+      rotateG: Math.PI / 12 * 3,
+      scatter: 0,
+      blending: 1,
+      blendingMode: 1,
+      greyscale: false,
+      disable: false,
+    };
+    this.gui = new GUI({
+      container: this.container,
+      title: "控制面板",
+      autoPlace: false,
+    });
+    this.halftonePass = new HalftonePass(0, 0, {});
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xaec5d5);
+    this.scene.background = new THREE.Color(0x444444);
+    this.scene.add(this.group);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(27, this.aspect, 1, 10000);
-    this.camera.position.z = 2000;
+    this.camera = new THREE.PerspectiveCamera(75, this.aspect, 1, 1000);
+    this.camera.position.z = 20;
 
+    // 灯光
+    this.generateLight();
+    // 地板
+    this.generateFloor();
+    // 创建模型网格
+    this.generateMesh();
     // 渲染器
     this.createRenderer();
+    // 初始化
+    this.initComposer();
 
+    // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.target.set(0, 0, 0);
     this.controls.update();
 
+    this.initGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -54,6 +131,50 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private generateMesh() {
+    for (let i = 0; i < 50; ++i) {
+      const geometry = new THREE.BoxGeometry(2, 2, 2);
+      const mesh = new THREE.Mesh(geometry, this.material);
+
+      mesh.position.set(
+        Math.random() * 16 - 8,
+        Math.random() * 16 - 8,
+        Math.random() * 16 - 8,
+      );
+      mesh.rotation.set(
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+      );
+
+      this.group.add(mesh);
+    }
+  }
+
+  private generateFloor() {
+    const geometry = new THREE.BoxGeometry(100, 1, 100);
+    const material = new THREE.MeshPhongMaterial({});
+    const floor = new THREE.Mesh(geometry, material);
+
+    floor.position.y = -10;
+    this.scene.add(floor);
+  }
+
+  private generateLight() {
+    const light = new THREE.PointLight(0xffffff, 1.0, 50, 2);
+    light.position.y = 2;
+    this.scene.add(light);
+  }
+
+  private initComposer() {
+    const renderPass = new RenderPass(this.scene, this.camera!);
+    this.halftonePass = new HalftonePass(this.width, this.height, this.params);
+    
+    this.composer = new EffectComposer(this.renderer!);
+    this.composer.addPass(renderPass);
+    this.composer.addPass(this.halftonePass);
+  }
+
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -62,10 +183,60 @@ export class Model {
     this.container.appendChild(this.renderer.domElement);
   }
 
+  private initGUI() {
+    const uniforms: any = this.halftonePass.uniforms || {};
+
+    const controller = {
+      radius: uniforms['radius'].value,
+      rotateR: uniforms['rotateR'].value / ( Math.PI / 180 ),
+      rotateG: uniforms['rotateG'].value / ( Math.PI / 180 ),
+      rotateB: uniforms['rotateB'].value / ( Math.PI / 180 ),
+      scatter: uniforms['scatter'].value,
+      shape: uniforms['shape'].value,
+      greyscale: uniforms['greyscale'].value,
+      blending: uniforms['blending'].value,
+      blendingMode: uniforms['blendingMode'].value,
+      disable: uniforms['disable'].value
+    };
+
+    const changeHandle = () => {
+      const uniforms: any = this.halftonePass.uniforms || {};
+
+      uniforms['radius'].value = controller.radius;
+      uniforms['rotateR'].value = controller.rotateR * (Math.PI / 180);
+      uniforms['rotateG'].value = controller.rotateG * (Math.PI / 180);
+      uniforms['rotateB'].value = controller.rotateB * (Math.PI / 180);
+      uniforms['scatter'].value = controller.scatter;
+      uniforms['shape'].value = controller.shape;
+      uniforms['greyscale'].value = controller.greyscale;
+      uniforms['blending'].value = controller.blending;
+      uniforms['blendingMode'].value = controller.blendingMode;
+      uniforms['disable'].value = controller.disable;
+
+      this.halftonePass.uniforms = uniforms;
+    };
+   
+    const shapeParams = {
+      'Dot': 1, 'Ellipse': 2, 'Line': 3, 'Square': 4
+    };
+    this.gui.add(controller, 'shape', shapeParams).name("形状").onChange(changeHandle);
+    this.gui.add(controller, 'radius', 1, 25).name("半径").onChange(changeHandle);
+    this.gui.add(controller, 'rotateR', 0, 90).name("旋转R").onChange(changeHandle);
+    this.gui.add(controller, 'rotateG', 0, 90).name("旋转G").onChange(changeHandle);
+    this.gui.add(controller, 'rotateB', 0, 90).name("旋转B").onChange(changeHandle);
+    this.gui.add(controller, 'scatter', 0, 1, 0.01).name("散射程度").onChange(changeHandle);
+    this.gui.add(controller, 'greyscale').name("缩放").onChange(changeHandle);
+    this.gui.add(controller, 'blending', 0, 1, 0.01).name("混合").onChange(changeHandle);
+    const blendingModeParams = {
+      'Linear': 1, 'Multiply': 2, 'Add': 3, 'Lighter': 4, 'Darker': 5
+    };
+    this.gui.add(controller, 'blendingMode', blendingModeParams).name("混合模式").onChange(changeHandle);
+    this.gui.add(controller, 'disable').name("是否禁用").onChange(changeHandle);
+  }
+
   // 性能统计
   private initStats() {
-    // @ts-ignore
-    this.stats = Stats();
+    this.stats = new Stats();
     // @ts-ignore
     this.stats.domElement.style.position = "absolute";
     // @ts-ignore
@@ -80,10 +251,9 @@ export class Model {
     this.stats?.update();
     this.controls?.update();
 
-    // 执行渲染
-    if (this.renderer && this.camera) {
-      this.renderer.render(this.scene, this.camera);
-    }
+    const delta = this.clock.getDelta();
+    this.group.rotation.y += delta * this.rotationSpeed;
+    this.composer?.render(delta);
   }
 
   // 消除 副作用
@@ -104,9 +274,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
-      }
+      this.renderer?.setSize(this.width, this.height);
+      this.composer?.setSize(this.width, this.height);
     };
   }
 }
