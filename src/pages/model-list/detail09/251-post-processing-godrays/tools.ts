@@ -63,10 +63,13 @@ export class Model {
     // 场景
     this.scene = new THREE.Scene();
 
-    // 相机
+    // 透视相机（PerspectiveCamera）
+    // 这一摄像机使用perspective projection（透视投影）来进行投影。
+    // 这一投影模式被用来模拟人眼所看到的景象，它是3D场景的渲染中使用得最普遍的投影模式。
     this.camera = new THREE.PerspectiveCamera(100, this.aspect, 1, 3000);
     this.camera.position.z = 200;
 
+    // 创建渲染模型
     this.createMesh();
     // 渲染器
     this.createRenderer();
@@ -92,73 +95,74 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private initProcess(renderTargetWidth: number, renderTargetHeight: number) {
+  // 初始化 核心逻辑 处理过程
+  private initProcess(width: number, height: number) {
+    // 渲染环境处理 场景、相机
     this.postprocessing.scene = new THREE.Scene();
     this.postprocessing.camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, -10000, 10000);
     this.postprocessing.camera.position.z = 100;
     this.postprocessing.scene.add(this.postprocessing.camera);
 
-    this.postprocessing.rtTextureColors = new THREE.WebGLRenderTarget(
-      renderTargetWidth, 
-      renderTargetHeight
-    );
-
-    this.postprocessing.rtTextureDepth = new THREE.WebGLRenderTarget(
-      renderTargetWidth, 
-      renderTargetHeight
-    );
-    this.postprocessing.rtTextureDepthMask = new THREE.WebGLRenderTarget(
-      renderTargetWidth, 
-      renderTargetHeight
-    );
+    // 材质 处理
+    this.postprocessing.rtTextureColors = new THREE.WebGLRenderTarget(width, height);
+    this.postprocessing.rtTextureDepth = new THREE.WebGLRenderTarget(width, height);
+    this.postprocessing.rtTextureDepthMask = new THREE.WebGLRenderTarget(width, height);
 
     // 乒乓渲染目标可以使用调整后的分辨率来最小化成本
-    const adjustedWidth = renderTargetWidth * this.renderTargetResolutionMultiplier;
-    const adjustedHeight = renderTargetHeight * this.renderTargetResolutionMultiplier;
+    const adjustedWidth = width * this.renderTargetResolutionMultiplier;
+    const adjustedHeight = height * this.renderTargetResolutionMultiplier;
     this.postprocessing.rtTextureGodRays1 = new THREE.WebGLRenderTarget(adjustedWidth, adjustedHeight);
     this.postprocessing.rtTextureGodRays2 = new THREE.WebGLRenderTarget(adjustedWidth, adjustedHeight);
 
-    // god-ray shaders
-    const godraysMaskShader = GodRaysDepthMaskShader;
-    this.postprocessing.godrayMaskUniforms = THREE.UniformsUtils.clone(godraysMaskShader.uniforms);
-    this.postprocessing.materialGodraysDepthMask = new THREE.ShaderMaterial({
-      uniforms: this.postprocessing.godrayMaskUniforms,
-      vertexShader: godraysMaskShader.vertexShader,
-      fragmentShader: godraysMaskShader.fragmentShader
-    });
+    // god-ray shaders(着色器)
+    {
+      const godraysMaskShader = GodRaysDepthMaskShader;
+      this.postprocessing.godrayMaskUniforms = THREE.UniformsUtils.clone(godraysMaskShader.uniforms);
+      this.postprocessing.materialGodraysDepthMask = new THREE.ShaderMaterial({
+        uniforms: this.postprocessing.godrayMaskUniforms,
+        vertexShader: godraysMaskShader.vertexShader,
+        fragmentShader: godraysMaskShader.fragmentShader
+      });
+    }
 
-    const godraysGenShader = GodRaysGenerateShader;
-    this.postprocessing.godrayGenUniforms = THREE.UniformsUtils.clone(godraysGenShader.uniforms);
-    this.postprocessing.materialGodraysGenerate = new THREE.ShaderMaterial({
-      uniforms: this.postprocessing.godrayGenUniforms,
-      vertexShader: godraysGenShader.vertexShader,
-      fragmentShader: godraysGenShader.fragmentShader
-    });
+    {
+      const godraysGenShader = GodRaysGenerateShader;
+      this.postprocessing.godrayGenUniforms = THREE.UniformsUtils.clone(godraysGenShader.uniforms);
+      this.postprocessing.materialGodraysGenerate = new THREE.ShaderMaterial({
+        uniforms: this.postprocessing.godrayGenUniforms,
+        vertexShader: godraysGenShader.vertexShader,
+        fragmentShader: godraysGenShader.fragmentShader
+      });
+    }
 
-    const godraysCombineShader = GodRaysCombineShader;
-    this.postprocessing.godrayCombineUniforms = THREE.UniformsUtils.clone(godraysCombineShader.uniforms);
-    this.postprocessing.materialGodraysCombine = new THREE.ShaderMaterial({
-      uniforms: this.postprocessing.godrayCombineUniforms,
-      vertexShader: godraysCombineShader.vertexShader,
-      fragmentShader: godraysCombineShader.fragmentShader
-    });
+    {
+      const godraysCombineShader = GodRaysCombineShader;
+      this.postprocessing.godrayCombineUniforms = THREE.UniformsUtils.clone(godraysCombineShader.uniforms);
+      this.postprocessing.materialGodraysCombine = new THREE.ShaderMaterial({
+        uniforms: this.postprocessing.godrayCombineUniforms,
+        vertexShader: godraysCombineShader.vertexShader,
+        fragmentShader: godraysCombineShader.fragmentShader
+      });
+    }
 
-    const godraysFakeSunShader = GodRaysFakeSunShader;
-    this.postprocessing.godraysFakeSunUniforms = THREE.UniformsUtils.clone(godraysFakeSunShader.uniforms);
-    this.postprocessing.materialGodraysFakeSun = new THREE.ShaderMaterial({
-      uniforms: this.postprocessing.godraysFakeSunUniforms,
-      vertexShader: godraysFakeSunShader.vertexShader,
-      fragmentShader: godraysFakeSunShader.fragmentShader
-    });
+    {
+      const godraysFakeSunShader = GodRaysFakeSunShader;
+      this.postprocessing.godraysFakeSunUniforms = THREE.UniformsUtils.clone(godraysFakeSunShader.uniforms);
+      this.postprocessing.materialGodraysFakeSun = new THREE.ShaderMaterial({
+        uniforms: this.postprocessing.godraysFakeSunUniforms,
+        vertexShader: godraysFakeSunShader.vertexShader,
+        fragmentShader: godraysFakeSunShader.fragmentShader
+      });
+    }
 
+    // 颜色和强度 调整
     this.postprocessing.godraysFakeSunUniforms.bgColor.value.setHex(this.bgColor);
     this.postprocessing.godraysFakeSunUniforms.sunColor.value.setHex(this.sunColor);
     this.postprocessing.godrayCombineUniforms.fGodRayIntensity.value = 0.75;
 
-    this.postprocessing.quad = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.0, 1.0),
-      this.postprocessing.materialGodraysGenerate
-    );
+    // 创建mesh并且渲染到场景
+    const geometry = new THREE.PlaneGeometry(1.0, 1.0);
+    this.postprocessing.quad = new THREE.Mesh(geometry, this.postprocessing.materialGodraysGenerate);
     this.postprocessing.quad.position.z = -9900;
     this.postprocessing.scene.add(this.postprocessing.quad);
   }
@@ -228,6 +232,7 @@ export class Model {
     this.postprocessing.scene.overrideMaterial = null;
   }
 
+  // 渲染的核心逻辑
   private render() {
     const time = Date.now() / 4000;
     this.sphereMesh.position.x = this.orbitRadius * Math.cos(time);
@@ -244,7 +249,8 @@ export class Model {
         this.sunPosition.z,
         1,
       );
-      this.clipPosition.applyMatrix4(this.camera!.matrixWorldInverse ).applyMatrix4(this.camera!.projectionMatrix);
+      // 这是matrixWorld矩阵的逆矩阵。 MatrixWorld包含了相机的世界变换矩阵。
+      this.clipPosition.applyMatrix4(this.camera!.matrixWorldInverse).applyMatrix4(this.camera!.projectionMatrix);
 
       // perspective divide (produce NDC space)
       this.clipPosition.x /= this.clipPosition.w;
