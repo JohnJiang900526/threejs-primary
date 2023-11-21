@@ -3,7 +3,7 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { HalftonePass } from 'three/examples/jsm/postprocessing/HalftonePass';
+import { HalftonePass, type HalftonePassParameters } from 'three/examples/jsm/postprocessing/HalftonePass';
 import { GUI } from 'lil-gui';
 
 export class Model {
@@ -23,18 +23,7 @@ export class Model {
   private composer: null | EffectComposer;
   private group: THREE.Group;
   private material: THREE.ShaderMaterial;
-  private params: {
-    shape: number;
-    radius: number;
-    rotateR: number;
-    rotateB: number;
-    rotateG: number;
-    scatter: number;
-    blending: number;
-    blendingMode: number;
-    greyscale: boolean;
-    disable: boolean;
-  }
+  private params: HalftonePassParameters
   private gui: GUI;
   private halftonePass: HalftonePass;
   constructor(container: HTMLDivElement) {
@@ -55,23 +44,23 @@ export class Model {
     this.group = new THREE.Group();
     this.material = new THREE.ShaderMaterial({
       uniforms: {},
-      vertexShader: [
-        'varying vec2 vUV;',
-        'varying vec3 vNormal;',
-        'void main() {',
-        'vUV = uv;',
-        'vNormal = vec3( normal );',
-        'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
-        '}'
-      ].join('\n'),
-      fragmentShader: [
-        'varying vec2 vUV;',
-        'varying vec3 vNormal;',
-        'void main() {',
-        'vec4 c = vec4( abs( vNormal ) + vec3( vUV, 0.0 ), 0.0 );',
-        'gl_FragColor = c;',
-        '}'
-      ].join('\n')
+      vertexShader: `
+        varying vec2 vUV;
+        varying vec3 vNormal;
+        void main() {
+          vUV = uv;
+          vNormal = vec3( normal );
+          gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUV;
+        varying vec3 vNormal;
+        void main() {
+          vec4 c = vec4( abs( vNormal ) + vec3( vUV, 0.0 ), 0.0 );
+          gl_FragColor = c;
+        }
+      `
     });
     this.params = {
       shape: 1,
@@ -117,6 +106,9 @@ export class Model {
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.target.set(0, 0, 0);
+    // 垂直方向 只允许在0-90度之间旋转
+    this.controls.minPolarAngle = 0;
+    this.controls.maxPolarAngle = Math.PI / 2;
     this.controls.update();
 
     this.initGUI();
@@ -131,6 +123,7 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 创建模型mesh
   private generateMesh() {
     for (let i = 0; i < 50; ++i) {
       const geometry = new THREE.BoxGeometry(2, 2, 2);
@@ -151,6 +144,7 @@ export class Model {
     }
   }
 
+  // 创建地板mesh
   private generateFloor() {
     const geometry = new THREE.BoxGeometry(100, 1, 100);
     const material = new THREE.MeshPhongMaterial({});
@@ -160,12 +154,15 @@ export class Model {
     this.scene.add(floor);
   }
 
+  // 创建光源
   private generateLight() {
+    // 创建点光源
     const light = new THREE.PointLight(0xffffff, 1.0, 50, 2);
     light.position.y = 2;
     this.scene.add(light);
   }
 
+  // 初始化作曲家
   private initComposer() {
     const renderPass = new RenderPass(this.scene, this.camera!);
     this.halftonePass = new HalftonePass(this.width, this.height, this.params);
