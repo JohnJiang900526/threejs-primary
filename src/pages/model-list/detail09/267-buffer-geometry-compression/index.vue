@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="webgl-post-processing">
+    <Page title="267.缓冲集合 压缩">
       <div ref="container" class="page-inner">
       </div>
     </Page>

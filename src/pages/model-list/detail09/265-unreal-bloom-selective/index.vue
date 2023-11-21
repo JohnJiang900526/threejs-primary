@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="webgl-post-processing">
+    <Page title="265.后处理 假的血 选择">
       <div ref="container" class="page-inner">
       </div>
     </Page>

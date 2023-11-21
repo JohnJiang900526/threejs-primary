@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="webgl-post-processing">
+    <Page title="268.自定义属性粒子">
       <div ref="container" class="page-inner">
       </div>
     </Page>
