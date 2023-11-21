@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="webgl-post-processing">
+    <Page title="259.WEBGL 后处理 smaa">
       <div ref="container" class="page-inner">
       </div>
     </Page>

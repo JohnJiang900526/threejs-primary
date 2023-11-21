@@ -10,6 +10,36 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "260",
+    title: "260.WEBGL 后处理 sobel",
+    path: "/list/webgl-post-processing-sobel",
+  },
+  {
+    key: "259",
+    title: "259.WEBGL 后处理 smaa",
+    path: "/list/webgl-post-processing-smaa",
+  },
+  {
+    key: "258",
+    title: "258.WEBGL 后处理 sao",
+    path: "/list/webgl-post-processing-sao",
+  },
+  {
+    key: "257",
+    title: "257.WEBGL 后处理 过程抽象",
+    path: "/list/webgl-post-processing-procedural",
+  },
+  {
+    key: "256",
+    title: "256.WEBGL 后处理 像素",
+    path: "/list/webgl-post-processing-pixel",
+  },
+  {
+    key: "255",
+    title: "255.WEBGL 后处理 轮廓",
+    path: "/list/webgl-post-processing-outline",
+  },
+  {
     key: "254",
     title: "254.WEBGL 后处理ssaa",
     path: "/list/webgl-post-processing-ssaa",

@@ -13,8 +13,51 @@ import PostProcessingGodrays from "@/pages/model-list/detail09/251-post-processi
 import PostProcessingRgbHalftone from "@/pages/model-list/detail09/252-post-processing-rgb-halftone/index.vue";
 import PostProcessingMasking from "@/pages/model-list/detail09/253-post-processing-masking/index.vue";
 import PostProcessingSsaa from "@/pages/model-list/detail09/254-post-processing-ssaa/index.vue";
+import PostProcessingOutline from "@/pages/model-list/detail09/255-post-processing-outline/index.vue";
+import PostProcessingPixel from "@/pages/model-list/detail09/256-post-processing-pixel/index.vue";
+import PostProcessingProcedural from "@/pages/model-list/detail09/257-post-processing-procedural/index.vue";
+import PostProcessingSao from "@/pages/model-list/detail09/258-post-processing-sao/index.vue";
+import PostProcessingSmaa from "@/pages/model-list/detail09/259-post-processing-smaa/index.vue";
+import PostProcessingSobel from "@/pages/model-list/detail09/260-post-processing-sobel/index.vue";
+
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-post-processing-sobel',
+    name: 'PostProcessingSobel',
+    meta: {title: "260.后处理sobel"},
+    component: PostProcessingSobel,
+  },
+  {
+    path: '/list/webgl-post-processing-smaa',
+    name: 'PostProcessingSmaa',
+    meta: {title: "259.后处理smaa"},
+    component: PostProcessingSmaa,
+  },
+  {
+    path: '/list/webgl-post-processing-sao',
+    name: 'PostProcessingSao',
+    meta: {title: "258.后处理sao"},
+    component: PostProcessingSao,
+  },
+  {
+    path: '/list/webgl-post-processing-procedural',
+    name: 'PostProcessingProcedural',
+    meta: {title: "257.后处理 过程抽象"},
+    component: PostProcessingProcedural,
+  },
+  {
+    path: '/list/webgl-post-processing-pixel',
+    name: 'PostProcessingPixel',
+    meta: {title: "256.后处理像素"},
+    component: PostProcessingPixel,
+  },
+  {
+    path: '/list/webgl-post-processing-outline',
+    name: 'PostProcessingOutline',
+    meta: {title: "255.后处理轮廓"},
+    component: PostProcessingOutline,
+  },
   {
     path: '/list/webgl-post-processing-ssaa',
     name: 'PostProcessingSsaa',
@@ -24,7 +67,7 @@ const routerList: RouteRecordRaw[] = [
   {
     path: '/list/webgl-post-processing-masking',
     name: 'PostProcessingMasking',
-    meta: {title: "254.后处理 屏蔽"},
+    meta: {title: "253.后处理 屏蔽"},
     component: PostProcessingMasking,
   },
   {

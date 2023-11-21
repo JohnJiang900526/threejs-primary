@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="webgl-post-processing">
+    <Page title="256.WEBGL 后处理 像素">
       <div ref="container" class="page-inner">
       </div>
     </Page>

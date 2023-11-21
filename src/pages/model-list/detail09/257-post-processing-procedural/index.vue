@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="webgl-post-processing">
+    <Page title="257.WEBGL 后处理 过程抽象">
       <div ref="container" class="page-inner">
       </div>
     </Page>
