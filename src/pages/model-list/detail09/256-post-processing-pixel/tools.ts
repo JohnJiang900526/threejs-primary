@@ -66,18 +66,22 @@ export class Model {
     this.camera.position.y = 2 * Math.tan(Math.PI / 6);
     this.camera.position.z = 5;
 
+    // 创建灯光
     this.generateLight();
+    // 创建mesh
     this.generateMesh();
     // 渲染器
     this.createRenderer();
+    // 初始化效果合成器
     this.initComposer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.maxZoom = 2;
+    this.controls.target.set(0, 0.5, 0);
     this.controls.update();
 
-    this.initGUI();
+    this.setGUI();
     this.initStats();
     this.animate();
     this.resize();
@@ -89,7 +93,7 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
-  private initGUI() {
+  private setGUI() {
     const renderPass = this.renderPixelatedPass;
     this.gui.add(this.params, 'pixelSize', 1, 16, 1).name("像素").onChange(() => {
       renderPass.setPixelSize(this.params.pixelSize);
@@ -102,6 +106,7 @@ export class Model {
     });
   }
 
+  // 添加箱子
   private addBox(size: number, x: number, z: number, rotation: number, material: THREE.MeshPhongMaterial) {
     const geometry = new THREE.BoxGeometry(size, size, size);
 
@@ -110,17 +115,29 @@ export class Model {
     mesh.receiveShadow = true;
 
     mesh.rotation.y = rotation;
-    mesh.position.y = size / 2;
-    mesh.position.set(x, size / 2 + .0001, z);
+    mesh.position.set(x, size / 2 + 0.0001, z);
     this.scene.add(mesh);
-    return mesh;
   }
 
   private pixelTexture(texture: THREE.Texture) {
+    // .minFilter : number
+    // 当一个纹素覆盖小于一个像素时，贴图将如何采样。
+    // 默认值为THREE.LinearMipmapLinearFilter， 
+    // 它将使用mipmapping以及三次线性滤镜。
     texture.minFilter = THREE.NearestFilter;
+    // .magFilter : number
+    // 当一个纹素覆盖大于一个像素时，贴图将如何采样。
+    // 默认值为THREE.LinearFilter， 它将获取四个最接近的纹素，
+    // 并在他们之间进行双线性插值。 另一个选项是THREE.NearestFilter，它将使用最接近的纹素的值。
     texture.magFilter = THREE.NearestFilter;
+    // 是否为纹理生成mipmap（如果可用）。默认为true。 如果你手动生成mipmap，请将其设为false
     texture.generateMipmaps = false;
+    // 这个值定义了纹理贴图在水平方向上将如何包裹，在UV映射中对应于U。
+    // 默认值是THREE.ClampToEdgeWrapping，即纹理边缘将被推到外部边缘的纹素。 
+    // 其它的两个选项分别是THREE.RepeatWrapping和THREE.MirroredRepeatWrapping
     texture.wrapS = THREE.RepeatWrapping;
+    // 这个值定义了纹理贴图在垂直方向上将如何包裹，在UV映射中对应于V。
+    // 可以使用与 .wrapS : number相同的选项
     texture.wrapT = THREE.RepeatWrapping;
     return texture;
   }
@@ -155,9 +172,13 @@ export class Model {
     {
 			const geometry = new THREE.IcosahedronGeometry(0.2);
       const material = new THREE.MeshPhongMaterial({
+        // .specular属性的高亮的程度，越高的值越闪亮。默认值为 30
         shininess: 10,
         color: 0x2379cf,
+        // 材质的高光颜色。默认值为0x111111（深灰色）的颜色Color。
+        // 这定义了材质的光泽度和光泽的颜色
         specular: 0xffffff,
+        // 材质的放射（光）颜色，基本上是不受其他光照影响的固有颜色。默认为黑色
         emissive: 0x143542,
       });
 			this.crystalMesh = new THREE.Mesh(geometry, material);
@@ -177,6 +198,8 @@ export class Model {
     const light3 = new THREE.SpotLight(0xff8800, 1, 10, Math.PI / 16, .02, 2);
     light3.position.set(2, 2, 0);
 
+    // 聚光灯的方向是从它的位置到目标位置.默认的目标位置为原点 (0,0,0)。
+    // 注意: 对于目标的位置，要将其更改为除缺省值之外的任何位置，它必须被添加到 scene 场景中去
     const target = light3.target;
     target.position.set(0, 0, 0);
     light3.castShadow = true;
@@ -237,11 +260,13 @@ export class Model {
     this.stats?.update();
     this.controls?.update();
 
-    const t = this.clock.getElapsedTime();
-    (this.crystalMesh.material as THREE.MeshPhongMaterial).emissiveIntensity = Math.sin(t * 3) * .5 + .5;
-    this.crystalMesh.position.y = .7 + Math.sin(t * 2) * .05;
-    this.crystalMesh.rotation.y = this.stopGoEased(t, 2, 4) * 2 * Math.PI;
-
+    {
+      const t = this.clock.getElapsedTime();
+      const material = (this.crystalMesh.material as THREE.MeshPhongMaterial);
+      material.emissiveIntensity = Math.sin(t * 3) * .5 + .5;
+      this.crystalMesh.position.y = .7 + Math.sin(t * 2) * .05;
+      this.crystalMesh.rotation.y = this.stopGoEased(t, 2, 4) * 2 * Math.PI;
+    }
 
     // 执行渲染
     this.composer?.render();
