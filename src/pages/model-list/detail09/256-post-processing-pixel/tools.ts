@@ -94,8 +94,12 @@ export class Model {
     this.gui.add(this.params, 'pixelSize', 1, 16, 1).name("像素").onChange(() => {
       renderPass.setPixelSize(this.params.pixelSize);
     });
-    this.gui.add(renderPass, 'normalEdgeStrength', 0, 2, 0.05).name("Normal Edge");
-    this.gui.add(renderPass, 'depthEdgeStrength', 0, 1, 0.05).name("Depth Edge");
+    this.gui.add(this.params, 'normalEdgeStrength', 0, 2, 0.05).name("Normal Edge").onChange(() => {
+      renderPass.normalEdgeStrength = this.params.normalEdgeStrength;
+    });
+    this.gui.add(this.params, 'depthEdgeStrength', 0, 1, 0.05).name("Depth Edge").onChange(() => {
+      renderPass.depthEdgeStrength = this.params.depthEdgeStrength;
+    });
   }
 
   private addBox(size: number, x: number, z: number, rotation: number, material: THREE.MeshPhongMaterial) {
@@ -129,18 +133,18 @@ export class Model {
     texChecker.repeat.set(30, 30);
     texChecker2.repeat.set(1.5, 1.5);
 
-    const boxMaterial = new THREE.MeshPhongMaterial({ map: texChecker2 });
     // 箱子
     {
-      this.addBox(0.4, 0, 0, Math.PI / 4, boxMaterial);
-			this.addBox(0.5, -0.5, -0.5, Math.PI / 4, boxMaterial);
+      const material = new THREE.MeshPhongMaterial({ map: texChecker2 });
+      this.addBox(0.4, 0, 0, Math.PI / 4, material);
+			this.addBox(0.5, -0.5, -0.5, Math.PI / 4, material);
     }
 
     // plane
     {
       const geometry = new THREE.PlaneGeometry(30, 30);
       const material = new THREE.MeshPhongMaterial({ map: texChecker });
-			const mesh = new THREE.Mesh(geometry,material);
+			const mesh = new THREE.Mesh(geometry, material);
 
 			mesh.receiveShadow = true;
 			mesh.rotation.x = -Math.PI / 2;
@@ -193,6 +197,8 @@ export class Model {
     this.composer = new EffectComposer(this.renderer!);
 
     this.renderPixelatedPass = new RenderPixelatedPass(6, this.scene, this.camera!);
+    this.renderPixelatedPass.normalEdgeStrength = this.params.normalEdgeStrength;
+    this.renderPixelatedPass.depthEdgeStrength = this.params.depthEdgeStrength;
     this.composer.addPass(this.renderPixelatedPass);
   }
 
