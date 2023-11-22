@@ -34,6 +34,7 @@ onBeforeUnmount(() => {
     .page-inner {
       position: relative;
       .width-and-height();
+      background-color: #000;
       .lil-gui.root {
         max-height: 50%;
         max-width: 80%;
