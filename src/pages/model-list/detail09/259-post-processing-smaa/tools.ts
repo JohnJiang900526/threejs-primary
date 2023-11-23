@@ -38,8 +38,8 @@ export class Model {
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 1, 1000);
-    this.camera.position.z = 500;
+    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 1, 2000);
+    this.camera.position.z = 750;
 
     this.generateMesh();
     // 渲染器
@@ -64,21 +64,24 @@ export class Model {
 
   private generateMesh() {
     const geometry = new THREE.BoxGeometry(120, 120, 120);
-    const material1 = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
-    const mesh1 = new THREE.Mesh(geometry, material1);
-    mesh1.position.x = -100;
+    {
+      const material1 = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+      const mesh = new THREE.Mesh(geometry, material1);
+      mesh.position.x = -100;
+      this.scene.add(mesh);
+    }
 
-    const loader = new THREE.TextureLoader();
-    const texture = loader.load('/examples/textures/brick_diffuse.jpg');
-    texture.anisotropy = 4;
+    {
+      const loader = new THREE.TextureLoader();
+      const texture = loader.load('/examples/textures/brick_diffuse.jpg');
+      texture.anisotropy = 4;
+      const material = new THREE.MeshBasicMaterial({ map: texture });
 
-    const material2 = new THREE.MeshBasicMaterial({ map: texture });
-
-    const mesh2 = new THREE.Mesh(geometry, material2);
-    mesh2.position.x = 100;
-    
-    this.scene.add(mesh1, mesh2);
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = 100;
+      this.scene.add(mesh);
+    }
   }
 
   // 创建渲染器
@@ -93,11 +96,13 @@ export class Model {
     this.composer = new EffectComposer(this.renderer!);
 
     {
+      // 首先需要添加渲染pass
       const renderPass = new RenderPass( this.scene, this.camera!);
       this.composer.addPass(renderPass);
     }
 
     {
+      // 然后 添加smaaPass
       const width = this.width * this.renderer!.getPixelRatio();
       const height = this.height * this.renderer!.getPixelRatio();
       const smaaPass = new SMAAPass(width, height);
