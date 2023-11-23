@@ -19,9 +19,79 @@ import PostProcessingProcedural from "@/pages/model-list/detail09/257-post-proce
 import PostProcessingSao from "@/pages/model-list/detail09/258-post-processing-sao/index.vue";
 import PostProcessingSmaa from "@/pages/model-list/detail09/259-post-processing-smaa/index.vue";
 import PostProcessingSobel from "@/pages/model-list/detail09/260-post-processing-sobel/index.vue";
+import PostProcessingSsao from "@/pages/model-list/detail09/261-post-processing-ssao/index.vue";
+import PostProcessingSsr from "@/pages/model-list/detail09/262-post-processing-ssr/index.vue";
+import PostProcessingTaa from "@/pages/model-list/detail09/263-post-processing-taa/index.vue";
+import PostProcessingUnrealBloom from "@/pages/model-list/detail09/264-postprocessing-unreal-bloom/index.vue";
+import UnrealBloomSelective from "@/pages/model-list/detail09/265-unreal-bloom-selective/index.vue";
+import BufferGeometry from "@/pages/model-list/detail09/266-buffer-geometry/index.vue";
+import BufferGeometryCompression from "@/pages/model-list/detail09/267-buffer-geometry-compression/index.vue";
+import CustomAttributesParticles from "@/pages/model-list/detail09/268-custom-attributes-particles/index.vue";
+import BufferGeometryDrawrange from "@/pages/model-list/detail09/269-buffer-geometry-drawrange/index.vue";
+import Glbufferattribute from "@/pages/model-list/detail09/270-buffer-geometry-glbufferattribute/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-buffer-geometry-glbufferattribute',
+    name: 'Glbufferattribute',
+    meta: {title: "270.缓冲几何 Gl缓冲属性"},
+    component: Glbufferattribute,
+  },
+  {
+    path: '/list/webgl-buffer-geometry-drawrange',
+    name: 'BufferGeometryDrawrange',
+    meta: {title: "269.缓冲几何 绘制范围"},
+    component: BufferGeometryDrawrange,
+  },
+  {
+    path: '/list/webgl-custom-attributes-particles',
+    name: 'CustomAttributesParticles',
+    meta: {title: "268.自定义属性粒子"},
+    component: CustomAttributesParticles,
+  },
+  {
+    path: '/list/webgl-buffer-geometry-compression',
+    name: 'BufferGeometryCompression',
+    meta: {title: "267.缓冲几何 压缩"},
+    component: BufferGeometryCompression,
+  },
+  {
+    path: '/list/webgl-buffer-geometry',
+    name: 'BufferGeometry',
+    meta: {title: "266.缓冲几何"},
+    component: BufferGeometry,
+  },
+  {
+    path: '/list/webgl-post-processing-unreal-bloom-selective',
+    name: 'UnrealBloomSelective',
+    meta: {title: "265.后处理 可选择性假血"},
+    component: UnrealBloomSelective,
+  },
+  {
+    path: '/list/webgl-post-processing-unreal-bloom',
+    name: 'PostProcessingUnrealBloom',
+    meta: {title: "264.后处理 假血"},
+    component: PostProcessingUnrealBloom,
+  },
+  {
+    path: '/list/webgl-post-processing-taa',
+    name: 'PostProcessingTaa',
+    meta: {title: "263.后处理taa"},
+    component: PostProcessingTaa,
+  },
+  {
+    path: '/list/webgl-post-processing-ssr',
+    name: 'PostProcessingSsr',
+    meta: {title: "262.后处理ssr"},
+    component: PostProcessingSsr,
+  },
+  {
+    path: '/list/webgl-post-processing-ssao',
+    name: 'PostProcessingSsao',
+    meta: {title: "261.后处理ssao"},
+    component: PostProcessingSsao,
+  },
   {
     path: '/list/webgl-post-processing-sobel',
     name: 'PostProcessingSobel',

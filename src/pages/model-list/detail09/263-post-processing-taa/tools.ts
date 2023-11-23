@@ -31,7 +31,6 @@ export class Model {
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xaec5d5);
 
     // 相机
     this.camera = new THREE.PerspectiveCamera(27, this.aspect, 1, 10000);

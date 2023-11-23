@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="265.后处理 假的血 选择">
+    <Page title="265.后处理 可选择性假血">
       <div ref="container" class="page-inner">
       </div>
     </Page>

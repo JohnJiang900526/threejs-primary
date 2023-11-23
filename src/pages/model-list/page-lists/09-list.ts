@@ -10,6 +10,56 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "270",
+    title: "270.WEBGL 缓冲几何 Gl缓冲属性",
+    path: "/list/webgl-buffer-geometry-glbufferattribute",
+  },
+  {
+    key: "269",
+    title: "269.WEBGL 缓冲几何 绘制范围",
+    path: "/list/webgl-buffer-geometry-drawrange",
+  },
+  {
+    key: "268",
+    title: "268.WEBGL 自定义属性粒子",
+    path: "/list/webgl-custom-attributes-particles",
+  },
+  {
+    key: "267",
+    title: "267.WEBGL 缓冲几何 压缩",
+    path: "/list/webgl-buffer-geometry-compression",
+  },
+  {
+    key: "266",
+    title: "266.WEBGL 缓冲几何",
+    path: "/list/webgl-buffer-geometry",
+  },
+  {
+    key: "265",
+    title: "265.WEBGL 后处理 可选择性假血",
+    path: "/list/webgl-post-processing-unreal-bloom-selective",
+  },
+  {
+    key: "264",
+    title: "264.WEBGL 后处理 假血",
+    path: "/list/webgl-post-processing-unreal-bloom",
+  },
+  {
+    key: "263",
+    title: "263.WEBGL 后处理 taa",
+    path: "/list/webgl-post-processing-taa",
+  },
+  {
+    key: "262",
+    title: "262.WEBGL 后处理 ssr",
+    path: "/list/webgl-post-processing-ssr",
+  },
+  {
+    key: "261",
+    title: "261.WEBGL 后处理 ssao",
+    path: "/list/webgl-post-processing-ssao",
+  },
+  {
     key: "260",
     title: "260.WEBGL 后处理 sobel",
     path: "/list/webgl-post-processing-sobel",
