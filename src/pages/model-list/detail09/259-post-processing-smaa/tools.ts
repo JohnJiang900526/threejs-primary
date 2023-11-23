@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass';
 
 export class Model {
   private width: number;
@@ -14,6 +17,7 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private composer: null | EffectComposer;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,20 +30,24 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.composer = null;
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xaec5d5);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(27, this.aspect, 1, 10000);
-    this.camera.position.z = 2000;
+    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 1, 1000);
+    this.camera.position.z = 500;
 
+    this.generateMesh();
     // 渲染器
     this.createRenderer();
+    // 效果合成器
+    this.initComposer();
 
+    // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.update();
 
@@ -54,12 +62,47 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  private generateMesh() {
+    const geometry = new THREE.BoxGeometry(120, 120, 120);
+    const material1 = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+
+    const mesh1 = new THREE.Mesh(geometry, material1);
+    mesh1.position.x = -100;
+
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('/examples/textures/brick_diffuse.jpg');
+    texture.anisotropy = 4;
+
+    const material2 = new THREE.MeshBasicMaterial({ map: texture });
+
+    const mesh2 = new THREE.Mesh(geometry, material2);
+    mesh2.position.x = 100;
+    
+    this.scene.add(mesh1, mesh2);
+  }
+
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
+  }
+
+  private initComposer() {
+    this.composer = new EffectComposer(this.renderer!);
+
+    {
+      const renderPass = new RenderPass( this.scene, this.camera!);
+      this.composer.addPass(renderPass);
+    }
+
+    {
+      const width = this.width * this.renderer!.getPixelRatio();
+      const height = this.height * this.renderer!.getPixelRatio();
+      const smaaPass = new SMAAPass(width, height);
+      this.composer.addPass(smaaPass);
+    }
   }
 
   // 性能统计
@@ -80,10 +123,15 @@ export class Model {
     this.stats?.update();
     this.controls?.update();
 
+    this.scene.traverse((item) => {
+      if (item instanceof THREE.Mesh) {
+        item.rotation.x += 0.005;
+        item.rotation.y += 0.01;
+      }
+    });
+
     // 执行渲染
-    if (this.renderer && this.camera) {
-      this.renderer.render(this.scene, this.camera);
-    }
+    this.composer!.render();
   }
 
   // 消除 副作用
@@ -104,9 +152,8 @@ export class Model {
         this.camera.updateProjectionMatrix();
       }
 
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
-      }
+      this.renderer?.setSize(this.width, this.height);
+      this.composer?.setSize(this.width, this.height);
     };
   }
 }
