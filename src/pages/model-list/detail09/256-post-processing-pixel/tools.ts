@@ -79,6 +79,8 @@ export class Model {
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.maxZoom = 2;
     this.controls.target.set(0, 0.5, 0);
+    this.controls.enablePan = false;
+    this.controls.enableDamping = true;
     this.controls.update();
 
     this.setGUI();
@@ -241,15 +243,19 @@ export class Model {
   private linearStep(x: number, edge0: number, edge1: number) {
     const w = edge1 - edge0;
     const m = 1 / w;
-    const y0 = -m * edge0;
-    return THREE.MathUtils.clamp(y0 + m * x, 0, 1);
+    const y = (-m) * edge0;
+
+    // .clamp ( value : Float, min : Float, max : Float ) : Float
+    // 限制数值value处于最小值min和最大值max之间
+    return THREE.MathUtils.clamp(y + m * x, 0, 1);
   }
 
   private stopGoEased(x: number, downtime: number, period: number) {
-    const cycle = ( x / period ) | 0;
+    // 位或运算
+    const cycle = (x / period) | 0;
     const tween = x - cycle * period;
-    const linStep = this.easeInOutCubic(this.linearStep(tween, downtime, period));
-    return cycle + linStep;
+    const lineStep = this.easeInOutCubic(this.linearStep(tween, downtime, period));
+    return cycle + lineStep;
   }
 
   // 持续动画
@@ -261,11 +267,12 @@ export class Model {
     this.controls?.update();
 
     {
-      const t = this.clock.getElapsedTime();
+      const timer = this.clock.getElapsedTime();
       const material = (this.crystalMesh.material as THREE.MeshPhongMaterial);
-      material.emissiveIntensity = Math.sin(t * 3) * .5 + .5;
-      this.crystalMesh.position.y = .7 + Math.sin(t * 2) * .05;
-      this.crystalMesh.rotation.y = this.stopGoEased(t, 2, 4) * 2 * Math.PI;
+      // 放射光强度。调节发光颜色。默认为1
+      material.emissiveIntensity = Math.sin(timer * 3) * 0.5 + 0.5;
+      this.crystalMesh.position.y = 0.7 + Math.sin(timer * 2) * 0.05;
+      this.crystalMesh.rotation.y = this.stopGoEased(timer, 2, 4) * 2 * Math.PI;
     }
 
     // 执行渲染
