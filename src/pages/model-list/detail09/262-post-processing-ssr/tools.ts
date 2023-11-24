@@ -34,7 +34,6 @@ export class Model {
     groundReflector: boolean,
   }
   private gui: GUI;
-  private dracoLoader: DRACOLoader;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -63,9 +62,6 @@ export class Model {
       autoPlace: false,
       container: this.container
     });
-    this.dracoLoader = new DRACOLoader();
-    this.dracoLoader.setDecoderPath('/examples/js/libs/draco/');
-		this.dracoLoader.setDecoderConfig({ type: 'js'});
   }
 
   init() {
@@ -75,7 +71,7 @@ export class Model {
 		this.scene.fog = new THREE.Fog(0x443333, 1, 4);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 0.1, 15);
+    this.camera = new THREE.PerspectiveCamera(35, this.aspect, 0.1, 15);
     this.camera.position.set(0.13271600513224902, 0.3489546826045913, 0.43921296427927076);
 
     // 地板
@@ -129,13 +125,12 @@ export class Model {
     });
 
     const folder = this.gui.addFolder('更多设置');
-    folder.add(this.ssrPass!, 'fresnel').onChange( ()=>{
+    folder.add(this.ssrPass!, 'fresnel').onChange(()=>{
       // @ts-ignore
       this.groundReflector!.fresnel = this.ssrPass!.fresnel;
     });
     folder.add(this.ssrPass!, 'distanceAttenuation').onChange(() => {
-      // @ts-ignore
-      this.groundReflector!.distanceAttenuation = this.ssrPass!.distanceAttenuation;
+      this.groundReflector!.distanceAttenuation = this.ssrPass!.isDistanceAttenuation;
     });
     this.ssrPass!.maxDistance = 0.1;
     this.groundReflector!.maxDistance = this.ssrPass!.maxDistance;
@@ -200,6 +195,9 @@ export class Model {
   private generateMesh() {
     {
       // 兔子
+      const loader = new DRACOLoader();
+      loader.setDecoderPath('/examples/js/libs/draco/');
+      loader.setDecoderConfig({ type: 'js'});
       const url = "/examples/models/draco/bunny.drc";
       const material = new THREE.MeshStandardMaterial({ color: 0x606060 });
       const toast = showLoadingToast({
@@ -207,20 +205,21 @@ export class Model {
         forbidClick: true,
         loadingType: 'spinner',
       });
-      this.dracoLoader.load(url, ( geometry ) => {
+      loader.load(url, (geometry) => {
         toast.close();
+        // 通过面片法向量的平均值计算每个顶点的法向量
         geometry.computeVertexNormals();
-        const mesh = new THREE.Mesh( geometry, material );
+        const mesh = new THREE.Mesh(geometry, material);
         mesh.position.y = -0.0365;
         this.scene.add(mesh);
         this.selects.push(mesh);
-        this.dracoLoader.dispose();
+        loader.dispose();
       }, undefined, () => { toast.close(); });
     }
 
     {
       // 绿色的箱子
-      const geometry = new THREE.BoxGeometry(.05, .05, .05);
+      const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
 			const material = new THREE.MeshStandardMaterial({ color: 'green' });
 			const mesh = new THREE.Mesh(geometry, material);
 			mesh.position.set(-0.12, 0.025, 0.015);
@@ -231,6 +230,7 @@ export class Model {
 
     {
       // 圆形的球体
+      // 二十面缓冲几何体（IcosahedronGeometry）
 			const geometry = new THREE.IcosahedronGeometry(0.025, 4);
 			const material = new THREE.MeshStandardMaterial({ color: 'cyan' });
 			const mesh = new THREE.Mesh(geometry, material);
@@ -242,6 +242,7 @@ export class Model {
 
     {
       // 黄色的圆锥
+      // 圆锥缓冲几何体（ConeGeometry）
 			const geometry = new THREE.ConeGeometry(0.025, 0.05, 64);
 			const material = new THREE.MeshStandardMaterial({ color: 'yellow' });
 			const mesh = new THREE.Mesh(geometry, material);
@@ -259,10 +260,11 @@ export class Model {
 				textureHeight: this.height,
 				color: 0x888888,
 				useDepthTexture: true,
-			} );
-			this.groundReflector.material.depthWrite = false;
-			this.groundReflector.rotation.x = -Math.PI / 2;
+			});
+      // 渲染此材质是否对深度缓冲区有任何影响。默认为true。
 			this.groundReflector.visible = false;
+			this.groundReflector.rotation.x = -Math.PI / 2;
+			this.groundReflector.material.depthWrite = false;
 			this.scene.add(this.groundReflector);
     }
   }
@@ -278,14 +280,16 @@ export class Model {
   private initComposer() {
     this.composer = new EffectComposer(this.renderer!);
 
+    const reflector = this.params.groundReflector ? this.groundReflector : null;
+    const selects = this.params.groundReflector ? this.selects : null;
     this.ssrPass = new SSRPass({
       renderer: this.renderer!,
       scene: this.scene,
       camera: this.camera!,
       width: this.width,
       height: this.height,
-      groundReflector: this.params.groundReflector ? this.groundReflector : null,
-      selects: this.params.groundReflector ? this.selects : null
+      groundReflector: reflector,
+      selects: selects,
     });
     this.composer.addPass(this.ssrPass);
 
@@ -318,7 +322,7 @@ export class Model {
         0.2135,
         Math.cos(timer) * 0.5,
       );
-      this.camera?.lookAt( 0, 0.0635, 0 );
+      this.camera?.lookAt(0, 0.0635, 0);
     } else {
       this.controls?.update();
     }
