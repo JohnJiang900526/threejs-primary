@@ -172,7 +172,6 @@ export class Model {
     const light2 = new THREE.SpotLight();
     light2.angle = Math.PI / 16;
     light2.penumbra = 0.5;
-    light2.castShadow = true;
     light2.position.set(-1, 1, 1);
 
     this.scene.add(light1, light2);
@@ -187,7 +186,6 @@ export class Model {
     const plane = new THREE.Mesh(geometry, material);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.0001;
-    plane.receiveShadow = true;
 
     this.scene.add(plane);
   }
