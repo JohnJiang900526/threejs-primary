@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="264.后处理 不真实的血">
+    <Page title="264.后处理 假血">
       <div ref="container" class="page-inner">
       </div>
     </Page>
