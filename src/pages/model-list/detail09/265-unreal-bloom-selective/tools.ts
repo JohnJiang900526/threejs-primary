@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 
 export class Model {
   private width: number;
@@ -14,6 +18,24 @@ export class Model {
   private animateNumber: number;
 
   private controls: null | OrbitControls;
+  private composer: null | EffectComposer;
+  private bloomPass: null | UnrealBloomPass;
+  private ENTIRE_SCENE: number;
+  private BLOOM_SCENE: number;
+  private bloomLayer: THREE.Layers;
+  private params: {
+    exposure: number;
+    bloomStrength: number;
+    bloomThreshold: number;
+    bloomRadius: number;
+    scene: string;
+  }
+  private darkMaterial: THREE.MeshBasicMaterial;
+  private materials: {
+    [key: string]: any;
+  }
+  private vertexShader: string;
+  private fragmentShader: string;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -26,6 +48,36 @@ export class Model {
     this.animateNumber = 0;
 
     this.controls = null;
+    this.composer = null;
+    this.bloomPass = null;
+    this.ENTIRE_SCENE = 0;
+    this.BLOOM_SCENE = 1;
+    this.bloomLayer = new THREE.Layers();
+    this.bloomLayer.set(this.BLOOM_SCENE);
+    this.params = {
+      exposure: 1,
+      bloomStrength: 5,
+      bloomThreshold: 0,
+      bloomRadius: 0,
+      scene: 'Scene with Glow'
+    };
+    this.darkMaterial = new THREE.MeshBasicMaterial({color: "black"});
+    this.materials = {};
+    this.vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+      }
+    `;
+    this.fragmentShader = `
+      uniform sampler2D baseTexture;
+      uniform sampler2D bloomTexture;
+      varying vec2 vUv;
+      void main() {
+        gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ) );
+      }
+    `;
   }
 
   init() {
@@ -56,6 +108,7 @@ export class Model {
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
@@ -80,9 +133,7 @@ export class Model {
     this.controls?.update();
 
     // 执行渲染
-    if (this.renderer && this.camera) {
-      this.renderer.render(this.scene, this.camera);
-    }
+    this.renderer?.render(this.scene, this.camera!);
   }
 
   // 消除 副作用
@@ -97,15 +148,11 @@ export class Model {
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
 
-      if (this.camera) {
-        this.camera.aspect = this.aspect;
-        // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
-        this.camera.updateProjectionMatrix();
-      }
+      this.camera!.aspect = this.aspect;
+      // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
+      this.camera!.updateProjectionMatrix();
 
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
-      }
+      this.renderer?.setSize(this.width, this.height);
     };
   }
 }
