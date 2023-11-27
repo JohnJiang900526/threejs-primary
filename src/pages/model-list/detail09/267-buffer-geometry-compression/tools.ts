@@ -6,6 +6,17 @@ import * as GeometryCompressionUtils from 'three/examples/jsm/utils/GeometryComp
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
 import { TeapotGeometry } from 'three/examples/jsm/geometries/TeapotGeometry';
 
+interface IdataType {
+  'model': string
+  'wireframe': boolean;
+  'texture': boolean;
+  'detail': number;
+  'rotationSpeed': number;
+  'QuantizePosEncoding': boolean;
+  'NormEncodingMethods': string
+  'DefaultUVEncoding': boolean;
+  'totalGPUMemory': string
+}
 
 export class Model {
   private width: number;
@@ -20,17 +31,7 @@ export class Model {
 
   private controls: null | OrbitControls;
   private lights: THREE.PointLight[];
-  private data: {
-    'model': string
-    'wireframe': boolean;
-    'texture': boolean;
-    'detail': number;
-    'rotationSpeed': number;
-    'QuantizePosEncoding': boolean;
-    'NormEncodingMethods': string
-    'DefaultUVEncoding': boolean;
-    'totalGPUMemory': string
-  };
+  private data: IdataType;
   private memoryDisplay: null | any;
   private radius: number;
   private lineMaterial: THREE.LineBasicMaterial
@@ -122,7 +123,7 @@ export class Model {
   }
 
   private setGUI() {
-    let folder = this.gui.addFolder('Scene');
+    let folder = this.gui.addFolder('场景信息');
     const modelValues = ['Icosahedron', 'Cylinder', 'TorusKnot', 'Teapot'];
     folder.add(this.data, 'model', modelValues).onChange(() => {
       this.generateGeometry();
@@ -139,26 +140,26 @@ export class Model {
     folder.add(this.data, 'rotationSpeed', 0, 0.5, 0.1);
     folder.open();
 
-    folder = this.gui.addFolder('Position Compression');
+    folder = this.gui.addFolder('Position 压缩');
     folder.add(this.data, 'QuantizePosEncoding').onChange(() => {
       this.generateGeometry();
     });
     folder.open();
 
-    folder = this.gui.addFolder('Normal Compression');
+    folder = this.gui.addFolder('Normal 压缩');
     const methods = ['None', 'DEFAULT', 'OCT1Byte', 'OCT2Byte', 'ANGLES'];
     folder.add(this.data, 'NormEncodingMethods', methods).onChange(() => {
       this.generateGeometry();
     });
     folder.open();
 
-    folder = this.gui.addFolder('UV Compression');
+    folder = this.gui.addFolder('UV 压缩');
     folder.add(this.data, 'DefaultUVEncoding').onChange(() => {
       this.generateGeometry();
     });
     folder.open();
 
-    folder = this.gui.addFolder('Memory Info');
+    folder = this.gui.addFolder('缓存信息');
     folder.open();
 
     this.memoryDisplay = folder.add(this.data, 'totalGPUMemory');
@@ -190,7 +191,7 @@ export class Model {
     this.lineSegments.visible = this.data.wireframe;
   }
 
-  private newGeometry(data: any) {
+  private newGeometry(data: IdataType) {
     switch (data.model) {
       case 'Icosahedron':
         // 二十面缓冲几何体（IcosahedronGeometry）
@@ -214,7 +215,7 @@ export class Model {
     mesh: THREE.Mesh, 
     lineSegments: THREE.LineSegments, 
     geometry: THREE.IcosahedronGeometry | THREE.CylinderGeometry | TeapotGeometry | THREE.TorusKnotGeometry, 
-    data: any,
+    data: IdataType,
   ) {
     // 销毁
     lineSegments.geometry.dispose();
