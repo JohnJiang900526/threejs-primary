@@ -147,19 +147,19 @@ export class Model {
     });
 
     const folder = this.gui.addFolder('Bloom Parameters');
-    folder.add(this.params, 'exposure', 0.1, 2 ).onChange((value: string) => {
+    folder.add(this.params, 'exposure', 0.1, 2).onChange((value: number) => {
       this.renderer!.toneMappingExposure = Math.pow(Number(value), 4.0);
-    } );
+    });
 
-    folder.add(this.params, 'bloomThreshold', 0.0, 1.0 ).onChange((value: number) => {
+    folder.add(this.params, 'bloomThreshold', 0.0, 1.0, 0.01).onChange((value: number) => {
       this.bloomPass!.threshold = Number(value);
     });
 
-    folder.add(this.params, 'bloomStrength', 0.0, 10.0 ).onChange((value: number) => {
+    folder.add(this.params, 'bloomStrength', 0.0, 10.0, 0.01).onChange((value: number) => {
       this.bloomPass!.strength = Number(value);
     });
 
-    folder.add(this.params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange((value: number) => {
+    folder.add(this.params, 'bloomRadius', 0.0, 1.0, 0.01).onChange((value: number) => {
       this.bloomPass!.radius = Number(value);
     });
   }
@@ -173,7 +173,7 @@ export class Model {
 
       this.raycaster.setFromCamera(this.mouse, this.camera!);
       const intersects = this.raycaster.intersectObjects(this.scene.children, false);
-      if (intersects[0]) {
+      if (intersects[0] && intersects[0].object) {
         const object = intersects[0].object;
         object.layers.toggle(this.BLOOM_SCENE);
       }
@@ -191,13 +191,15 @@ export class Model {
         obj.material.dispose();
       }
     });
-    this.scene.children.length = 0;
+    this.scene.children = [];
 
     const geometry = new THREE.IcosahedronGeometry(1, 15);
     for (let i = 0; i < 50; i++) {
+      // 颜色
       const color = new THREE.Color();
       color.setHSL(Math.random(), 0.7, Math.random() * 0.2 + 0.05);
 
+      // 材质 & 几何 && mesh
       const material = new THREE.MeshBasicMaterial({ color: color });
       const sphere = new THREE.Mesh(geometry, material);
       sphere.position.set(
@@ -205,11 +207,22 @@ export class Model {
         Math.random() * 10 - 5,
         Math.random() * 10 - 5,
       );
+      // .normalize () : this
+      // 将该向量转换为单位向量（unit vector）， 
+      // 也就是说，将该向量的方向设置为和原向量相同，但是其长度（length）为1。
+
+      // .multiplyScalar ( s : Float ) : this
+      // 将该向量与所传入的标量s进行相乘。
       sphere.position.normalize().multiplyScalar(Math.random() * 4.0 + 2.0);
+      // .setScalar ( scalar : Float ) : this
+      // 将该向量的x、y和z值同时设置为等于传入的scalar。
       sphere.scale.setScalar(Math.random() * Math.random() + 0.5);
       this.scene.add(sphere);
 
       if (Math.random() < 0.25) {
+        // .layers : Layers
+        // 物体的层级关系。 物体只有和一个正在使用的Camera至少在同一个层时才可见。
+        // This property can also be used to filter out unwanted objects in ray-intersection tests when using Raycaster.
         sphere.layers.enable(this.BLOOM_SCENE);
       }
     }
@@ -218,6 +231,7 @@ export class Model {
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    // 默认是NoToneMapping。查看Renderer constants以获取其它备选项
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
@@ -239,15 +253,14 @@ export class Model {
     this.bloomComposer.addPass(this.bloomPass);
 
     const material = new THREE.ShaderMaterial({
+      defines: {},
       uniforms: {
         baseTexture: { value: null },
         bloomTexture: { value: this.bloomComposer.renderTarget2.texture }
       },
       vertexShader: this.vertexShader,
       fragmentShader: this.fragmentShader,
-      defines: {}
     });
-
     this.finalComposer = new EffectComposer(this.renderer!);
     this.finalComposer.addPass(renderPass);
     const finalPass = new ShaderPass(material, 'baseTexture');
@@ -271,6 +284,7 @@ export class Model {
 				}
       });
     } else {
+      // 摄像机是一个layers的成员. 这是一个从Object3D继承而来的属性
       this.camera!.layers.set(this.BLOOM_SCENE);
       this.bloomComposer!.render();
       this.camera!.layers.set(this.ENTIRE_SCENE);
@@ -319,8 +333,8 @@ export class Model {
 
   // 消除 副作用
   dispose() {
-    window.cancelAnimationFrame(this.animateNumber);
     this.container.onclick = null;
+    window.cancelAnimationFrame(this.animateNumber);
   }
 
   // 处理自适应
