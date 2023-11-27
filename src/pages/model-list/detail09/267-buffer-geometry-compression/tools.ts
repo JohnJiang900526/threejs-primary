@@ -1,10 +1,10 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as GeometryCompressionUtils from 'three/examples/jsm/utils/GeometryCompressionUtils';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
 import { TeapotGeometry } from 'three/examples/jsm/geometries/TeapotGeometry';
-import GUI from 'lil-gui';
 
 
 export class Model {
@@ -77,7 +77,7 @@ export class Model {
     this.texture = new THREE.TextureLoader().load('/examples/textures/uv_grid_opengl.jpg');
     this.texture.wrapS = THREE.RepeatWrapping;
     this.texture.wrapT = THREE.RepeatWrapping;
-    
+
     this.lineSegments = new THREE.LineSegments();
     this.geom = null;
     this.mesh = new THREE.Mesh();
@@ -93,7 +93,7 @@ export class Model {
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 0.01, 10000000);
+    this.camera = new THREE.PerspectiveCamera(80, this.aspect, 0.01, 10000000);
     this.camera.position.set(this.radius * 2, this.radius * 2, this.radius * 2);
 
     // helper
@@ -157,8 +157,10 @@ export class Model {
       this.generateGeometry();
     });
     folder.open();
+
     folder = this.gui.addFolder('Memory Info');
     folder.open();
+
     this.memoryDisplay = folder.add(this.data, 'totalGPUMemory');
     this.computeGPUMemory(this.mesh);
   }
@@ -191,14 +193,19 @@ export class Model {
   private newGeometry(data: any) {
     switch (data.model) {
       case 'Icosahedron':
+        // 二十面缓冲几何体（IcosahedronGeometry）
         return new THREE.IcosahedronGeometry(this.radius, data.detail);
       case 'Cylinder':
+        // 圆柱缓冲几何体（CylinderGeometry）
         return new THREE.CylinderGeometry(this.radius, this.radius, this.radius * 2, data.detail * 6);
       case 'Teapot':
+        // 茶壶几何体
         return new TeapotGeometry(this.radius, data.detail * 3, true, true, true, true, 1);
       case 'TorusKnot':
+        // 圆环缓冲扭结几何体（TorusKnotGeometry）
         return new THREE.TorusKnotGeometry(this.radius, 10, data.detail * 20, data.detail * 6, 3, 4);
       default:
+        // 二十面缓冲几何体（IcosahedronGeometry）
         return new THREE.IcosahedronGeometry(this.radius, data.detail);
     }
   }
@@ -209,14 +216,16 @@ export class Model {
     geometry: THREE.IcosahedronGeometry | THREE.CylinderGeometry | TeapotGeometry | THREE.TorusKnotGeometry, 
     data: any,
   ) {
-    // dispose first
+    // 销毁
     lineSegments.geometry.dispose();
     mesh.geometry.dispose();
 
-    lineSegments.geometry = new THREE.WireframeGeometry( geometry );
+    lineSegments.geometry = new THREE.WireframeGeometry(geometry);
     mesh.geometry = geometry;
-    mesh.material = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x111111 });
-    (mesh.material as THREE.MeshPhongMaterial).map = data.texture ? this.texture : null;
+
+    const material = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x111111 });
+    material.map =  data.texture ? this.texture : null;;
+    mesh.material = material;
 
     if (data['QuantizePosEncoding']) {
       GeometryCompressionUtils.compressPositions(mesh);
@@ -234,6 +243,9 @@ export class Model {
   }
 
   private computeGPUMemory(mesh: THREE.Mesh) {
+    // .estimateBytesUsed ( geometry : BufferGeometry ) : Number
+    // geometry -- 通过 BufferGeometry 的实例来估计内存使用情况。
+    // 返回所有用于表示几何体的属性所占用的字节数。
     this.memoryDisplay?.setValue(BufferGeometryUtils.estimateBytesUsed(mesh.geometry) + ' bytes');
   }
 
@@ -307,15 +319,10 @@ export class Model {
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
 
-      if (this.camera) {
-        this.camera.aspect = this.aspect;
-        // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
-        this.camera.updateProjectionMatrix();
-      }
-
-      if (this.renderer) {
-        this.renderer.setSize(this.width, this.height);
-      }
+      this.camera!.aspect = this.aspect;
+      // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
+      this.camera!.updateProjectionMatrix();
+      this.renderer!.setSize(this.width, this.height);
     };
   }
 }
