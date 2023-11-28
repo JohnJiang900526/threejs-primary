@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export class Model {
   private width: number;
@@ -13,7 +12,6 @@ export class Model {
   private stats: null | Stats;
   private animateNumber: number;
 
-  private controls: null | OrbitControls;
   private points: null | THREE.Points;
   private particles: number; 
   private drawCount: number;
@@ -28,7 +26,6 @@ export class Model {
     this.stats = null;
     this.animateNumber = 0;
 
-    this.controls = null;
     this.points = null;
     this.particles = 300000;
     this.drawCount = 10000;
@@ -48,10 +45,6 @@ export class Model {
     this.createRenderer();
     // 创建模型
     this.generateModel();
-    
-    // 控制面板
-    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.update();
 
     this.initStats();
     this.animate();
@@ -145,7 +138,6 @@ export class Model {
     this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
 
     this.stats?.update();
-    this.controls?.update();
 
     {
       const timer = Date.now() * 0.001;
