@@ -46,7 +46,7 @@ const list: listType[] = [
   },
   {
     key: "273",
-    title: "273.缓冲集合 实例化",
+    title: "273.缓冲集合 实例化广告牌",
     path: "/list/webgl-buffergeometry-instancing-billboards",
   },
   {

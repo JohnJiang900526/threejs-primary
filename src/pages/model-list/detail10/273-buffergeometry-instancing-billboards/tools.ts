@@ -103,8 +103,8 @@ export class Model {
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 5000);
-    this.camera.position.z = 2000;
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 10000);
+    this.camera.position.z = 3000;
 
     // 模型
     this.generateMesh();
