@@ -39,7 +39,8 @@ export class Model {
       title: "控制面板",
       autoPlace: false,
       container: this.container,
-    }).hide();
+    });
+    this.gui.hide();
 
     this.mesh = null;
     this.instances = 5000;
@@ -78,6 +79,7 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 核心
   private generateMesh() {
     const geometry = new THREE.InstancedBufferGeometry();
 
@@ -145,6 +147,7 @@ export class Model {
     // 实例化每一个数据
     const matrix = new THREE.Matrix4();
     const offset = new THREE.Vector3();
+    // 四元数 用于表示物体的旋转
     const orientation = new THREE.Quaternion();
     const scale = new THREE.Vector3(1, 1, 1);
 
@@ -166,6 +169,9 @@ export class Model {
         Math.random() * 2 - 1,
         Math.random() * 2 - 1,
       ).normalize();
+
+      // .compose ( position : Vector3, quaternion : Quaternion, scale : Vector3 ) : this
+      // 设置将该对象位置 position，四元数quaternion 和 缩放scale 组合变换的矩阵
       matrix.compose(offset, orientation, scale);
       this.mesh.setMatrixAt(i, matrix);
     }
@@ -200,15 +206,28 @@ export class Model {
     this.controls?.update();
 
     {
+      // 核心
       const timer = performance.now();
 			this.mesh!.rotation.y = timer * 0.00005;
 			const delta = (timer - this.lastTime) / 5000;
+
+      // .normalize () : this
+      // Normalizes（归一化）四元数 —— 即计算与该四元数具有相同旋转、但长度为1的四元数
 			this.tmpQ.set(this.moveQ.x * delta, this.moveQ.y * delta, this.moveQ.z * delta, 1).normalize();
+      // .makeRotationFromQuaternion ( q : Quaternion ) : this
+      // 将这个矩阵的旋转分量设置为四元数q指定的旋转
 			this.tmpM.makeRotationFromQuaternion(this.tmpQ);
 
 			for (let i = 0; i < this.instances; i++) {
+        // .getMatrixAt ( index : Integer, matrix : Matrix4 ) : undefined
+        // index: 实例的索引。值必须在 [0, count] 区间。
+        // matrix: 该4x4矩阵将会被设为已定义实例的本地变换矩阵。获得已定义实例的本地变换矩阵。
 				this.mesh!.getMatrixAt(i, this.current);
 				this.current.multiply(this.tmpM);
+        // .setMatrixAt ( index : Integer, matrix : Matrix4 ) : undefined
+        // index: 实例的索引。值必须在 [0, count] 区间。
+        // matrix: 一个4x4矩阵，表示单个实例本地变换。
+        // 设置给定的本地变换矩阵到已定义的实例。 请确保在更新所有矩阵后将 .instanceMatrix.needsUpdate 设置为true。
 				this.mesh!.setMatrixAt(i, this.current);
 			}
 
