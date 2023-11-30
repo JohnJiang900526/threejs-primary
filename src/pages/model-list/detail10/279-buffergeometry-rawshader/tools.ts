@@ -16,6 +16,8 @@ export class Model {
 
   private controls: null | OrbitControls;
   private gui: GUI;
+  private vertexShader: string;
+  private fragmentShader: string;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -33,16 +35,55 @@ export class Model {
       autoPlace: false,
       container: this.container,
     });
+    this.gui.hide();
+    this.vertexShader = `
+      precision mediump float;
+      precision mediump int;
+
+      uniform mat4 modelViewMatrix; // optional
+      uniform mat4 projectionMatrix; // optional
+
+      attribute vec3 position;
+      attribute vec4 color;
+
+      varying vec3 vPosition;
+      varying vec4 vColor;
+
+      void main()	{
+        vPosition = position;
+        vColor = color;
+
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+      }
+    `;
+    this.fragmentShader = `
+      precision mediump float;
+      precision mediump int;
+
+      uniform float time;
+
+      varying vec3 vPosition;
+      varying vec4 vColor;
+
+      void main()	{
+        vec4 color = vec4( vColor );
+        color.r += sin( vPosition.x * 10.0 + time ) * 0.5;
+        gl_FragColor = color;
+      }
+    `;
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x101010);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 3500);
-    this.camera.position.z = 2750;
+    this.camera = new THREE.PerspectiveCamera(75, this.aspect, 1, 10);
+    this.camera.position.z = 2;
 
+    // 模型
+    this.generateModel();
     // 渲染器
     this.createRenderer();
 
@@ -59,6 +100,50 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  private generateModel() {
+    const vertexCount = 200 * 3;
+    const geometry = new THREE.BufferGeometry();
+
+    const positions = [];
+    const colors = [];
+
+    for (let i = 0; i < vertexCount; i++) {
+      // 位置
+      positions.push(Math.random() - 0.5);
+      positions.push(Math.random() - 0.5);
+      positions.push(Math.random() - 0.5);
+
+      // 颜色 r,g,b,a
+      colors.push(Math.random() * 255);
+      colors.push(Math.random() * 255);
+      colors.push(Math.random() * 255);
+      colors.push(Math.random() * 255);
+    }
+
+    const positionAttr = new THREE.Float32BufferAttribute(positions, 3);
+    const colorAttr = new THREE.Uint8BufferAttribute(colors, 4);
+
+    // this will map the buffer values to 0.0f - +1.0f in the shader
+    colorAttr.normalized = true;
+
+    geometry.setAttribute('position', positionAttr);
+    geometry.setAttribute('color', colorAttr);
+
+    const material = new THREE.RawShaderMaterial({
+      side: THREE.DoubleSide,
+      transparent: true,
+      uniforms: {
+        time: { value: 1.0 }
+      },
+      vertexShader: this.vertexShader,
+      fragmentShader: this.fragmentShader,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = "target";
+    this.scene.add(mesh);
   }
 
   // 创建渲染器
@@ -86,6 +171,16 @@ export class Model {
 
     this.stats?.update();
     this.controls?.update();
+
+    {
+      const time = performance.now();
+      const obj = this.scene.getObjectByName("target");
+
+      if (obj && obj instanceof THREE.Mesh) {
+        obj.rotation.y = time * 0.0005;
+        obj.material.uniforms.time.value = time * 0.005;
+      }
+    }
 
     // 执行渲染
     this.renderer?.render(this.scene, this.camera!);
