@@ -1,7 +1,7 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import GUI from 'lil-gui';
 
 export class Model {
   private width: number;
@@ -16,6 +16,7 @@ export class Model {
 
   private controls: null | OrbitControls;
   private gui: GUI;
+  private points: null | THREE.Points;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -33,16 +34,22 @@ export class Model {
       autoPlace: false,
       container: this.container,
     });
+    this.gui.hide();
+    this.points = null;
   }
 
   init() {
     // 场景
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x050505);
+    this.scene.fog = new THREE.Fog(0x050505, 2000, 5000);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 3500);
+    this.camera = new THREE.PerspectiveCamera(80, this.aspect, 5, 5000);
     this.camera.position.z = 2750;
 
+    // 模型
+    this.generateModel();
     // 渲染器
     this.createRenderer();
 
@@ -59,6 +66,60 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  // 创建模型
+  // 核心逻辑 看不懂唉
+  private generateModel() {
+    const particles = 5000;
+    const geometry = new THREE.BufferGeometry();
+
+    const arrayBuffer = new ArrayBuffer(particles * 16);
+    const float32Buffer = new Float32Array(arrayBuffer);
+    const uint8Buffer = new Uint8Array(arrayBuffer);
+
+    const color = new THREE.Color();
+    // 粒子在立方体中扩散
+    const radius = 1000, half = radius / 2;
+    for (let i = 0; i < float32Buffer.length; i += 4) {
+      // 位置
+      const x = Math.random() * radius - half;
+      const y = Math.random() * radius - half;
+      const z = Math.random() * radius - half;
+
+      float32Buffer[i + 0] = x;
+      float32Buffer[i + 1] = y;
+      float32Buffer[i + 2] = z;
+
+      // 颜色
+      const r = (x / radius) + 0.5;
+      const g = (y / radius) + 0.5;
+      const b = (z / radius) + 0.5;
+      color.setRGB(r, g, b);
+
+      const j = (i + 3) * 4;
+      uint8Buffer[j + 0] = color.r * 255;
+      uint8Buffer[j + 1] = color.g * 255;
+      uint8Buffer[j + 2] = color.b * 255;
+      uint8Buffer[j + 3] = 0;
+    }
+
+    const buffer32 = new THREE.InterleavedBuffer(float32Buffer, 4);
+    const buffer8 = new THREE.InterleavedBuffer(uint8Buffer, 16);
+
+    const positionAttr = new THREE.InterleavedBufferAttribute(buffer32, 3, 0, false);
+    geometry.setAttribute('position', positionAttr);
+
+    const colorAttr = new THREE.InterleavedBufferAttribute(buffer8, 3, 12, true);
+    geometry.setAttribute('color', colorAttr);
+
+    const material = new THREE.PointsMaterial({
+      size: 15,
+      // 使用顶点着色
+      vertexColors: true,
+    });
+    this.points = new THREE.Points(geometry, material);
+    this.scene.add(this.points);
   }
 
   // 创建渲染器
@@ -86,6 +147,13 @@ export class Model {
 
     this.stats?.update();
     this.controls?.update();
+
+    {
+      // 控制模型旋转
+      const timer = Date.now() * 0.001 / 2;
+      this.points!.rotation.x = timer * 0.25;
+      this.points!.rotation.y = timer * 0.50;
+    }
 
     // 执行渲染
     this.renderer?.render(this.scene, this.camera!);
