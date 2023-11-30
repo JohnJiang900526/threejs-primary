@@ -77,7 +77,10 @@ export class Model {
   // 核心
   private generateMesh() {
     const geometry = new THREE.BufferGeometry();
-    const material = new THREE.LineBasicMaterial({ vertexColors: true });
+    const material = new THREE.LineBasicMaterial({
+      // 使用顶点着色
+      vertexColors: true 
+    });
 
     const positions = [];
     const colors = [];
@@ -96,22 +99,19 @@ export class Model {
       colors.push((z / this.radius) + 0.5);
     }
 
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    const positionAttr = new THREE.Float32BufferAttribute(positions, 3);
+    geometry.setAttribute('position', positionAttr);
+
+    const colorAttr = new THREE.Float32BufferAttribute(colors, 3);
+    geometry.setAttribute('color', colorAttr);
+
     this.generateMorphTargets(geometry);
+    // 计算当前几何体的的边界球形，该操作会更新已有 [param:.boundingSphere]。
+    // 边界球形不会默认计算，需要调用该接口指定计算边界球形，否则保持默认值 null。
     geometry.computeBoundingSphere();
 
     this.line = new THREE.Line(geometry, material);
     this.scene.add(this.line);
-  }
-
-  // 创建渲染器
-  private createRenderer() {
-    this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(this.width, this.height);
-    this.container.appendChild(this.renderer.domElement);
   }
 
   // 核心
@@ -129,6 +129,15 @@ export class Model {
     const morphTarget = new THREE.Float32BufferAttribute(data, 3);
     morphTarget.name = 'target1';
     geometry.morphAttributes.position = [morphTarget];
+  }
+
+  // 创建渲染器
+  private createRenderer() {
+    this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(this.width, this.height);
+    this.container.appendChild(this.renderer.domElement);
   }
 
   // 性能统计
@@ -158,6 +167,8 @@ export class Model {
         this.line.rotation.y = time * 0.5;
 
         this.timer += delta * 0.5;
+        // 一个权重数组，通常从0-1指定应用多少变形。
+        // 默认情况下未定义，但被. updatemorphtargets()重置为空白数组。
         this.line.morphTargetInfluences![0] = Math.abs(Math.sin(this.timer));
       }
     }
