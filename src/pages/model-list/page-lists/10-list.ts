@@ -10,6 +10,56 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "290",
+    path: "/list/webgl-gpgpu-protoplanet",
+    title: "290.GP GPU 星球",
+  },
+  {
+    key: "289",
+    path: "/list/webgl-gpgpu-water",
+    title: "289.GP GPU 水波",
+  },
+  {
+    key: "288",
+    path: "/list/webgl-gpgpu-birds-gltf",
+    title: "288.GP GPU birds动图",
+  },
+  {
+    key: "287",
+    path: "/list/webgl-gpgpu-birds",
+    title: "287.GP GPU birds",
+  },
+  {
+    key: "286",
+    path: "/list/webgl-custom-attributes-points3",
+    title: "286.自定义属性 点3",
+  },
+  {
+    key: "285",
+    path: "/list/webgl-custom-attributes-points2",
+    title: "285.自定义属性 点2",
+  },
+  {
+    key: "284",
+    path: "/list/webgl-custom-attributes-points",
+    title: "284.自定义属性 点",
+  },
+  {
+    key: "283",
+    path: "/list/webgl-custom-attributes-lines",
+    title: "283.自定义属性 线",
+  },
+  {
+    key: "282",
+    path: "/list/webgl-custom-attributes",
+    title: "282.自定义属性",
+  },
+  {
+    key: "281",
+    title: "281.缓冲集合 单元",
+    path: "/list/webgl-buffergeometry-uint",
+  },
+  {
     key: "280",
     title: "280.缓冲集合 选择绘制",
     path: "/list/webgl-buffergeometry-selective-draw",

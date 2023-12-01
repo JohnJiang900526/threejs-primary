@@ -1,6 +1,6 @@
 <template>
   <div class="webgl-page">
-    <Page title="283.自定义属性 线">
+    <Page :title="title">
       <div ref="container" class="page-inner">
       </div>
     </Page>
@@ -8,9 +8,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { useRoute } from "vue-router";
 import Page from "@/base/page/index.vue";
 import { Model } from "./tools";
+
+const route = useRoute();
+const title = computed(() => {
+  return route.meta.title as string;
+});
 
 let objModel: Model | null = null;
 const container = ref<HTMLDivElement>(document.createElement("div"));
