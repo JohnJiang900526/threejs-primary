@@ -103,13 +103,13 @@ export class Model {
   }
 
   private generateModel() {
-    const vertexCount = 200 * 3;
+    const count = 200 * 3;
     const geometry = new THREE.BufferGeometry();
 
     const positions = [];
     const colors = [];
 
-    for (let i = 0; i < vertexCount; i++) {
+    for (let i = 0; i < count; i++) {
       // 位置
       positions.push(Math.random() - 0.5);
       positions.push(Math.random() - 0.5);
@@ -125,7 +125,7 @@ export class Model {
     const positionAttr = new THREE.Float32BufferAttribute(positions, 3);
     const colorAttr = new THREE.Uint8BufferAttribute(colors, 4);
 
-    // this will map the buffer values to 0.0f - +1.0f in the shader
+    // 在着色器中将缓冲值映射为0.0f - +1.0f
     colorAttr.normalized = true;
 
     geometry.setAttribute('position', positionAttr);
