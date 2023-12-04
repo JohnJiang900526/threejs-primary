@@ -199,17 +199,14 @@ export class Model {
       // 颜色
       this.uniforms.color.value.offsetHSL(0.0005, 0, 0);
       // 位移量 随着时间进行更新
-      const attributes = this.line.geometry.attributes;
-      const array = (attributes.displacement as THREE.BufferAttribute).array;
+      const displacement = this.line.geometry.attributes.displacement as THREE.BufferAttribute;
+      const array = displacement.array as Float32Array;
       for (let i = 0; i < array.length; i += 3) {
-        // @ts-ignore
         array[i + 0] += 0.3 * (0.5 - Math.random());
-        // @ts-ignore
         array[i + 1] += 0.3 * (0.5 - Math.random());
-        // @ts-ignore
         array[i + 2] += 0.3 * (0.5 - Math.random());
       }
-      attributes.displacement.needsUpdate = true;
+      this.line.geometry.attributes.displacement.needsUpdate = true;
     }
 
     // 执行渲染
