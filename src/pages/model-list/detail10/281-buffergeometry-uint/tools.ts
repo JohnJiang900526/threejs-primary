@@ -75,11 +75,13 @@ export class Model {
     light2.position.set(1, 1, 1);
 
     const light3 = new THREE.DirectionalLight(0xffffff, 1.5);
-    light3.position.set(0, - 1, 0);
+    light3.position.set(0, -1, 0);
 
     this.scene.add(light1, light2, light3);
   }
 
+  // 核心 逻辑
+  // 向量的计算和
   private generateModel() {
     const triangles = 500000;
     const geometry = new THREE.BufferGeometry();
@@ -127,27 +129,40 @@ export class Model {
       pB.set(bx, by, bz);
       pC.set(cx, cy, cz);
 
+      // .subVectors ( a : Vector3, b : Vector3 ) : this
+      // 将该向量设置为a - b。
       cb.subVectors(pC, pB);
       ab.subVectors(pA, pB);
+      // .cross ( v : Vector3 ) : this
+      // 将该向量设置为它本身与传入的v的叉积（cross product）。
       cb.cross(ab);
+      // .normalize () : this
+      // 将该向量转换为单位向量（unit vector）， 也就是说，
+      // 将该向量的方向设置为和原向量相同，但是其长度（length）为1。
       cb.normalize();
 
-      const nx = cb.x;
-      const ny = cb.y;
-      const nz = cb.z;
+      {
+        // 法线数据处理
+        const baseNumber = 32767;
+        const nx = cb.x;
+        const ny = cb.y;
+        const nz = cb.z;
+        normals.push(nx * baseNumber, ny * baseNumber, nz * baseNumber);
+        normals.push(nx * baseNumber, ny * baseNumber, nz * baseNumber);
+        normals.push(nx * baseNumber, ny * baseNumber, nz * baseNumber);
+      }
 
-      normals.push(nx * 32767, ny * 32767, nz * 32767);
-      normals.push(nx * 32767, ny * 32767, nz * 32767);
-      normals.push(nx * 32767, ny * 32767, nz * 32767);
-
-      // 颜色
-      const vx = (x / n) + 0.5;
-      const vy = (y / n) + 0.5;
-      const vz = (z / n) + 0.5;
-      color.setRGB(vx, vy, vz);
-      colors.push(color.r * 255, color.g * 255, color.b * 255);
-      colors.push(color.r * 255, color.g * 255, color.b * 255);
-      colors.push(color.r * 255, color.g * 255, color.b * 255);
+      {
+        // 颜色数据处理
+        const baseNumber = 255;
+        const vx = (x / n) + 0.5;
+        const vy = (y / n) + 0.5;
+        const vz = (z / n) + 0.5;
+        color.setRGB(vx, vy, vz);
+        colors.push(color.r * baseNumber, color.g * baseNumber, color.b * baseNumber);
+        colors.push(color.r * baseNumber, color.g * baseNumber, color.b * baseNumber);
+        colors.push(color.r * baseNumber, color.g * baseNumber, color.b * baseNumber);
+      }
     }
 
     // 位置
