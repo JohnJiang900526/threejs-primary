@@ -168,14 +168,14 @@ export class Model {
         const e = event.touches[0];
 
         const x = e.clientX - this.half.x;
-        const y = e.clientX - 45 - this.half.y;
+        const y = e.clientY - 45 - this.half.y;
         this.mouse.set(x, y);
       };
     } else {
       window.ontouchmove = null;
       window.onpointermove = (e) => {
         const x = e.clientX - this.half.x;
-        const y = e.clientX - 45 - this.half.y;
+        const y = e.clientY - 45 - this.half.y;
         this.mouse.set(x, y);
       };
     }
