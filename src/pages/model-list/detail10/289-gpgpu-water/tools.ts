@@ -173,6 +173,18 @@ export class Model {
     }
   }
 
+  private changeHandle() {
+    this.heightmapVariable.material.uniforms['mouseSize'].value = this.params.mouseSize;
+    this.heightmapVariable.material.uniforms['viscosityConstant'].value = this.params.viscosity;
+    this.spheresEnabled = this.params.spheresEnabled;
+
+    for (let i = 0; i < this.NUM_SPHERES; i++) {
+      if (this.spheres[i]) {
+        this.spheres[i].visible = this.spheresEnabled;
+      }
+    }
+  }
+
   private setGUI() {
     this.gui.add(this.params, 'mouseSize', 1.0, 100.0, 1.0).onChange(() => {
       this.changeHandle();
@@ -201,18 +213,6 @@ export class Model {
 
       this.smoothShader.uniforms['smoothTexture'].value = alternateRenderTarget.texture;
       this.gpuCompute!.doRenderTarget(this.smoothShader, currentRenderTarget);
-    }
-  }
-
-  private changeHandle() {
-    this.heightmapVariable.material.uniforms['mouseSize'].value = this.params.mouseSize;
-    this.heightmapVariable.material.uniforms['viscosityConstant'].value = this.params.viscosity;
-    this.spheresEnabled = this.params.spheresEnabled;
-
-    for (let i = 0; i < this.NUM_SPHERES; i++) {
-      if (this.spheres[i]) {
-        this.spheres[i].visible = this.spheresEnabled;
-      }
     }
   }
 
