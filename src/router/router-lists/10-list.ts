@@ -26,7 +26,7 @@ const routerList: RouteRecordRaw[] = [
   {
     path: '/list/webgl-gpgpu-protoplanet',
     name: 'GpgpuProtoplanet',
-    meta: {title: "290.GP GPU 地球"},
+    meta: {title: "290.GP GPU 行星"},
     component: GpgpuProtoplanet,
   },
   {
