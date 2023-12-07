@@ -32,7 +32,7 @@ export class Model {
   private readonly BOUNDS: number;
   private readonly BOUNDS_HALF: number;
   private mouseMoved: boolean;
-  private mouseCoords: THREE.Vector2;
+  private mouse: THREE.Vector2;
   private raycaster: THREE.Raycaster;
 
   private waterNormal: THREE.Vector3;
@@ -82,7 +82,7 @@ export class Model {
     this.BOUNDS = 512;
     this.BOUNDS_HALF = this.BOUNDS / 2;
     this.mouseMoved = false;
-    this.mouseCoords = new THREE.Vector2();
+    this.mouse = new THREE.Vector2(10000, 10000);
     this.raycaster = new THREE.Raycaster();
 
     this.waterNormal = new THREE.Vector3();
@@ -99,13 +99,13 @@ export class Model {
     this.smoothShader = {};
     this.readWaterLevelShader = {};
     this.readWaterLevelRenderTarget = new THREE.WebGLRenderTarget(4, 1, {
+      depthBuffer: false,
+      format: THREE.RGBAFormat,
+      type: THREE.UnsignedByteType,
       wrapS: THREE.ClampToEdgeWrapping,
       wrapT: THREE.ClampToEdgeWrapping,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter,
-      format: THREE.RGBAFormat,
-      type: THREE.UnsignedByteType,
-      depthBuffer: false
     });
     this.readWaterLevelImage = new Uint8Array(4 * 1 * 4);
 
@@ -151,23 +151,23 @@ export class Model {
 
   private bind() {
     if (this.isMobile()) {
-      window.onpointermove = null;
-      window.ontouchmove = (event) => {
+      this.container.onpointermove = null;
+      this.container.ontouchmove = (event) => {
         const e = event.touches[0];
 
         const x = e.clientX / this.width * 2 - 1;
         const y = -(e.clientY - 45) / this.height * 2 + 1;
   
-        this.mouseCoords.set(x, y);
+        this.mouse.set(x, y);
         this.mouseMoved = true;        
       };
     } else {
-      window.ontouchmove = null;
-      window.onpointermove = (e) => {
+      this.container.ontouchmove = null;
+      this.container.onpointermove = (e) => {
         const x = e.clientX / this.width * 2 - 1;
         const y = -e.clientY / this.height * 2 + 1;
   
-        this.mouseCoords.set(x, y);
+        this.mouse.set(x, y);
         this.mouseMoved = true;
       };
     }
@@ -227,10 +227,10 @@ export class Model {
   }
 
   private fillTexture(texture: THREE.DataTexture) {
-    const waterMaxHeight = 10;
+    const max = 10;
 
     const noise = (x: number, y: number) => {
-      let multR = waterMaxHeight;
+      let multR = max;
       let mult = 0.025;
       let r = 0;
       for (let i = 0; i < 15; i++) {
@@ -263,17 +263,22 @@ export class Model {
     if (this.renderer!.capabilities.isWebGL2 === false) {
       this.gpuCompute.setDataType(THREE.HalfFloatType);
     }
-    const heightmap0 = this.gpuCompute.createTexture();
+    const heightmap = this.gpuCompute.createTexture();
 
-    this.fillTexture(heightmap0);
+    this.fillTexture(heightmap);
 
-    this.heightmapVariable = this.gpuCompute.addVariable('heightmap', this.heightmapFragmentShader, heightmap0);
+    const vHeightmap = this.gpuCompute.addVariable('heightmap', this.heightmapFragmentShader, heightmap);
+    this.heightmapVariable = vHeightmap;
 
     this.gpuCompute.setVariableDependencies(this.heightmapVariable, [this.heightmapVariable]);
 
+    // 鼠标位置
     this.heightmapVariable.material.uniforms['mousePos'] = { value: new THREE.Vector2(10000, 10000) };
+    // 鼠标影响半径 大小
     this.heightmapVariable.material.uniforms['mouseSize'] = { value: 20.0 };
+    // 粘性常数
     this.heightmapVariable.material.uniforms['viscosityConstant'] = { value: 0.98 };
+    // 高度补偿
     this.heightmapVariable.material.uniforms['heightCompensation'] = { value: 0 };
     this.heightmapVariable.material.defines.BOUNDS = this.BOUNDS.toFixed(1);
 
@@ -282,26 +287,24 @@ export class Model {
   }
 
   private initWater() {
-    const materialColor = 0x0040C0;
-    const geometry = new THREE.PlaneGeometry(this.BOUNDS, this.BOUNDS, this.WIDTH - 1, this.WIDTH - 1);
-
     // ShaderMaterial克隆THREE。MeshPhongMaterial，带有自定义顶点着色器
     const material = new THREE.ShaderMaterial({
       uniforms: THREE.UniformsUtils.merge([
         THREE.ShaderLib['phong'].uniforms,
-        {
-          'heightmap': { value: null }
-        }
+        { heightmap: { value: null } }
       ]),
       vertexShader: this.waterVertexShader,
       fragmentShader: THREE.ShaderChunk['meshphong_frag']
     });
 
+    // 材质是否受到光照的影响。默认值为 false。
+    // 如果传递与光照相关的uniform数据到这个材质，则为true。默认是false。
     material.lights = true;
 
     Object.assign(material, {
       shininess: 50,
-      color: new THREE.Color(materialColor),
+      color: new THREE.Color(0x0040C0),
+      // 镜面颜色
       specular: new THREE.Color(0x111111),
     });
 
@@ -318,6 +321,8 @@ export class Model {
     material.defines.BOUNDS = this.BOUNDS.toFixed(1);
 
     {
+      // 水
+      const geometry = new THREE.PlaneGeometry(this.BOUNDS, this.BOUNDS, this.WIDTH - 1, this.WIDTH - 1);
       this.waterUniforms = material.uniforms;
       this.waterMesh = new THREE.Mesh(geometry, material);
       this.waterMesh.rotation.x = -Math.PI / 2;
@@ -327,6 +332,7 @@ export class Model {
     }
 
     {
+      // 水波
       const geometryRay = new THREE.PlaneGeometry(this.BOUNDS, this.BOUNDS, 1, 1);
       const material = new THREE.MeshBasicMaterial({ 
         color: 0xFFFFFF, 
@@ -375,50 +381,50 @@ export class Model {
   }
 
   private sphereDynamics() {
-    const currentRenderTarget = this.gpuCompute!.getCurrentRenderTarget(this.heightmapVariable);
+    const currentTarget = this.gpuCompute!.getCurrentRenderTarget(this.heightmapVariable);
+    this.readWaterLevelShader.uniforms['levelTexture'].value = currentTarget.texture;
 
-    this.readWaterLevelShader.uniforms['levelTexture'].value = currentRenderTarget.texture;
-
-    for (let i = 0; i < this.NUM_SPHERES; i++) {
-      const sphere = this.spheres[i];
-
-      if (sphere) {
-        const u = 0.5 * sphere.position.x / this.BOUNDS_HALF + 0.5;
-        const v = 1 - (0.5 * sphere.position.z / this.BOUNDS_HALF + 0.5);
-
-        this.readWaterLevelShader.uniforms['point1'].value.set(u, v);
-        this.gpuCompute!.doRenderTarget(this.readWaterLevelShader, this.readWaterLevelRenderTarget);
-        this.renderer!.readRenderTargetPixels(this.readWaterLevelRenderTarget, 0, 0, 4, 1, this.readWaterLevelImage);
-        
-        const pixels = new Float32Array(this.readWaterLevelImage.buffer);
-        this.waterNormal.set(pixels[1], 0, - pixels[2]);
-
-        const pos = sphere.position;
-        pos.y = pixels[0];
-
-        // 移动球体
-        this.waterNormal.multiplyScalar(0.1);
-        sphere.userData.velocity.add(this.waterNormal);
-        sphere.userData.velocity.multiplyScalar(0.998);
-        pos.add(sphere.userData.velocity);
-
-        if (pos.x < -this.BOUNDS_HALF) {
-          pos.x = -this.BOUNDS_HALF + 0.001;
-          sphere.userData.velocity.x *= - 0.3;
-        } else if (pos.x > this.BOUNDS_HALF) {
-          pos.x = this.BOUNDS_HALF - 0.001;
-          sphere.userData.velocity.x *= - 0.3;
-        }
-
-        if (pos.z < -this.BOUNDS_HALF) {
-          pos.z = -this.BOUNDS_HALF + 0.001;
-          sphere.userData.velocity.z *= - 0.3;
-        } else if (pos.z > this.BOUNDS_HALF) {
-          pos.z = this.BOUNDS_HALF - 0.001;
-          sphere.userData.velocity.z *= - 0.3;
-        }
+    this.spheres.forEach((sphere) => {
+      const x = 0.5 * sphere.position.x / this.BOUNDS_HALF + 0.5;
+      const y = 1 - (0.5 * sphere.position.z / this.BOUNDS_HALF + 0.5);
+  
+      this.readWaterLevelShader.uniforms['point1'].value.set(x, y);
+      this.gpuCompute!.doRenderTarget(this.readWaterLevelShader, this.readWaterLevelRenderTarget);
+      this.renderer!.readRenderTargetPixels(this.readWaterLevelRenderTarget, 0, 0, 4, 1, this.readWaterLevelImage);
+      
+      const pixels = new Float32Array(this.readWaterLevelImage.buffer);
+      this.waterNormal.set(pixels[1], 0, - pixels[2]);
+  
+      const position = sphere.position;
+      position.y = pixels[0];
+  
+      // 移动球体
+      this.waterNormal.multiplyScalar(0.1);
+      // .add ( v : Vector3 ) : this
+      // 将传入的向量v和这个向量相加。
+      sphere.userData.velocity.add(this.waterNormal);
+      // .multiplyScalar ( s : Float ) : this
+      // 将该向量与所传入的标量s进行相乘。
+      sphere.userData.velocity.multiplyScalar(0.998);
+      position.add(sphere.userData.velocity);
+  
+      // 球在x方向上的移动
+      if (position.x < -this.BOUNDS_HALF) {
+        position.x = -this.BOUNDS_HALF + 0.001;
+        sphere.userData.velocity.x *= - 0.3;
+      } else if (position.x > this.BOUNDS_HALF) {
+        position.x = this.BOUNDS_HALF - 0.001;
+        sphere.userData.velocity.x *= - 0.3;
       }
-    }
+      // 球在y方向上的移动
+      if (position.z < -this.BOUNDS_HALF) {
+        position.z = -this.BOUNDS_HALF + 0.001;
+        sphere.userData.velocity.z *= - 0.3;
+      } else if (position.z > this.BOUNDS_HALF) {
+        position.z = this.BOUNDS_HALF - 0.001;
+        sphere.userData.velocity.z *= - 0.3;
+      }
+    });
   }
 
   // 创建渲染器
@@ -442,10 +448,10 @@ export class Model {
   private render() {
     const uniforms = this.heightmapVariable.material.uniforms;
     if (this.mouseMoved) {
-      this.raycaster.setFromCamera(this.mouseCoords, this.camera!);
-      const intersects = this.raycaster.intersectObject(this.meshRay);
+      this.raycaster.setFromCamera(this.mouse, this.camera!);
 
-      if (intersects.length > 0) {
+      const intersects = this.raycaster.intersectObject(this.meshRay);
+      if (intersects[0]) {
         const point = intersects[0].point;
         uniforms['mousePos'].value.set(point.x, point.z);
       } else {
@@ -463,8 +469,8 @@ export class Model {
     }
 
     // 获得自定义统一的计算输出
-    this.waterUniforms['heightmap'].value = this.gpuCompute!.getCurrentRenderTarget(this.heightmapVariable).texture;
-
+    const heightmap = this.gpuCompute!.getCurrentRenderTarget(this.heightmapVariable).texture;
+    this.waterUniforms['heightmap'].value = heightmap;
   }
 
   // 持续动画
@@ -482,6 +488,8 @@ export class Model {
 
   // 消除 副作用
   dispose() {
+    this.container.onpointermove = null;
+    this.container.ontouchmove = null;
     window.cancelAnimationFrame(this.animateNumber);
   }
 
