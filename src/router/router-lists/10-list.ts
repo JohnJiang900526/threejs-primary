@@ -20,9 +20,79 @@ import GpgpuBirds from "@/pages/model-list/detail10/287-gpgpu-birds/index.vue";
 import GpgpuBirdsGLTF from "@/pages/model-list/detail10/288-gpgpu-birds-gltf/index.vue";
 import GpgpuWater from "@/pages/model-list/detail10/289-gpgpu-water/index.vue";
 import GpgpuProtoplanet from "@/pages/model-list/detail10/290-gpgpu-protoplanet/index.vue";
+import LightningStrike from "@/pages/model-list/detail10/291-lightning-strike/index.vue";
+import MaterialsModified from "@/pages/model-list/detail10/292-materials-modified/index.vue";
+import RaymarchingReflect from "@/pages/model-list/detail10/293-raymarching-reflect/index.vue";
+import ShadowmapCsm from "@/pages/model-list/detail10/294-shadowmap-csm/index.vue";
+import ShadowmapPcss from "@/pages/model-list/detail10/295-shadowmap-pcss/index.vue";
+import ShadowmapProgressive from "@/pages/model-list/detail10/296-shadowmap-progressive/index.vue";
+import SimpleGi from "@/pages/model-list/detail10/297-simple-gi/index.vue";
+import TiledForward from "@/pages/model-list/detail10/298-tiled-forward/index.vue";
+import WorkerOffscreenCanvas from "@/pages/model-list/detail10/299-worker-offscreen-canvas/index.vue";
+import AttributesNteger from "@/pages/model-list/detail10/300-buffergeometry-attributes-integer/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-buffergeometry-attributes-integer',
+    name: 'AttributesNteger',
+    meta: {title: "300.缓冲集合 属性integer"},
+    component: AttributesNteger,
+  },
+  {
+    path: '/list/webgl-worker-offscreen-canvas',
+    name: 'WorkerOffscreenCanvas',
+    meta: {title: "299.画面之外 canvas"},
+    component: WorkerOffscreenCanvas,
+  },
+  {
+    path: '/list/webgl-tiled-forward',
+    name: 'TiledForward',
+    meta: {title: "298.平铺向前"},
+    component: TiledForward,
+  },
+  {
+    path: '/list/webgl-simple-gi',
+    name: 'SimpleGi',
+    meta: {title: "297.简单的 gi"},
+    component: SimpleGi,
+  },
+  {
+    path: '/list/webgl-shadowmap-progressive',
+    name: 'ShadowmapProgressive',
+    meta: {title: "296.阴影贴图-progressive"},
+    component: ShadowmapProgressive,
+  },
+  {
+    path: '/list/webgl-shadowmap-pcss',
+    name: 'ShadowmapPcss',
+    meta: {title: "295.阴影贴图-pcss"},
+    component: ShadowmapPcss,
+  },
+  {
+    path: '/list/webgl-shadowmap-csm',
+    name: 'ShadowmapCsm',
+    meta: {title: "294.阴影贴图-csm"},
+    component: ShadowmapCsm,
+  },
+  {
+    path: '/list/webgl-raymarching-reflect',
+    name: 'RaymarchingReflect',
+    meta: {title: "293.射线反射"},
+    component: RaymarchingReflect,
+  },
+  {
+    path: '/list/webgl-materials-modified',
+    name: 'MaterialsModified',
+    meta: {title: "292.材质修改"},
+    component: MaterialsModified,
+  },
+  {
+    path: '/list/webgl-lightning-strike',
+    name: 'LightningStrike',
+    meta: {title: "291.雷电"},
+    component: LightningStrike,
+  },
   {
     path: '/list/webgl-gpgpu-protoplanet',
     name: 'GpgpuProtoplanet',

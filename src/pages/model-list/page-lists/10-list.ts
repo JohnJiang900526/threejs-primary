@@ -10,6 +10,56 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
+    key: "300",
+    path: "/list/webgl-buffergeometry-attributes-integer",
+    title: "300.缓冲集合 属性integer",
+  },
+  {
+    key: "299",
+    path: "/list/webgl-worker-offscreen-canvas",
+    title: "299.画面之外 canvas",
+  },
+  {
+    key: "298",
+    path: "/list/webgl-tiled-forward",
+    title: "298.平铺向前",
+  },
+  {
+    key: "297",
+    path: "/list/webgl-simple-gi",
+    title: "297.简单的 gi",
+  },
+  {
+    key: "296",
+    path: "/list/webgl-shadowmap-progressive",
+    title: "296.阴影贴图-progressive",
+  },
+  {
+    key: "295",
+    path: "/list/webgl-shadowmap-pcss",
+    title: "295.阴影贴图-pcss",
+  },
+  {
+    key: "294",
+    path: "/list/webgl-shadowmap-csm",
+    title: "294.阴影贴图-csm",
+  },
+  {
+    key: "293",
+    path: "/list/webgl-raymarching-reflect",
+    title: "293.射线反射",
+  },
+  {
+    key: "292",
+    path: "/list/webgl-materials-modified",
+    title: "292.材质修改",
+  },
+  {
+    key: "291",
+    path: "/list/webgl-lightning-strike",
+    title: "291.雷电",
+  },
+  {
     key: "290",
     path: "/list/webgl-gpgpu-protoplanet",
     title: "290.GP GPU 星球",
