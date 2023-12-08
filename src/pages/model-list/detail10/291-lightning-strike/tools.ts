@@ -22,7 +22,7 @@ export class Model {
   private gui: GUI;
 
   private composer: null | EffectComposer;
-  private currentSceneIndex: number;
+  private currentIndex: number;
   private currentTime: number;
   private clock: THREE.Clock;
   private raycaster: THREE.Raycaster;
@@ -44,7 +44,7 @@ export class Model {
     });
 
     this.composer = null;
-    this.currentSceneIndex = 2;
+    this.currentIndex = 0;
     this.currentTime = 0;
     this.clock = new THREE.Clock();
     this.raycaster = new THREE.Raycaster();
@@ -83,7 +83,7 @@ export class Model {
     this.gui.close();
 
     {
-      this.scene.userData.sceneIndex = this.currentSceneIndex;
+      this.scene.userData.sceneIndex = this.currentIndex;
       this.scene.userData.timeRate = 1;
       this.scene.userData.lightningColorRGB = [
         this.scene.userData.lightningColor.r * 255,
@@ -100,7 +100,7 @@ export class Model {
     const sceneFolder = this.gui.addFolder('场景参数');
     const scaneIndexValues = { '电锥': 0, '灯泡': 1, '风暴': 2 };
     sceneFolder.add(this.scene.userData, 'sceneIndex', scaneIndexValues).name('场景').onChange((value: number) => {
-      this.currentSceneIndex = value;
+      this.currentIndex = value;
       this.generateScane();
     });
     const canGo = this.scene.userData.canGoBackwardsInTime;
@@ -147,7 +147,7 @@ export class Model {
   }
 
   private generateScane() {
-    switch (this.currentSceneIndex) {
+    switch (this.currentIndex) {
       case 0:
         this.scene = this.createConesScene();
         break;
