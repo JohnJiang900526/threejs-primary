@@ -98,6 +98,7 @@ export class Model {
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
     this.controls.maxPolarAngle = Math.PI / 2;
     this.controls.target = new THREE.Vector3(-100, 10, 0);
+    this.controls.enableDamping = true;
     this.controls.update();
 
     this.setGUI();
