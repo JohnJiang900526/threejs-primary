@@ -1,8 +1,7 @@
 <template>
   <div class="webgl-page">
     <Page :title="title">
-      <div ref="container" class="page-inner">
-      </div>
+      <div ref="container" class="page-inner"></div>
     </Page>
   </div>
 </template>
