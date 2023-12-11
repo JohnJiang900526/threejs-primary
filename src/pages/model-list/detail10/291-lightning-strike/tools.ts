@@ -2,7 +2,11 @@ import * as THREE from 'three';
 import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { LightningStrike, type LightningSegment, type LightningSubray } from 'three/examples/jsm/geometries/LightningStrike';
+import { 
+  LightningStrike, 
+  type LightningSegment, 
+  type LightningSubray,
+} from 'three/examples/jsm/geometries/LightningStrike';
 import { LightningStorm } from 'three/examples/jsm/objects/LightningStorm';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
@@ -54,7 +58,6 @@ export class Model {
   init() {
     // 渲染器
     this.createRenderer();
-    this.composer = new EffectComposer(this.renderer!);
 
     // 场景
     this.generateScane();
@@ -165,11 +168,21 @@ export class Model {
   }
 
   private createOutline(scene: THREE.Scene, objectsArray: THREE.Mesh[], visibleColor: THREE.Color) {
-    const outlinePass = new OutlinePass(new THREE.Vector2(this.width, this.height), scene, scene.userData.camera, objectsArray);
+    // 冲突
+    const resolution = new THREE.Vector2(this.width, this.height);
+    const camera = scene.userData.camera;
+    const selectedObj = objectsArray;
+
+    const outlinePass = new OutlinePass(resolution, scene, camera, selectedObj);
+    // 边缘强度
     outlinePass.edgeStrength = 2.5;
+    // 边缘发光
     outlinePass.edgeGlow = 0.7;
+    // 边缘厚度
     outlinePass.edgeThickness = 2.8;
+    // 可见边缘颜色
     outlinePass.visibleEdgeColor = visibleColor;
+    // 不可见边缘颜色
     outlinePass.hiddenEdgeColor.set(0);
 
     this.composer!.addPass(outlinePass);
@@ -178,7 +191,7 @@ export class Model {
     return outlinePass;
   }
 
-  // 带闪电的锥形
+  // 电锥场景
   private createConesScene() {
     // 场景
     const scene = new THREE.Scene();
@@ -190,6 +203,7 @@ export class Model {
     scene.userData.lightningColor = new THREE.Color(0xB0FFFF);
     scene.userData.outlineColor = new THREE.Color(0x00FFFF);
 
+    // 点光
     const posLight = new THREE.PointLight(0x00ffff, 1, 5000, 2);
     scene.add(posLight);
 
@@ -208,11 +222,7 @@ export class Model {
     posLight.position.set(0, (distance + height) * 0.5, 0);
     posLight.color = scene.userData.outlineColor;
 
-    scene.userData.camera.position.set(
-      5 * height,
-      4 * height,
-      18 * height,
-    );
+    scene.userData.camera.position.set(5 * height, 4 * height, 18 * height);
 
     const geometry1 = new THREE.ConeGeometry(height, height, 30, 1, false);
     const material1 = new THREE.MeshPhongMaterial({ color: 0xFFFF00, emissive: 0x1F1F00 });
@@ -227,7 +237,7 @@ export class Model {
     coneMesh2.position.y = heightHalf;
     scene.add(coneMesh2);
 
-    // 雷电
+    // 雷电材质
     scene.userData.lightningMaterial = new THREE.MeshBasicMaterial({
       color: scene.userData.lightningColor
     });
@@ -239,6 +249,7 @@ export class Model {
       radius1: 4,
       minRadius: 2.5,
       maxIterations: 7,
+
       isEternal: true,
       timeScale: 0.7,
       propagationTimeFactor: 0.05,
@@ -248,6 +259,7 @@ export class Model {
       maxSubrayRecursion: 3,
       ramification: 7,
       recursionProbability: 0.6,
+
       roughness: 0.85,
       straightness: 0.6
     };
@@ -260,6 +272,7 @@ export class Model {
     scene.userData.recreateRay = () => {
       if (lightningStrikeMesh) {
         scene.remove(lightningStrikeMesh);
+        lightningStrikeMesh = null;
       }
 
       lightningStrike = new LightningStrike(scene.userData.rayParams);
@@ -318,6 +331,13 @@ export class Model {
       // @ts-ignore
       const rayParameters = lightningStrike!.rayParameters;
       const { sourceOffset, destOffset } = rayParameters;
+      // .lerpVectors ( v1 : Vector3, v2 : Vector3, alpha : Float ) : this
+      // v1 - 起始的Vector3。
+      // v2 - 朝着进行插值的Vector3。
+      // alpha - 插值因数，其范围通常在[0, 1]闭区间。
+
+      // 将此向量设置为在v1和v2之间进行线性插值的向量， 
+      // 其中alpha为两个向量之间连线的长度的百分比 —— alpha = 0 时表示的是v1，alpha = 1 时表示的是v2。
       posLight.position.lerpVectors( sourceOffset, destOffset, 0.5);
 
       if (scene.userData.outlineEnabled) {
@@ -329,7 +349,7 @@ export class Model {
 
     return scene;
   }
-  // 电灯泡
+  // 电灯泡场景
   private createBallScene() {
     const scene = new THREE.Scene();
     scene.userData.canGoBackwardsInTime = true;
@@ -339,19 +359,16 @@ export class Model {
     ballScene.background = new THREE.Color(0x454545);
 
     // 光线
-    const ambientLight = new THREE.AmbientLight(0x444444);
-    ballScene.add(ambientLight);
-    scene.add(ambientLight);
+    const light0 = new THREE.AmbientLight(0x444444);
 
     const light1 = new THREE.DirectionalLight(0xffffff, 0.5);
     light1.position.set(1, 1, 1);
-    ballScene.add(light1);
-    scene.add(light1);
 
     const light2 = new THREE.DirectionalLight(0xffffff, 1.5);
     light2.position.set(-0.5, 1, 0.2);
-    ballScene.add(light2);
-    scene.add(light2);
+
+    ballScene.add(light0, light1, light2);
+    scene.add(light0, light1, light2);
 
     // 等离子体球
     scene.userData.lightningColor = new THREE.Color(0xFFB0FF);
@@ -370,18 +387,18 @@ export class Model {
     ];
 
     const loader = (new THREE.CubeTextureLoader()).setPath(path);
-    const textureCube = loader.load(urls);
-    textureCube.mapping = THREE.CubeReflectionMapping;
-    textureCube.encoding = THREE.sRGBEncoding;
+    const texture = loader.load(urls);
+    texture.mapping = THREE.CubeReflectionMapping;
+    texture.encoding = THREE.sRGBEncoding;
 
     const sphereMaterial = new THREE.MeshPhysicalMaterial({
       transparent: true,
-      transmission: .96,
+      transmission: 0.96,
       depthWrite: false,
       color: 'white',
       metalness: 0,
       roughness: 0,
-      envMap: textureCube
+      envMap: texture,
     });
 
     const sphereHeight = 300;
@@ -389,6 +406,7 @@ export class Model {
 
     scene.userData.camera.position.set(5 * sphereRadius, 2 * sphereHeight, 6 * sphereRadius);
 
+    // 灯泡 圆球
     const geometry = new THREE.SphereGeometry(sphereRadius, 80, 40);
     const sphereMesh = new THREE.Mesh(geometry, sphereMaterial);
     sphereMesh.position.set(0, sphereHeight, 0);
@@ -401,14 +419,17 @@ export class Model {
     spherePlasma.scale.y = 0.6;
     scene.add(spherePlasma);
 
+    // 圆柱缓冲几何体（CylinderGeometry）
+    // 棍子
     const geometry2 = new THREE.CylinderGeometry(sphereRadius * 0.06, sphereRadius * 0.06, sphereHeight, 6, 1, true)
     const material2 = new THREE.MeshLambertMaterial({ color: 0x020202 });
-    const post = new THREE.Mesh(geometry2, material2);
-    post.position.y = (sphereHeight * 0.5 - sphereRadius * 0.05 * 1.2);
-    scene.add(post);
+    const stick = new THREE.Mesh(geometry2, material2);
+    stick.position.y = (sphereHeight * 0.5 - sphereRadius * 0.05 * 1.2);
+    scene.add(stick);
 
+    // 底座
     const geometry3 = new THREE.BoxGeometry(sphereHeight * 0.5, sphereHeight * 0.1, sphereHeight * 0.5);
-    const box = new THREE.Mesh(geometry3, post.material);
+    const box = new THREE.Mesh(geometry3, stick.material);
     box.position.y = sphereHeight * 0.05 * 0.5;
     scene.add(box);
 
@@ -417,9 +438,10 @@ export class Model {
     const vec2 = new THREE.Vector3();
     let rayLength = 0;
 
+    const destOffset = new THREE.Vector3(sphereRadius, 0, 0).add(sphereMesh.position)
     scene.userData.rayParams = {
       sourceOffset: sphereMesh.position,
-      destOffset: new THREE.Vector3(sphereRadius, 0, 0).add(sphereMesh.position),
+      destOffset: destOffset,
       radius0: 4,
       radius1: 4,
       radius0Factor: 0.82,
@@ -464,6 +486,7 @@ export class Model {
     scene.userData.recreateRay = () => {
       if (lightningStrikeMesh) {
         scene.remove(lightningStrikeMesh);
+        lightningStrikeMesh = null;
       }
 
       lightningStrike = new LightningStrike(scene.userData.rayParams);
@@ -474,8 +497,13 @@ export class Model {
       outlineMeshArray.push(spherePlasma);
       scene.add(lightningStrikeMesh);
     };
-
     scene.userData.recreateRay();
+
+    // 控制器
+    const controls = new OrbitControls(scene.userData.camera, this.renderer!.domElement);
+    controls.target.copy(sphereMesh.position);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
     // composer 渲染
     const renderPass = new RenderPass(ballScene, scene.userData.camera);
@@ -492,7 +520,9 @@ export class Model {
       // @ts-ignore
       const rayParameters = lightningStrike!.rayParameters;
       const { destOffset, sourceOffset } = rayParameters;
+
       rayDirection.subVectors(destOffset, sourceOffset);
+      // 计算从(0, 0, 0) 到 (x, y, z)的欧几里得长度 （Euclidean length，即直线长度）
       rayLength = rayDirection.length();
       rayDirection.normalize();
 
@@ -502,12 +532,6 @@ export class Model {
       outlinePass.enabled = scene.userData.outlineEnabled;
       this.composer!.render();
     };
-
-    // 控制器
-    const controls = new OrbitControls(scene.userData.camera, this.renderer!.domElement);
-    controls.target.copy(sphereMesh.position);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
 
     const intersection = new THREE.Vector3();
     // 光线投射
@@ -525,6 +549,9 @@ export class Model {
       }
     };
 
+    this.container.ontouchmove = null;
+    this.container.onpointermove = null;
+
     if (this.isMobile()) {
       this.container.onpointermove = null;
       this.container.ontouchmove = (event) => {
@@ -538,9 +565,10 @@ export class Model {
         handle(e);
       };
     }
-
     return scene;
   }
+
+  // 风暴雷电场景
   private createStormScene() {
     // 场景
     const scene = new THREE.Scene();
@@ -549,20 +577,25 @@ export class Model {
     scene.userData.camera = new THREE.PerspectiveCamera(50, this.aspect, 20, 10000);
 
     // 光线
+    // 环境光
     const light0 = new THREE.AmbientLight(0x444444);
 
     const light1 = new THREE.DirectionalLight(0xffffff, 0.5);
     light1.position.set(1, 1, 1);
 
-    const posLight = new THREE.PointLight(0x00ffff);
-    posLight.position.set(0, 100, 0);
-    scene.add(light0, light1, posLight);
+    const light2 = new THREE.PointLight(0x00ffff);
+    light2.position.set(0, 100, 0);
+    scene.add(light0, light1, light2);
 
     // 地板
     const GROUND_SIZE = 1000;
 
+    // .multiplyScalar ( s : Float ) : this
+    // 将该向量与所传入的标量s进行相乘。
     scene.userData.camera.position.set(0, 0.2, 1.6).multiplyScalar(GROUND_SIZE * 0.5);
     const geometry1 = new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE);
+    // Lambert网格材质(MeshLambertMaterial)
+    // 一种非光泽表面的材质，没有镜面高光
     const material1 = new THREE.MeshLambertMaterial({ color: 0x072302 });
     const ground = new THREE.Mesh(geometry1, material1);
     ground.rotation.x = - Math.PI * 0.5;
@@ -608,7 +641,11 @@ export class Model {
         const sourceOffset = lightningStrike.rayParameters.sourceOffset;
         rayLength = sourceOffset.y;
 
+        // .subVectors ( a : Vector3, b : Vector3 ) : this
+        // 将该向量设置为a - b。
         vec1.subVectors(childSubray.pos1, sourceOffset);
+        // .dot ( v : Vector3 ) : Float
+        // 计算该vector和所传入v的点积（dot product）。
         const proj = rayDirection.dot(vec1);
         vec2.copy(rayDirection).multiplyScalar(proj);
         vec1.sub(vec2);
@@ -639,7 +676,9 @@ export class Model {
     const starGeometry = new THREE.BufferGeometry();
     const positionAttr = new THREE.Float32BufferAttribute(starVertices, 3);
     starGeometry.setAttribute('position', positionAttr);
-    const starMesh = new THREE.Mesh(starGeometry, new THREE.MeshBasicMaterial({ color: 0x020900 }));
+
+    const startMaterial = new THREE.MeshBasicMaterial({ color: 0x020900 });
+    const starMesh = new THREE.Mesh(starGeometry, startMaterial);
     starMesh.scale.multiplyScalar(6);
 
     // 风暴
@@ -651,21 +690,22 @@ export class Model {
       maxLightnings: 8,
       lightningParameters: scene.userData.rayParams,
       lightningMaterial: scene.userData.lightningMaterial,
-      onLightningDown: (lightning) => {
+      onLightningDown: (lightning: LightningStrike) => {
         // 在射线击中时添加黑色星标记
-        const star1 = starMesh.clone();
+        const star = starMesh.clone();
         // @ts-ignore
-        star1.position.copy(lightning.rayParameters.destOffset);
-        star1.position.y = 0.05;
-        star1.rotation.y = 2 * Math.PI * Math.random();
-        scene.add(star1);
+        star.position.copy(lightning.rayParameters.destOffset);
+        star.position.y = 0.05;
+        star.rotation.y = 2 * Math.PI * Math.random();
+        scene.add(star);
       }
     });
     scene.add(storm);
 
     // composer 渲染
+    const renderPass = new RenderPass(scene, scene.userData.camera);
     this.composer!.passes = [];
-    this.composer!.addPass(new RenderPass(scene, scene.userData.camera));
+    this.composer!.addPass(renderPass);
     // @ts-ignore
     this.createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
 
@@ -675,6 +715,7 @@ export class Model {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
+    // 渲染方法
     scene.userData.render = (time: number) => {
       storm.update(time);
       controls.update();
@@ -695,6 +736,8 @@ export class Model {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.container.appendChild(this.renderer.domElement);
+
+    this.composer = new EffectComposer(this.renderer);
   }
 
   // 性能统计
@@ -714,11 +757,11 @@ export class Model {
 
     this.stats?.update();
 
-    {
-      this.currentTime += this.scene.userData.timeRate * this.clock.getDelta();
-      if (this.currentTime < 0) { this.currentTime = 0; }
-      this.scene.userData.render(this.currentTime);
-    }
+    // 执行渲染
+    const timer = this.scene.userData.timeRate * this.clock.getDelta();
+    this.currentTime += timer;
+    if (this.currentTime < 0) { this.currentTime = 0; }
+    this.scene.userData.render(this.currentTime);
   }
 
   // 消除 副作用
