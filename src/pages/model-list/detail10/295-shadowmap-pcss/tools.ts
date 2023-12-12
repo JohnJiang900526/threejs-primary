@@ -69,6 +69,7 @@ export class Model {
     this.controls.minDistance = 10;
     this.controls.maxDistance = 75;
     this.controls.target.set(0, 2.5, 0);
+    this.controls.enableDamping = true;
     this.controls.update();
 
     this.initStats();
