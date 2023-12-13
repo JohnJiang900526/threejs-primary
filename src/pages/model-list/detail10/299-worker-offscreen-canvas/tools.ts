@@ -1,20 +1,15 @@
 import * as THREE from 'three';
 import GUI from 'lil-gui';
 // @ts-ignore
-import init from './offscreen/scene';
+import init from './offscreen/scene.js';
 import { showFailToast } from 'vant';
 
 export class Model {
   private width: number;
   private height: number;
-  private aspect: number;
   private container: HTMLDivElement;
   private canvas1: HTMLCanvasElement;
   private canvas2: HTMLCanvasElement;
-  private scene: THREE.Scene;
-  private renderer: null | THREE.WebGLRenderer;
-  private camera: null | THREE.PerspectiveCamera;
-  private stats: null | Stats;
   private animateNumber: number;
 
   private gui: GUI;
@@ -24,11 +19,6 @@ export class Model {
     this.canvas2 = canvas2;
     this.width = this.canvas1.offsetWidth;
     this.height = this.canvas1.offsetHeight;
-    this.aspect = this.width/this.height;
-    this.scene = new THREE.Scene();
-    this.renderer = null;
-    this.camera = null;
-    this.stats = null;
     this.animateNumber = 0;
 
     this.gui = new GUI({
@@ -81,7 +71,6 @@ export class Model {
     window.onresize = () => {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
-      this.aspect = this.width/this.height;
     };
   }
 }
