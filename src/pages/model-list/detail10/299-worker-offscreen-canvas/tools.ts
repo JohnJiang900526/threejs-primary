@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import GUI from 'lil-gui';
-// @ts-ignore
-import init from './offscreen/scene.js';
+import init from './offscreen/index';
 import { showFailToast } from 'vant';
 
 export class Model {
@@ -36,7 +35,7 @@ export class Model {
     if ('transferControlToOffscreen' in this.canvas2) {
       // @ts-ignore
       const offscreen = this.canvas2?.transferControlToOffscreen();
-      const worker = new Worker(new URL('./offscreen/offscreen.js', import.meta.url), { 
+      const worker = new Worker(new URL('./offscreen/off-screen.ts', import.meta.url), { 
         type: 'module' 
       });
       worker.postMessage({
