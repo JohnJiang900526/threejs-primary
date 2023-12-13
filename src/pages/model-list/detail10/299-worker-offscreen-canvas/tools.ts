@@ -1,25 +1,29 @@
 import * as THREE from 'three';
-import Stats from 'three/examples/jsm/libs/stats.module';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import GUI from 'lil-gui';
+// @ts-ignore
+import init from './offscreen/scene';
+import { showFailToast } from 'vant';
 
 export class Model {
   private width: number;
   private height: number;
   private aspect: number;
   private container: HTMLDivElement;
+  private canvas1: HTMLCanvasElement;
+  private canvas2: HTMLCanvasElement;
   private scene: THREE.Scene;
   private renderer: null | THREE.WebGLRenderer;
   private camera: null | THREE.PerspectiveCamera;
   private stats: null | Stats;
   private animateNumber: number;
 
-  private controls: null | OrbitControls;
   private gui: GUI;
-  constructor(container: HTMLDivElement) {
+  constructor(container: HTMLDivElement, canvas1: HTMLCanvasElement, canvas2: HTMLCanvasElement) {
     this.container = container;
-    this.width = this.container.offsetWidth;
-    this.height = this.container.offsetHeight;
+    this.canvas1 = canvas1;
+    this.canvas2 = canvas2;
+    this.width = this.canvas1.offsetWidth;
+    this.height = this.canvas1.offsetHeight;
     this.aspect = this.width/this.height;
     this.scene = new THREE.Scene();
     this.renderer = null;
@@ -27,68 +31,44 @@ export class Model {
     this.stats = null;
     this.animateNumber = 0;
 
-    this.controls = null;
     this.gui = new GUI({
       title: "控制面板",
       autoPlace: false,
       container: this.container,
     });
+    this.gui.hide();
   }
 
   init() {
-    // 场景
-    this.scene = new THREE.Scene();
+    init(this.canvas1, this.width, this.height, window.devicePixelRatio, '/examples/');
 
-    // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 3500);
-    this.camera.position.z = 2750;
-
-    // 渲染器
-    this.createRenderer();
-
-    // 控制器
-    this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
-    this.controls.update();
-
-    this.initStats();
-    this.animate();
-    this.resize();
+    // offscreen
+    if ('transferControlToOffscreen' in this.canvas2) {
+      // @ts-ignore
+      const offscreen = this.canvas2?.transferControlToOffscreen();
+      const worker = new Worker(new URL('./offscreen/offscreen.js', import.meta.url), { 
+        type: 'module' 
+      });
+      worker.postMessage({
+        drawingSurface: offscreen,
+        width: this.canvas2.clientWidth,
+        height: this.canvas2.clientHeight,
+        pixelRatio: window.devicePixelRatio,
+        path: "/examples/"
+      }, [offscreen]);
+    } else {
+      showFailToast({
+        message: `canvas中不存在【transferControlToOffscreen】属性`,
+        forbidClick: true,
+        loadingType: 'spinner',
+      });
+    }
   }
 
   // 判断是否为移动端
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
-  }
-
-  // 创建渲染器
-  private createRenderer() {
-    this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(this.width, this.height);
-    this.container.appendChild(this.renderer.domElement);
-  }
-
-  // 性能统计
-  private initStats() {
-    // @ts-ignore
-    this.stats = Stats();
-    // @ts-ignore
-    this.stats.domElement.style.position = "absolute";
-    // @ts-ignore
-    this.container.appendChild(this.stats.domElement);
-  }
-
-  // 持续动画
-  private animate() {
-    this.animateNumber && window.cancelAnimationFrame(this.animateNumber);
-    this.animateNumber = window.requestAnimationFrame(() => { this.animate(); });
-
-    this.stats?.update();
-    this.controls?.update();
-
-    // 执行渲染
-    this.renderer?.render(this.scene, this.camera!);
   }
 
   // 消除 副作用
@@ -102,12 +82,6 @@ export class Model {
       this.width = this.container.offsetWidth;
       this.height = this.container.offsetHeight;
       this.aspect = this.width/this.height;
-
-      this.camera!.aspect = this.aspect;
-      // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
-      this.camera!.updateProjectionMatrix();
-
-      this.renderer!.setSize(this.width, this.height);
     };
   }
 }

@@ -2,6 +2,8 @@
   <div class="webgl-page">
     <Page :title="title">
       <div ref="container" class="page-inner">
+        <canvas ref="canvas1" class="canvas"></canvas>
+        <canvas ref="canvas2" class="canvas"></canvas>
       </div>
     </Page>
   </div>
@@ -20,9 +22,11 @@ const title = computed(() => {
 
 let objModel: Model | null = null;
 const container = ref<HTMLDivElement>(document.createElement("div"));
+const canvas1 = ref<HTMLCanvasElement>(document.createElement("canvas"));
+const canvas2 = ref<HTMLCanvasElement>(document.createElement("canvas"));
 
 onMounted(() => {
-  objModel = new Model(container.value);
+  objModel = new Model(container.value, canvas1.value, canvas2.value);
   objModel?.init();
 });
 
@@ -41,6 +45,12 @@ onBeforeUnmount(() => {
       position: relative;
       .width-and-height();
       background-color: #000;
+      display: flex !important;
+      .canvas {
+        flex: 1;
+        width: 50%;
+        height: 100%;
+      }
       .lil-gui.root {
         max-height: 50%;
         max-width: 80%;
