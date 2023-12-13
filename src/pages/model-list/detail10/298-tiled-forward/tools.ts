@@ -1,10 +1,10 @@
 import * as THREE from 'three';
+import { showLoadingToast } from 'vant';
 import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { showLoadingToast } from 'vant';
 
 
 export class Model {
@@ -130,7 +130,7 @@ export class Model {
       // @ts-ignore
       this.bloom!.render(renderer, null, this.renderTarget);
     };
-    this.resizeTiles();
+    this.setTiles();
 
     // 相机
     this.camera = new THREE.PerspectiveCamera(60, this.aspect, 1, 2000);
@@ -164,6 +164,7 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 光线范围
   private lightBounds() {
     const v = new THREE.Vector3();
 
@@ -173,12 +174,17 @@ export class Model {
 
       for (let i = 0; i < 8; i++) {
         v.copy(pos);
-        v.x += i & 1 ? r : - r;
-        v.y += i & 2 ? r : - r;
-        v.z += i & 4 ? r : - r;
+
+        v.x += (i & 1 ? r : -r);
+        v.y += (i & 2 ? r : -r);
+        v.z += (i & 4 ? r : -r);
+
+        // .project ( camera : Camera ) : this
+        // camera — 在投影中使用的摄像机。
         const vector = v.project(camera);
         const x = (vector.x * hw) + hw;
         const y = (vector.y * hh) + hh;
+
         minX = Math.min(minX, x);
         maxX = Math.max(maxX, x);
         minY = Math.min(minY, y);
@@ -198,9 +204,10 @@ export class Model {
     d.fill(0);
 
     const vector = new THREE.Vector3();
+
     this.lights.forEach((light, index) => {
       // @ts-ignore
-      const _light = light._light;
+      const _light = light.userData._light;
       vector.setFromMatrixPosition(light.matrixWorld);
       const lightBounds = this.lightBounds();
       const bs = lightBounds(camera, vector, _light.radius as number);
@@ -211,16 +218,19 @@ export class Model {
       _light.color.toArray(ld, 32 * 4 + 4 * index);
       ld[32 * 4 + 4 * index + 3] = _light.decay;
 
-      if (bs[1] < 0 || bs[0] > this.State.width || bs[3] < 0 || bs[2] > this.State.height) return;
-      if (bs[0] < 0) bs[0] = 0;
-      if (bs[1] > this.State.width) bs[1] = this.State.width;
-      if (bs[2] < 0) bs[2] = 0;
-      if (bs[3] > this.State.height) bs[3] = this.State.height;
+      if (bs[1] < 0 || bs[0] > this.State.width || bs[3] < 0 || bs[2] > this.State.height) { return; }
+      if (bs[0] < 0) { bs[0] = 0; }
+      if (bs[1] > this.State.width) { bs[1] = this.State.width; }
+      if (bs[2] < 0) { bs[2] = 0; }
+      if (bs[3] > this.State.height) { bs[3] = this.State.height; }
 
       const i4 = Math.floor(index / 8), i8 = 7 - (index % 8);
       for (let i = Math.floor(bs[2] / 32); i <= Math.ceil(bs[3] / 32); i++) {
         for (let j = Math.floor(bs[0] / 32); j <= Math.ceil(bs[1] / 32); j++) {
-          d[(this.State.cols * i + j) * 4 + i4] |= 1 << i8;
+          // |= 按位或  
+          // <<n 转换为二进制 向左移动n位 
+          // >>n 转换为二进制 向右移动n位 
+          d[(this.State.cols * i + j) * 4 + i4] |= (1 << i8);
         }
       }
     });
@@ -267,31 +277,48 @@ export class Model {
       { type: 'phong', uniforms: { 'diffuse': 0x555555, 'shininess': 10 }, defines: { TOON: 1 } }
     ];
 
-    const sphereGeom = new THREE.SphereGeometry(1.5, 32, 32);
+    const sphere = new THREE.SphereGeometry(1.5, 32, 32);
     const tIndex = Math.round(Math.random() * 3);
 
-    Heads.forEach((conf, index) => {
-      const g = new THREE.Group();
-      const ml = THREE.ShaderLib[conf.type];
+    Heads.forEach((head, index) => {
+      const group = new THREE.Group();
+      const ml = THREE.ShaderLib[head.type];
       const mtl = new THREE.ShaderMaterial({
+        // 材质是否受到光照的影响。默认值为 false。
+        // 如果传递与光照相关的uniform数据到这个材质，则为true。默认是false。
         lights: true,
+        // 片段着色
         fragmentShader: ml.fragmentShader,
+        // 顶点着色器
         vertexShader: ml.vertexShader,
         uniforms: THREE.UniformsUtils.clone(ml.uniforms),
-        defines: conf.defines,
-        transparent: tIndex === index ? true : false,
+        // 使用 #define 指令在GLSL代码为顶点着色器和片段着色器定义自定义常量；每个键/值对产生一行定义语句：
+        /*
+        defines: {
+          FOO: 15,
+          BAR: true
+        }
+
+        这将在GLSL代码中产生如下定义语句：
+          #define FOO 15
+          #define BAR true
+        */
+        defines: head.defines,
+        transparent: (tIndex === index ? true : false),
+        side: (tIndex === index) ? THREE.FrontSide : THREE.DoubleSide
       });
 
+      // 派生
       mtl.extensions.derivatives = true;
 
-      mtl.uniforms['opacity'].value = tIndex === index ? 0.9 : 1;
+      mtl.uniforms['opacity'].value = (tIndex === index ? 0.9 : 1);
       mtl.uniforms['tileData'] = this.State.tileData;
       mtl.uniforms['tileTexture'] = this.State.tileTexture;
       mtl.uniforms['lightTexture'] = this.State.lightTexture;
 
-      for (const u in conf.uniforms) {
+      for (const u in head.uniforms) {
         // @ts-ignore
-        const vu = conf.uniforms[u];
+        const vu = head.uniforms[u];
         if (mtl.uniforms[u].value.set) {
           mtl.uniforms[u].value.set(vu);
         } else {
@@ -304,37 +331,36 @@ export class Model {
 
       const obj = new THREE.Mesh(geometry, mtl);
       obj.position.y = -37;
-      mtl.side = tIndex === index ? THREE.FrontSide : THREE.DoubleSide;
 
-      g.rotation.y = index * Math.PI / 2;
-      g.position.x = Math.sin(index * Math.PI / 2) * this.RADIUS;
-      g.position.z = Math.cos(index * Math.PI / 2) * this.RADIUS;
-      g.add(obj);
+      group.rotation.y = index * Math.PI / 2;
+      group.position.x = Math.sin(index * Math.PI / 2) * this.RADIUS;
+      group.position.z = Math.cos(index * Math.PI / 2) * this.RADIUS;
+      group.add(obj);
 
       for (let i = 0; i < 8; i++) {
         const color = new THREE.Color().setHSL(Math.random(), 1.0, 0.5);
-        const l = new THREE.Group();
+        const light = new THREE.Group();
 
         {
           const material = new THREE.MeshBasicMaterial({ color: color });
-          const mesh = new THREE.Mesh(sphereGeom, material); 
-          l.add(mesh);
+          const mesh = new THREE.Mesh(sphere, material);
+          mesh.name = `light_inner_${i + 1}`;
+          light.add(mesh);
         }
 
         {
           const material = new THREE.MeshBasicMaterial({ 
             color: color,
             transparent: true,
-            opacity: 0.033
+            opacity: 0.033,
           });
-          const mesh = new THREE.Mesh(sphereGeom, material); 
-          l.add(mesh);
+          const mesh = new THREE.Mesh(sphere, material);
+          mesh.name = `light_out_${i + 1}`;
+          mesh.scale.set(6.66, 6.66, 6.66);
+          light.add(mesh);
         }
 
-        l.children[1].scale.set(6.66, 6.66, 6.66);
-
-        // @ts-ignore
-        l._light = {
+        light.userData._light = {
           color: color,
           radius: this.RADIUS,
           decay: 1,
@@ -347,12 +373,16 @@ export class Model {
           dir: Math.random() > 0.5 ? 1 : - 1
         };
 
-        this.lights.push(l);
-        g.add(l);
+        this.lights.push(light);
+        group.add(light);
       }
-      this.scene.add(g);
+      this.scene.add(group);
     });
 
+    // 设置渲染
+    // .setAnimationLoop ( callback : Function ) : undefined
+    // callback — 每个可用帧都会调用的函数。 如果传入‘null’,所有正在进行的动画都会停止。
+    // 可用来代替requestAnimationFrame的内置函数. 对于WebXR项目，必须使用此函数。
     this.renderer?.setAnimationLoop((timer) => {
       this.stats?.update();
       this.controls?.update();
@@ -367,6 +397,7 @@ export class Model {
   // 创建渲染器
   private createRenderer() {
     this.renderer = new THREE.WebGLRenderer();
+    // 色调映射
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
@@ -383,7 +414,7 @@ export class Model {
     this.container.appendChild(this.stats.domElement);
   }
 
-  private resizeTiles() {
+  private setTiles() {
     this.State.width = this.width;
     this.State.height = this.height;
 
@@ -402,18 +433,21 @@ export class Model {
   }
 
   private render(now: number) {
-    this.lights.forEach((l) => {
-      // @ts-ignore
-      const ld = l._light;
-      const radius = 0.8 + 0.2 * Math.sin(ld.pr + (0.6 + 0.3 * ld.sr) * now);
-      l.position.x = (Math.sin(ld.pc + (0.8 + 0.2 * ld.sc) * now * ld.dir)) * radius * this.RADIUS;
-      l.position.z = (Math.cos(ld.pc + (0.8 + 0.2 * ld.sc) * now * ld.dir)) * radius * this.RADIUS;
-      l.position.y = Math.sin(ld.py + (0.8 + 0.2 * ld.sy) * now) * radius * 32;
+    this.lights.forEach((light) => {
+      const l = light.userData._light;
+      const radius = 0.8 + 0.2 * Math.sin(l.pr + (0.6 + 0.3 * l.sr) * now);
+
+      const x = (Math.sin(l.pc + (0.8 + 0.2 * l.sc) * now * l.dir)) * radius * this.RADIUS;
+      const y = Math.sin(l.py + (0.8 + 0.2 * l.sy) * now) * radius * 32;
+      const z = (Math.cos(l.pc + (0.8 + 0.2 * l.sc) * now * l.dir)) * radius * this.RADIUS;
+
+      light.position.set(x, y, z);
     });
   }
 
   // 消除 副作用
   dispose() {
+    // 还原 原始变量值
     THREE.ShaderChunk['lights_pars_begin'] = this.lights_pars_begin;
     THREE.ShaderChunk['lights_fragment_end'] = this.lights_fragment_end;
     window.cancelAnimationFrame(this.animateNumber);
@@ -433,7 +467,7 @@ export class Model {
       this.renderer!.setSize(this.width, this.height);
       this.renderTarget.setSize(this.width, this.height);
 
-      this.resizeTiles();
+      this.setTiles();
     };
   }
 }
