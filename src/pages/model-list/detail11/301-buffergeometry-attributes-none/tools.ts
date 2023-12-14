@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import GUI from 'lil-gui';
+import WebGL from 'three/examples/jsm/capabilities/WebGL';
+import { showFailToast } from 'vant';
+import { fragmentShader, vertexShader } from './vars';
 
 export class Model {
   private width: number;
@@ -16,6 +19,7 @@ export class Model {
 
   private controls: null | OrbitControls;
   private gui: GUI;
+  private mesh: THREE.Mesh;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -33,16 +37,27 @@ export class Model {
       autoPlace: false,
       container: this.container,
     });
+    this.gui.hide();
+    this.mesh = new THREE.Mesh();
   }
 
   init() {
+    if (!WebGL.isWebGL2Available()) {
+      showFailToast(WebGL.getWebGL2ErrorMessage());
+      return false;
+    }
+    
     // 场景
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x050505);
+    this.scene.fog = new THREE.Fog(0x050505, 2000, 3500);
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 3500);
-    this.camera.position.z = 2750;
+    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 1, 3500);
+    this.camera.position.z = 4;
 
+    // 模型
+    this.generateModel();
     // 渲染器
     this.createRenderer();
 
@@ -59,6 +74,31 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  // 核心 逻辑
+  // 向量的计算和
+  private generateModel() {
+    const triangleCount = 10000;
+    const vertexCountPerTriangle = 3;
+    const vertexCount = triangleCount * vertexCountPerTriangle;
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setDrawRange(0, vertexCount);
+
+    const material = new THREE.RawShaderMaterial({
+      uniforms: {
+        seed: { value: 42 },
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      side: THREE.DoubleSide,
+      glslVersion: THREE.GLSL3
+    });
+
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.frustumCulled = false;
+    this.scene.add(this.mesh);
   }
 
   // 创建渲染器
@@ -86,6 +126,12 @@ export class Model {
 
     this.stats?.update();
     this.controls?.update();
+
+    {
+      const timer = Date.now() * 0.001;
+      this.mesh.rotation.x = timer * 0.25;
+      this.mesh.rotation.y = timer * 0.50;
+    }
 
     // 执行渲染
     this.renderer?.render(this.scene, this.camera!);

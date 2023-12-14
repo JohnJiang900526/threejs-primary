@@ -47,7 +47,8 @@ export class Model {
 
   init() {
     if (!WebGL.isWebGL2Available()) {
-      showFailToast(WebGL.getWebGL2ErrorMessage())
+      showFailToast(WebGL.getWebGL2ErrorMessage());
+      return false;
     }
 
     // 场景
