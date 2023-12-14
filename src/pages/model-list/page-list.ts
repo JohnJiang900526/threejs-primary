@@ -8,6 +8,7 @@ import list07 from "@/pages/model-list/page-lists/07-list";
 import list08 from "@/pages/model-list/page-lists/08-list";
 import list09 from "@/pages/model-list/page-lists/09-list";
 import list10 from "@/pages/model-list/page-lists/10-list";
+import list11 from "@/pages/model-list/page-lists/11-list";
 
 // 列表接口类型
 export interface listType {
@@ -19,6 +20,7 @@ export interface listType {
 
 // 列表数据
 const list: listType[] = [
+  ...list11,
   ...list10,
   ...list09,
   ...list08,
