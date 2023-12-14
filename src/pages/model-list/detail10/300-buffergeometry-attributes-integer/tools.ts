@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import GUI from 'lil-gui';
+import { showFailToast } from 'vant';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import WebGL from 'three/examples/jsm/capabilities/WebGL';
-import { showFailToast } from 'vant';
 import { fragmentShader, vertexShader } from './vars';
 
 export class Model {
@@ -80,11 +80,12 @@ export class Model {
     return userAgent.includes("mobile");
   }
 
+  // 核心 难点
   private generateModel() {
     const triangles = 10000;
     const geometry = new THREE.BufferGeometry();
 
-    const positions = [];
+    const positions: number[] = [];
     const uvs: number[] = [];
     const textureIndices: number[] = [];
 
@@ -115,10 +116,10 @@ export class Model {
       positions.push(bx, by, bz);
       positions.push(cx, cy, cz);
 
-      // uvs
-      uvs.push(0, 0);
-      uvs.push(0.5, 1);
-      uvs.push(1, 0);
+      // uvs映射
+      uvs.push(0.0, 0.0);
+      uvs.push(0.5, 1.0);
+      uvs.push(1.0, 0.0);
 
       // 索引
       const t = i % 3;
@@ -129,7 +130,7 @@ export class Model {
     const positionAttr = new THREE.Float32BufferAttribute(positions, 3);
     geometry.setAttribute('position', positionAttr);
 
-    // uv
+    // uv映射
     const uvAttr = new THREE.Float32BufferAttribute(uvs, 2);
     geometry.setAttribute('uv', uvAttr);
 
@@ -137,6 +138,7 @@ export class Model {
     const indexAttr = new THREE.Int32BufferAttribute(textureIndices, 1);
     geometry.setAttribute('textureIndex', indexAttr);
 
+    // 计算球形边界
     geometry.computeBoundingSphere();
 
     // 材质
