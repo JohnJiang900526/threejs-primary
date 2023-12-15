@@ -4,6 +4,8 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise';
 import { fragmentShader, vertexShader } from './vars';
+import WebGL from 'three/examples/jsm/capabilities/WebGL';
+import { showFailToast } from 'vant';
 
 
 export class Model {
@@ -78,6 +80,10 @@ export class Model {
   }
 
   init() {
+    if (!WebGL.isWebGL2Available()) {
+      showFailToast(WebGL.getWebGL2ErrorMessage());
+      return false;
+    }
     // 场景
     this.scene = new THREE.Scene();
 
