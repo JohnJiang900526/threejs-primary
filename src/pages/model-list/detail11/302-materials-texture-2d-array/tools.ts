@@ -1,7 +1,12 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
+import { showFailToast, showLoadingToast } from 'vant';
+import { unzipSync } from "fflate";
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import GUI from 'lil-gui';
+import WebGL from 'three/examples/jsm/capabilities/WebGL';
+import { fragmentShader, vertexShader } from './vars';
+
 
 export class Model {
   private width: number;
@@ -16,6 +21,10 @@ export class Model {
 
   private controls: null | OrbitControls;
   private gui: GUI;
+  private mesh: THREE.Mesh;
+  private planeWidth: number;
+  private planeHeight: number;
+  private depthStep: number;
   constructor(container: HTMLDivElement) {
     this.container = container;
     this.width = this.container.offsetWidth;
@@ -33,16 +42,28 @@ export class Model {
       autoPlace: false,
       container: this.container,
     });
+    this.gui.hide();
+    this.mesh = new THREE.Mesh();
+    this.planeWidth = 50;
+    this.planeHeight = 50;
+    this.depthStep = 0.4;
   }
 
   init() {
+    if (!WebGL.isWebGL2Available()) {
+      showFailToast(WebGL.getWebGL2ErrorMessage());
+      return false;
+    }
+    
     // 场景
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 3500);
-    this.camera.position.z = 2750;
+    this.camera = new THREE.PerspectiveCamera(70, this.aspect, 0.1, 2000);
+    this.camera.position.z = 70;
 
+    // 模型
+    this.generateModel();
     // 渲染器
     this.createRenderer();
 
@@ -51,7 +72,6 @@ export class Model {
     this.controls.update();
 
     this.initStats();
-    this.animate();
     this.resize();
   }
 
@@ -59,6 +79,55 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  // 模型
+  private generateModel() {
+    const url = "textures/3d/head256x256x109.zip";
+    const loader = new THREE.FileLoader();
+
+    loader.setPath("/examples/");
+    loader.setResponseType("arraybuffer");
+
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
+    loader.load(url, (data) => {
+      toast.close();
+
+      const zip = unzipSync(new Uint8Array(data as ArrayBuffer));
+      const array = new Uint8Array(zip['head256x256x109'].buffer);
+
+      // 纹理
+      const texture = new THREE.DataArrayTexture(array, 256, 256, 109);
+      texture.format = THREE.RedFormat;
+      texture.needsUpdate = true;
+
+      const size = new THREE.Vector2(this.planeWidth, this.planeHeight);
+      const material = new THREE.ShaderMaterial({
+        uniforms: {
+          // 扩散
+          diffuse: { value: texture },
+          // 深度
+          depth: { value: 55 },
+          // 大小
+          size: { value: size },
+        },
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        glslVersion: THREE.GLSL3,
+      });
+
+      const geometry = new THREE.PlaneGeometry(this.planeWidth, this.planeHeight);
+      this.mesh = new THREE.Mesh(geometry, material);
+      this.scene.add(this.mesh);
+
+      this.animate();
+    }, undefined, () => {
+      toast.close();
+    });
   }
 
   // 创建渲染器
@@ -86,6 +155,26 @@ export class Model {
 
     this.stats?.update();
     this.controls?.update();
+
+    {
+      const material = this.mesh.material as THREE.ShaderMaterial;
+      if (this.mesh) {
+        let value = material.uniforms['depth'].value;
+        value += this.depthStep;
+
+        if (value > 109.0 || value < 0.0) {
+          if (value > 1.0) {
+            value = 109.0 * 2.0 - value;
+          }
+          if (value < 0.0) {
+            value = - value;
+          }
+          this.depthStep = - this.depthStep;
+        }
+
+        material.uniforms['depth'].value = value;
+      }
+    }
 
     // 执行渲染
     this.renderer?.render(this.scene, this.camera!);
