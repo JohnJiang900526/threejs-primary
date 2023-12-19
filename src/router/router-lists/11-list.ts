@@ -9,9 +9,79 @@ import RenderTargetTexture2dArray from "@/pages/model-list/detail11/307-renderta
 import Texture2dArrayCompressed from "@/pages/model-list/detail11/308-texture-2d-array-compressed/index.vue";
 import Webgl2Ubo from "@/pages/model-list/detail11/309-webgl2-ubo/index.vue";
 import VolumeCloud from "@/pages/model-list/detail11/310-volume-cloud/index.vue";
+import VolumeInstancing from "@/pages/model-list/detail11/311-volume-instancing/index.vue";
+import VolumePerlin from "@/pages/model-list/detail11/312-volume-perlin/index.vue";
+import GpuAudioProcessing from "@/pages/model-list/detail11/313-gpu-audio-processing/index.vue";
+import GpuCompute from "@/pages/model-list/detail11/314-gpu-compute/index.vue";
+import CubemapAdjustments from "@/pages/model-list/detail11/315-gpu-cubemap-adjustments/index.vue";
+import CubemapMix from "@/pages/model-list/detail11/316-gpu-cubemap-mix/index.vue";
+import GpuDepthTexture from "@/pages/model-list/detail11/317-gpu-depth-texture/index.vue";
+import GpuEquirectangular from "@/pages/model-list/detail11/318-gpu-equirectangular/index.vue";
+import GpuInstanceMesh from "@/pages/model-list/detail11/319-gpu-instance-mesh/index.vue";
+import GpuInstanceUniform from "@/pages/model-list/detail11/320-gpu-instance-uniform/index.vue";
 
 
 const routerList: RouteRecordRaw[] = [
+  {
+    path: '/list/webgl-gpu-instance-uniform',
+    name: 'GpuInstanceUniform',
+    meta: {title: "320.GPU实例化网格"},
+    component: GpuInstanceUniform,
+  },
+  {
+    path: '/list/webgl-gpu-instance-mesh',
+    name: 'GpuInstanceMesh',
+    meta: {title: "319.GPU实例化网格"},
+    component: GpuInstanceMesh,
+  },
+  {
+    path: '/list/webgl-gpu-equirectangular',
+    name: 'GpuEquirectangular',
+    meta: {title: "318.GPU球面投影"},
+    component: GpuEquirectangular,
+  },
+  {
+    path: '/list/webgl-gpu-depth-texture',
+    name: 'GpuDepthTexture',
+    meta: {title: "317.GPU深度纹理"},
+    component: GpuDepthTexture,
+  },
+  {
+    path: '/list/webgl-gpu-cubemap-mix',
+    name: 'CubemapMix',
+    meta: {title: "316.GPU立方体图混合"},
+    component: CubemapMix,
+  },
+  {
+    path: '/list/webgl-gpu-cubemap-adjustments',
+    name: 'CubemapAdjustments',
+    meta: {title: "315.GPU立方体图调整"},
+    component: CubemapAdjustments,
+  },
+  {
+    path: '/list/webgl-gpu-compute',
+    name: 'GpuCompute',
+    meta: {title: "314.GPU计算"},
+    component: GpuCompute,
+  },
+  {
+    path: '/list/webgl-gpu-audio-processing',
+    name: 'GpuAudioProcessing',
+    meta: {title: "313.音频处理"},
+    component: GpuAudioProcessing,
+  },
+  {
+    path: '/list/webgl-volume-perlin',
+    name: 'VolumePerlin',
+    meta: {title: "312.volume 噪声"},
+    component: VolumePerlin,
+  },
+  {
+    path: '/list/webgl-volume-instancing',
+    name: 'VolumeInstancing',
+    meta: {title: "311.volume实例化"},
+    component: VolumeInstancing,
+  },
   {
     path: '/list/webgl-volume-cloud',
     name: 'VolumeCloud',
