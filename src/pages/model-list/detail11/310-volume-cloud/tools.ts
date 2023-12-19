@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import GUI from 'lil-gui';
+import { showFailToast } from 'vant';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise';
 import WebGL from 'three/examples/jsm/capabilities/WebGL';
-import { showFailToast } from 'vant';
 import { fragmentShader, vertexShader } from './vars';
 
 export class Model {
@@ -77,6 +77,7 @@ export class Model {
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.enableDamping = true;
     this.controls.update();
 
     this.setGUI();
@@ -98,27 +99,30 @@ export class Model {
       this.material.uniforms.range.value = this.params.range;
       this.material.uniforms.steps.value = this.params.steps;
     };
-    
-    this.gui.add(this.params, 'threshold', 0, 1, 0.01).onChange(update);
-    this.gui.add(this.params, 'opacity', 0, 1, 0.01).onChange(update);
-    this.gui.add(this.params, 'range', 0, 1, 0.01).onChange(update);
-    this.gui.add(this.params, 'steps', 0, 200, 1).onChange(update);
+
+    this.gui.add(this.params, 'threshold', 0, 1, 0.01).name("阈值").onChange(update);
+    this.gui.add(this.params, 'opacity', 0, 1, 0.01).name("透明度").onChange(update);
+    this.gui.add(this.params, 'range', 0, 1, 0.01).name("范围").onChange(update);
+    this.gui.add(this.params, 'steps', 0, 200, 1).name("步骤").onChange(update);
   }
 
+  // 核心逻辑
   private createMesh() {
     const size = 128;
     const data = new Uint8Array(size * size * size);
 
-    let i = 0;
-    const scale = 0.05;
     const perlin = new ImprovedNoise();
     const vector = new THREE.Vector3();
+    const scale = 0.05;
+    let i = 0;
 
     for (let z = 0; z < size; z++) {
       for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
-          const d = 1.0 - vector.set(x, y, z).subScalar(size / 2).divideScalar(size).length();
-          data[i] = (128 + 128 * perlin.noise(x * scale / 1.5, y * scale, z * scale / 1.5)) * d * d;
+          const length = vector.set(x, y, z).subScalar(size / 2).divideScalar(size).length();;
+          const d = 1.0 - length;
+          const noise = perlin.noise(x * scale / 1.5, y * scale, z * scale / 1.5)
+          data[i] = (128 + 128 * noise) * d * d;
           i++;
         }
       }
@@ -154,6 +158,7 @@ export class Model {
     this.scene.add(this.mesh);
   }
 
+  // 创建天空
   private createSky() {
     const canvas = document.createElement('canvas');
     canvas.width = 1;
