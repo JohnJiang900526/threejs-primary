@@ -1,7 +1,11 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import GUI from 'lil-gui';
+import { VOXLoader, VOXData3DTexture } from 'three/examples/jsm/loaders/VOXLoader';
+import WebGL from 'three/examples/jsm/capabilities/WebGL';
+import { showFailToast, showLoadingToast } from 'vant';
+import { vertexShader, fragmentShader } from "./vars";
 
 export class Model {
   private width: number;
@@ -33,21 +37,32 @@ export class Model {
       autoPlace: false,
       container: this.container,
     });
+    this.gui.hide();
   }
 
   init() {
+    if (!WebGL.isWebGL2Available()) {
+      showFailToast(WebGL.getWebGL2ErrorMessage());
+      return false;
+    }
+    
     // 场景
     this.scene = new THREE.Scene();
 
     // 相机
-    this.camera = new THREE.PerspectiveCamera(50, this.aspect, 1, 3500);
-    this.camera.position.z = 2750;
+    this.camera = new THREE.PerspectiveCamera(60, this.aspect, 0.1, 1000);
+    this.camera.position.z = 4;
 
+    // 加载模型
+    this.loadModel();
     // 渲染器
     this.createRenderer();
 
     // 控制器
     this.controls = new OrbitControls(this.camera, this.renderer?.domElement);
+    this.controls.autoRotate = true;
+    this.controls.autoRotateSpeed = -1.0;
+    this.controls.enableDamping = true;
     this.controls.update();
 
     this.initStats();
@@ -59,6 +74,62 @@ export class Model {
   isMobile() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     return userAgent.includes("mobile");
+  }
+
+  private loadModel() {
+    const loader = new VOXLoader();
+    const url = "models/vox/menger.vox";
+
+    const toast = showLoadingToast({
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
+
+    loader.setPath("/examples/");
+    loader.load(url, (chunks) => {
+      toast.close();
+
+      chunks.forEach((chunk) => {
+        const map = new VOXData3DTexture(chunk);
+        const position = new THREE.Vector3();
+
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.RawShaderMaterial({
+          uniforms: {
+            map: { value: map },
+            cameraPos: { value: position }
+          },
+          vertexShader: vertexShader,
+          fragmentShader: fragmentShader,
+          side: THREE.BackSide,
+          glslVersion: THREE.GLSL3,
+        });
+
+        const mesh = new THREE.InstancedMesh(geometry, material, 50000);
+        mesh.onBeforeRender = () => {
+          material.uniforms.cameraPos.value.copy(this.camera!.position);
+        }
+
+        const transform = new THREE.Object3D();
+        for (let i = 0; i < mesh.count; i++) {
+          // .random () : this
+          // 将该向量的每个分量(x、y、z)设置为介于 0 和 1 之间的伪随机数，不包括 1。
+          transform.position.random().subScalar(0.5).multiplyScalar(150);
+
+          transform.rotation.set(
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+          );
+          transform.updateMatrix();
+          mesh.setMatrixAt(i, transform.matrix);
+        }
+        this.scene.add(mesh);
+      });
+    }, undefined, () => {
+      toast.close();
+    });
   }
 
   // 创建渲染器
