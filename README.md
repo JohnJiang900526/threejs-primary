@@ -7,3 +7,6 @@ threejs Training ground, is gradually completing all threejs official cases, cur
 The technology stack includes vue3, typescript, and vite.
 
 
+由于three.js@0.147版本对webgpu的支持不是很好，webgpu和webxr部分将会单独创建项目。
+Since the three.js@0.147 version does not support webgpu very well, the webgpu and webxr sections will be created as separate projects.
+
