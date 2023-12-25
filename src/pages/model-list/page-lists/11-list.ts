@@ -10,46 +10,6 @@ export interface listType {
 // 列表数据
 const list: listType[] = [
   {
-    key: "320",
-    path: "/list/webgl-gpu-instance-uniform",
-    title: "320.GPU实例化网格",
-  },
-  {
-    key: "319",
-    path: "/list/webgl-gpu-instance-mesh",
-    title: "319.GPU实例化网格",
-  },
-  {
-    key: "318",
-    path: "/list/webgl-gpu-equirectangular",
-    title: "318.GPU球面投影",
-  },
-  {
-    key: "317",
-    path: "/list/webgl-gpu-depth-texture",
-    title: "317.GPU深度纹理",
-  },
-  {
-    key: "316",
-    path: "/list/webgl-gpu-cubemap-mix",
-    title: "316.GPU立方体图混合",
-  },
-  {
-    key: "315",
-    path: "/list/webgl-gpu-cubemap-adjustments",
-    title: "315.GPU立方体图调整",
-  },
-  {
-    key: "314",
-    path: "/list/webgl-gpu-compute",
-    title: "314.GPU计算",
-  },
-  {
-    key: "313",
-    path: "/list/webgl-gpu-audio-processing",
-    title: "313.音频处理",
-  },
-  {
     key: "312",
     path: "/list/webgl-volume-perlin",
     title: "312.volume 噪声",
